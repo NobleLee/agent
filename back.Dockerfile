@@ -17,6 +17,6 @@ COPY --from=builder /root/workspace/agent/mesh-agent/target/mesh-agent-1.0-SNAPS
 COPY --from=builder /usr/local/bin/docker-entrypoint.sh /usr/local/bin
 COPY start-agent.sh /usr/local/bin
 
-RUN set -ex && mkdir -p /root/logs && chmod u+x /usr/local/bin/docker-entrypoint.sh
+RUN set -ex && mkdir -p /root/logs
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+#ENTRYPOINT ["sh docker-entrypoint.sh"]
