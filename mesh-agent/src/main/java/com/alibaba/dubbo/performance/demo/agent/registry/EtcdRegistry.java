@@ -50,7 +50,7 @@ public class EtcdRegistry implements IRegistry {
             e.printStackTrace();
         }
 
-        keepAlive();
+        keepAlive();  // 对于consumer的agent，并不需要进行租期续约
 
         String type = System.getProperty("type");   // 获取type参数
         if ("provider".equals(type)) {
@@ -61,8 +61,6 @@ public class EtcdRegistry implements IRegistry {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else if("consumer".equals(type)){
-
         }
     }
 

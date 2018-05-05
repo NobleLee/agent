@@ -27,10 +27,11 @@ public class AgentClientConnectPool {
 
     }
 
-    public Channel getChannel(String server) throws Exception {
 
+    // 发送消息
+    public void sendToServer(Endpoint server, String msg) throws Exception {
         while (FLAG.etcdLock.get()) ;
-        return channelMap.get(server);
+        channelMap.get(server).writeAndFlush(msg);
     }
 
     public boolean putServers(List<Endpoint> endpoints) throws Exception {
