@@ -36,7 +36,7 @@ public class EndpointHelper {
 
         Endpoint endpoint = getBlancePoint();
 
-        return "http://" + endpoint.getPort() + ":" + endpoint.getPort();
+        return "http://" + endpoint.getHost() + ":" + endpoint.getPort();
     }
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限

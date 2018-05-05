@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @RestController
 public class HelloController {
@@ -66,7 +64,8 @@ public class HelloController {
 
         String url = endpointHelper.getBalancePointUrl();
 
-        logger.info("chose server: " + url);
+        logger.info("chose server: " + url +"all host: " + Arrays.toString(endpointHelper.getEndpoints().toArray()));
+
         RequestBody requestBody = new FormBody.Builder()
                 .add("interface", interfaceName)
                 .add("method", method)
