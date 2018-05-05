@@ -23,8 +23,7 @@ public class EndpointHelper {
     private IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
 
     // 对节点设置watcher监控rpc节点的变更
-    private void watch() {
-    }
+    private void watch() {}
 
     public String getBalancePointUrl() throws Exception {
         if (endpoints == null) {
