@@ -15,14 +15,18 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-
+/**
+ * 描述: Dubbo 和 agent 的调用RPCß
+ * ${DESCRIPTION}
+ */
 public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
     private ConnecManager connectManager;
 
-    public RpcClient(IRegistry registry){
-        this.connectManager = new ConnecManager();
+    public RpcClient(IRegistry registry) {
+        this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
+                4, new RpcClientInitializer());
     }
 
     public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
@@ -47,14 +51,14 @@ public class RpcClient {
         logger.info("requestId=" + request.getId());
 
         RpcFuture future = new RpcFuture();
-        RpcRequestHolder.put(String.valueOf(request.getId()),future);
+        RpcRequestHolder.put(String.valueOf(request.getId()), future);
 
         channel.writeAndFlush(request);
 
         Object result = null;
         try {
             result = future.get();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;

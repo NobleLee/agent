@@ -17,7 +17,7 @@ public class EndpointHelper {
 
     private Logger logger = LoggerFactory.getLogger(EndpointHelper.class);
 
-    private List<Endpoint> endpoints;
+    private List<Endpoint> endpoints; //之后可以考虑把初始化的过程放到前面
     private Random random = new Random();
 
     private IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));

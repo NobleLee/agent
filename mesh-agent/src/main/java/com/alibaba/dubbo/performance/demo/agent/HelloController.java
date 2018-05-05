@@ -33,8 +33,7 @@ public class HelloController {
 
     private RpcClient rpcClient = new RpcClient(registry);
     private EndpointHelper endpointHelper = new EndpointHelper();
-    private List<Endpoint> endpoints = null;
-    private Object lock = new Object();
+
     private OkHttpClient httpClient = new OkHttpClient();
 
 

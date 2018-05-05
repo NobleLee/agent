@@ -1,22 +1,31 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
+import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class ConnecManager {
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
+    private EventLoopGroup eventLoopGroup;
 
     private Bootstrap bootstrap;
 
     private Channel channel;
     private Object lock = new Object();
 
-    public ConnecManager() {
+    private Endpoint endpoint;
+
+
+    public ConnecManager(String host, int port, int nThread, ChannelInitializer<SocketChannel> initializer) {
+        eventLoopGroup = new NioEventLoopGroup(nThread);
+        endpoint = new Endpoint(host, port);
+        initBootstrap(initializer);
     }
 
     public Channel getChannel() throws Exception {
@@ -24,19 +33,10 @@ public class ConnecManager {
             return channel;
         }
 
-        if (null == bootstrap) {
-            synchronized (lock) {
-                if (null == bootstrap) {
-                    initBootstrap();
-                }
-            }
-        }
-
         if (null == channel) {
-            synchronized (lock){
-                if (null == channel){
-                    int port = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
-                    channel = bootstrap.connect("127.0.0.1", port).sync().channel();
+            synchronized (lock) {
+                if (null == channel) {
+                    channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
                 }
             }
         }
@@ -44,7 +44,7 @@ public class ConnecManager {
         return channel;
     }
 
-    public void initBootstrap() {
+    public void initBootstrap(ChannelInitializer<SocketChannel> initializer) {
 
         bootstrap = new Bootstrap()
                 .group(eventLoopGroup)

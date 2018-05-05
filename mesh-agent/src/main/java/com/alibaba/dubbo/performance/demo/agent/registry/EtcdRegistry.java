@@ -61,6 +61,8 @@ public class EtcdRegistry implements IRegistry {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }else if("consumer".equals(type)){
+
         }
     }
 
