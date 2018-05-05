@@ -23,7 +23,8 @@ public class EndpointHelper {
     private IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
 
     // 对节点设置watcher监控rpc节点的变更
-    private void watch(){}
+    private void watch() {
+    }
 
     public String getBalancePointUrl() throws Exception {
         if (endpoints == null) {
@@ -36,7 +37,7 @@ public class EndpointHelper {
 
         Endpoint endpoint = getBlancePoint();
 
-        return "http://127.0.0.1:" + endpoint.getPort();
+        return "http://" + endpoint.getPort() + ":" + endpoint.getPort();
     }
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
@@ -47,6 +48,4 @@ public class EndpointHelper {
     public List<Endpoint> getEndpoints() {
         return endpoints;
     }
-
-
 }
