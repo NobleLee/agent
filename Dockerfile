@@ -7,7 +7,8 @@ FROM service:0.0.1 AS builder
 
 COPY . /root/workspace/agent
 WORKDIR /root/workspace/agent
-#RUN set -ex && mvn clean package
+RUN set -ex
+#&& mvn clean package
 
 
 # Runner container
