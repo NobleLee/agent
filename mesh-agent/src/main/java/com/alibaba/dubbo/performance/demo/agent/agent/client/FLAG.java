@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.agent;
+package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
