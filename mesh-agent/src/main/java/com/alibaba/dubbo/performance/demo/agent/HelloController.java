@@ -66,6 +66,9 @@ public class HelloController {
 
         logger.info("chose server: " + url +"all host: " + Arrays.toString(endpointHelper.getEndpoints().toArray()));
 
+
+
+
         RequestBody requestBody = new FormBody.Builder()
                 .add("interface", interfaceName)
                 .add("method", method)
