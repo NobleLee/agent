@@ -1,21 +1,38 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RpcRequestHolder {
 
-    // key: requestId     value: RpcFuture
-    private static ConcurrentHashMap<String,RpcFuture> processingRpc = new ConcurrentHashMap<>();
+    private static HashMap<String, RpcRequestHolder> requestHolderMap = new HashMap<>();
 
-    public static void put(String requestId,RpcFuture rpcFuture){
-        processingRpc.put(requestId,rpcFuture);
+    static {
+        requestHolderMap.put("agentClient", new RpcRequestHolder());
+        requestHolderMap.put("agentServer", new RpcRequestHolder());
+        requestHolderMap.put("dubboClient", new RpcRequestHolder());
     }
 
-    public static RpcFuture get(String requestId){
+    private RpcRequestHolder() {
+    }
+
+    public static RpcRequestHolder getRpcRequestHolderByName(String name) {
+        return requestHolderMap.get(name);
+    }
+
+
+    // key: requestId     value: RpcFuture
+    private ConcurrentHashMap<String, RpcFuture> processingRpc = new ConcurrentHashMap<>();
+
+    public void put(String requestId, RpcFuture rpcFuture) {
+        processingRpc.put(requestId, rpcFuture);
+    }
+
+    public RpcFuture get(String requestId) {
         return processingRpc.get(requestId);
     }
 
-    public static void remove(String requestId){
+    public void remove(String requestId) {
         processingRpc.remove(requestId);
     }
 }

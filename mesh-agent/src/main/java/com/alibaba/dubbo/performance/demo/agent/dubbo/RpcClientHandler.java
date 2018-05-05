@@ -9,12 +9,14 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
+    private RpcRequestHolder requestHolder = RpcRequestHolder.getRpcRequestHolderByName("dubboClient");
+
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse response) {
         String requestId = response.getRequestId();
-        RpcFuture future = RpcRequestHolder.get(requestId);
-        if(null != future){
-            RpcRequestHolder.remove(requestId);
+        RpcFuture future = requestHolder.get(requestId);
+        if (null != future) {
+            requestHolder.remove(requestId);
             future.done(response);
         }
     }

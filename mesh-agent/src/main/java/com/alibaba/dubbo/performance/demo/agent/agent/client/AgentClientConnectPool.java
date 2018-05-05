@@ -1,6 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.ConnecManager;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcFuture;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -23,15 +25,28 @@ public class AgentClientConnectPool {
 
     private HashMap<Endpoint, Channel> channelMap = new HashMap<>();
 
+    private RpcRequestHolder requestHolder = RpcRequestHolder.getRpcRequestHolderByName("agentClient");
+
+
     public AgentClientConnectPool() {
 
     }
 
-
     // 发送消息
-    public void sendToServer(Endpoint server, String msg) throws Exception {
+    public Object sendToServer(Endpoint server, AgentClientRequest request) throws Exception {
         while (FLAG.etcdLock.get()) ;
-        channelMap.get(server).writeAndFlush(msg);
+
+        RpcFuture future = new RpcFuture();
+        requestHolder.put(String.valueOf(request.getId()), future);
+        channelMap.get(server).writeAndFlush(request.getMsg());
+
+        Object result = null;
+        try {
+            result = future.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public boolean putServers(List<Endpoint> endpoints) throws Exception {
@@ -48,6 +63,5 @@ public class AgentClientConnectPool {
         }
         return true;
     }
-
 
 }
