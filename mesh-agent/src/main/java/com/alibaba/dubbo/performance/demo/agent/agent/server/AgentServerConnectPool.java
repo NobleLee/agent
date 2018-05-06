@@ -3,10 +3,13 @@ package com.alibaba.dubbo.performance.demo.agent.agent.server;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.string.StringDecoder;
 
 /**
  * 描述:
@@ -25,14 +28,11 @@ public class AgentServerConnectPool {
     ServerBootstrap bootstrap = new ServerBootstrap();
 
     public AgentServerConnectPool() {
-        try {
-            init();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        init();
     }
 
-    public void init() throws InterruptedException {
+    // server init
+    public void init() {
         bootstrap.group(bossGroup, workerGroup)
                 //我要指定使用NioServerSocketChannel这种类型的通道
                 .channel(NioServerSocketChannel.class)
@@ -40,13 +40,26 @@ public class AgentServerConnectPool {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
-                        sc.pipeline().addLast(new AgentServerRpcHandler());
+                        ChannelPipeline pipeline = sc.pipeline();
+                        pipeline.addLast(new LineBasedFrameDecoder(1024));
+                        pipeline.addLast(new StringDecoder());
+                        pipeline.addLast(new AgentServerRpcHandler());
                     }
                 });
-        ChannelFuture f = bootstrap.bind(Integer.parseInt(System.getProperty("server.port"))).sync();
-        f.channel().closeFuture().sync();
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+
+        try {
+
+            ChannelFuture f = bootstrap.bind(Integer.parseInt(System.getProperty("server.port"))).sync();
+            f.channel().closeFuture().sync();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            // 释放资源
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
+        }
+
     }
 
 

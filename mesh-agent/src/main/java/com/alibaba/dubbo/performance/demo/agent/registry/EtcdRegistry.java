@@ -27,6 +27,7 @@ public class EtcdRegistry implements IRegistry {
     private KV kv;
     private long leaseId;
 
+    // key 注册地址 value 返回对象
     private static ConcurrentHashMap<String, EtcdRegistry> etcdRegistryMap = new ConcurrentHashMap<String, EtcdRegistry>();
 
     // etcd factory build etcdRegistry
@@ -40,6 +41,7 @@ public class EtcdRegistry implements IRegistry {
         return etcdRegistryMap.get(registryAddress);
     }
 
+    // 获取监听内容
     private EtcdRegistry(String registryAddress) {
         Client client = Client.builder().endpoints(registryAddress).build();
         this.lease = client.getLeaseClient();

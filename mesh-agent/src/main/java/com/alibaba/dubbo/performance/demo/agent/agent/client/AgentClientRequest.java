@@ -1,6 +1,12 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import io.netty.buffer.Unpooled;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.concurrent.atomic.AtomicLong;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * 描述:
@@ -13,21 +19,67 @@ public class AgentClientRequest {
     private static AtomicLong atomicLong = new AtomicLong();
     private long id;
 
-    private String msg;
+
+    private String interfaceName;
+    private String method;
+    private String parameterTypesString;
+    private String parameter;
 
     public AgentClientRequest() {
         id = atomicLong.getAndIncrement();
     }
 
-    public AgentClientRequest(String msg) {
-        this.msg = msg;
+    public AgentClientRequest(String interfaceName, String method, String parameterTypesString, String parameter) {
+        id = atomicLong.getAndIncrement();
+        this.interfaceName = interfaceName;
+        this.method = method;
+        this.parameterTypesString = parameterTypesString;
+        this.parameter = parameter;
+    }
+
+
+    // 获取要发送的消息
+    ByteBuf getBuyteBuff() {
+        String msg = String.valueOf(id) + COMMON.AttributeSeparator +
+                interfaceName + COMMON.AttributeSeparator +
+                method + COMMON.AttributeSeparator +
+                parameterTypesString + parameter + COMMON.MessageSeparator;
+        return Unpooled.copiedBuffer(msg.getBytes());
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getInterfaceNAme() {
+        return interfaceName;
+    }
+
+    public void setInterfaceNAme(String interfaceNAme) {
+        this.interfaceName = interfaceNAme;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public String getParameterTypesString() {
+        return parameterTypesString;
+    }
+
+    public void setParameterTypesString(String parameterTypesString) {
+        this.parameterTypesString = parameterTypesString;
+    }
+
+    public String getParameter() {
+        return parameter;
+    }
+
+    public void setParameter(String parameter) {
+        this.parameter = parameter;
     }
 }

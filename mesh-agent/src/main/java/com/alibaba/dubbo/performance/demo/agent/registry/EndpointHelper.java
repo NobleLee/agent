@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.registry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Random;
@@ -13,6 +14,7 @@ import java.util.Random;
  * @author gaoguili
  * @create 2018-05-05 上午9:40
  */
+
 public class EndpointHelper {
 
     private Logger logger = LoggerFactory.getLogger(EndpointHelper.class);
@@ -22,8 +24,27 @@ public class EndpointHelper {
 
     private IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
 
+    private static EndpointHelper instance;
+
+    // 单例模式
+    public static EndpointHelper getInstance() {
+        if (instance == null) {
+            synchronized (EndpointHelper.class) {
+                if (instance == null) {
+                    instance = new EndpointHelper();
+                }
+            }
+        }
+        return instance;
+    }
+
+    private EndpointHelper() {
+    }
+
+
     // 对节点设置watcher监控rpc节点的变更
-    private void watch() {}
+    private void watch() {
+    }
 
     public String getBalancePointUrl() throws Exception {
         if (endpoints == null) {
@@ -39,12 +60,23 @@ public class EndpointHelper {
         return "http://" + endpoint.getHost() + ":" + endpoint.getPort();
     }
 
+    // 采用负载均衡算法对结果进行处理
+    public Endpoint getBalancePoint() throws Exception {
+        if (endpoints == null) {
+            synchronized (EndpointHelper.class) {
+                if (endpoints == null) {
+                    endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+                }
+            }
+        }
+
+        return getBlancePoint();
+    }
+
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
     private Endpoint getBlancePoint() {
         return endpoints.get(random.nextInt(endpoints.size()));
     }
-
-
 
 
     public List<Endpoint> getEndpoints() {

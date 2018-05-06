@@ -11,6 +11,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+// 一个ConnecManager对应于一个连接
 public class ConnecManager {
     private EventLoopGroup eventLoopGroup;
 
@@ -52,6 +53,6 @@ public class ConnecManager {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 .channel(NioSocketChannel.class)
-                .handler(new RpcClientInitializer());
+                .handler(initializer);
     }
 }
