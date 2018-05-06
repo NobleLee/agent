@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
@@ -29,13 +30,12 @@ public class HelloController {
 
     private Logger logger = LoggerFactory.getLogger(HelloController.class);
 
-    private IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
 
-    private RpcClient rpcClient = new RpcClient(registry);
     private EndpointHelper endpointHelper = new EndpointHelper();
 
     private OkHttpClient httpClient = new OkHttpClient();
 
+    private AgentServerConnectPool agentServerConnectPool = new AgentServerConnectPool();
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -46,26 +46,17 @@ public class HelloController {
         String type = System.getProperty("type");   // 获取type参数
         if ("consumer".equals(type)) {
             return consumer(interfaceName, method, parameterTypesString, parameter);
-        } else if ("provider".equals(type)) {
-            return provider(interfaceName, method, parameterTypesString, parameter);
         } else {
             return "Environment variable type is needed to set to provider or consumer.";
         }
     }
 
-    public byte[] provider(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
-
-        Object result = rpcClient.invoke(interfaceName, method, parameterTypesString, parameter);
-        return (byte[]) result;
-    }
 
     public Integer consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
         String url = endpointHelper.getBalancePointUrl();
 
-        logger.info("chose server: " + url +"all host: " + Arrays.toString(endpointHelper.getEndpoints().toArray()));
-
-
+        logger.info("chose server: " + url + "all host: " + Arrays.toString(endpointHelper.getEndpoints().toArray()));
 
 
         RequestBody requestBody = new FormBody.Builder()

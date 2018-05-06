@@ -24,8 +24,12 @@ public class AgentServerConnectPool {
     // 辅助对象
     ServerBootstrap bootstrap = new ServerBootstrap();
 
-    public AgentServerConnectPool() throws InterruptedException {
-        init();
+    public AgentServerConnectPool() {
+        try {
+            init();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void init() throws InterruptedException {

@@ -5,6 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
@@ -14,6 +15,7 @@ import java.io.PrintWriter;
  * 描述: Dubbo 和 agent 的调用RPCß
  * ${DESCRIPTION}
  */
+
 public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
