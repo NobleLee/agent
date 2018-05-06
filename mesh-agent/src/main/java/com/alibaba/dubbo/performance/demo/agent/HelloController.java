@@ -24,11 +24,13 @@ public class HelloController {
     // 生成这个对象的时候，已经产生获取了服务注册地址
     private EndpointHelper endpointHelper = EndpointHelper.getInstance();
 
-    private OkHttpClient httpClient = new OkHttpClient();
+    public HelloController() {
+        init();
+    }
 
-    private AgentServerConnectPool agentServerConnectPool = new AgentServerConnectPool();
+    private AgentServerConnectPool agentServerConnectPool;
 
-    private AgentClientConnectPool agentClientConnectPool = new AgentClientConnectPool();
+    private AgentClientConnectPool agentClientConnectPool;
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -45,6 +47,13 @@ public class HelloController {
         }
     }
 
+
+    void init() {
+        if (System.getProperty("type").equals("consumer"))
+            agentClientConnectPool = new AgentClientConnectPool();
+        else
+            agentServerConnectPool = new AgentServerConnectPool();
+    }
 
 //    public Integer consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 //

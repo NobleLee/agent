@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,11 @@ public class EndpointHelper {
             synchronized (EndpointHelper.class) {
                 if (instance == null) {
                     instance = new EndpointHelper();
+                    try {
+                        instance.getBalancePoint();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -50,7 +56,7 @@ public class EndpointHelper {
         if (endpoints == null) {
             synchronized (EndpointHelper.class) {
                 if (endpoints == null) {
-                    endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+                    endpoints = registry.find(COMMON.ServiceName);
                 }
             }
         }
@@ -65,7 +71,7 @@ public class EndpointHelper {
         if (endpoints == null) {
             synchronized (EndpointHelper.class) {
                 if (endpoints == null) {
-                    endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+                    endpoints = registry.find(COMMON.ServiceName);
                 }
             }
         }
