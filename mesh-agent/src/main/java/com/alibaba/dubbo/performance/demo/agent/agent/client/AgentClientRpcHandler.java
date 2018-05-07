@@ -20,7 +20,7 @@ public class AgentClientRpcHandler extends SimpleChannelInboundHandler<RpcRespon
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) {
         String requestId = response.getRequestId();
         RpcFuture future = requestHolder.get(requestId);
         if (null != future) {

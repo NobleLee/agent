@@ -24,7 +24,7 @@ public class AgentServerConnectPool {
     // 工作处理线程
     EventLoopGroup workerGroup = new NioEventLoopGroup(4);
     // 辅助对象
-    ServerBootstrap bootstrap = new ServerBootstrap();
+    ServerBootstrap serverBootstrap = new ServerBootstrap();
 
     public AgentServerConnectPool() {
         init();
@@ -32,7 +32,7 @@ public class AgentServerConnectPool {
 
     // server init
     public void init() {
-        bootstrap.group(bossGroup, workerGroup)
+        serverBootstrap.group(bossGroup, workerGroup)
                 //我要指定使用NioServerSocketChannel这种类型的通道
                 .channel(NioServerSocketChannel.class)
                 //一定要使用 childHandler 去绑定具体的 事件处理器
@@ -47,7 +47,7 @@ public class AgentServerConnectPool {
 
         try {
 
-            ChannelFuture f = bootstrap.bind(Integer.parseInt(System.getProperty("server.port"))).sync();
+            ChannelFuture f = serverBootstrap.bind(Integer.parseInt(System.getProperty("nio.port"))).sync();
             f.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {

@@ -63,7 +63,7 @@ public class AgentClientConnectPool {
             ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), 4,
                     new ChannelInitializer<SocketChannel>() {
                         @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
+                        protected void initChannel(SocketChannel ch) {
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast(new LineBasedFrameDecoder(1024));
                             pipeline.addLast(new AgentClientResponseDecoder());
