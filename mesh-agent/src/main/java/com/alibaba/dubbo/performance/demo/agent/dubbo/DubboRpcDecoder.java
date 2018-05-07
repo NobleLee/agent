@@ -17,13 +17,13 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
 
     // 接收dubbo消息，并将消息传送给client
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf data = (ByteBuf) msg;
         try {
             ByteBuf byteBuf = decode3(data);
             AgentServerRpcHandler.channel.writeAndFlush(byteBuf);
         } finally {
-          //  data.release();
+            //  data.release();
         }
 
     }
@@ -50,11 +50,12 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
         //ByteBuf buffer = PooledByteBufAllocator.DEFAULT.buffer(byteBuf.readableBytes() - HEADER_LENGTH + 7);
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
+        System.err.println(bytes.length + Arrays.toString(bytes));
 
         byte[] resByte = new byte[bytes.length - HEADER_LENGTH + 7];
         Bytes.copy(0, resByte, bytes, 4, 8);
         Bytes.copy(8, resByte, bytes, HEADER_LENGTH + 1, bytes.length - HEADER_LENGTH - 1);
-        System.err.println(Arrays.toString(resByte));
+        System.err.println(resByte.length + Arrays.toString(resByte));
         //buffer.writeBytes(resByte);
         //Unpooled.copiedBuffer(resByte);
 //        buffer.writeBytes(byteBuf, 4, 8);

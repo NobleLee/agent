@@ -41,7 +41,7 @@ public class AgentServerConnectPool {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
                         ChannelPipeline pipeline = sc.pipeline();
-                        pipeline.addLast(new LineBasedFrameDecoder(2048));
+                    //    pipeline.addLast(new LineBasedFrameDecoder(2048));
                         pipeline.addLast(new AgentServerRpcHandler());
                     }
                 });
