@@ -28,9 +28,9 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
 
     }
 
-    private Object decode2(ByteBuf byteBuf) {
-        byte[] data = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(data);
+    private RpcResponse decode2(byte[] data) {
+//        byte[] data = new byte[byteBuf.readableBytes()];
+//        byteBuf.readBytes(data);
 
         byte[] subArray = Arrays.copyOfRange(data, HEADER_LENGTH + 1, data.length);
 
@@ -50,12 +50,17 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
         //ByteBuf buffer = PooledByteBufAllocator.DEFAULT.buffer(byteBuf.readableBytes() - HEADER_LENGTH + 7);
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
+
         System.err.println(bytes.length + Arrays.toString(bytes));
 
         byte[] resByte = new byte[bytes.length - HEADER_LENGTH + 7];
         Bytes.copy(0, resByte, bytes, 4, 8);
         Bytes.copy(8, resByte, bytes, HEADER_LENGTH + 1, bytes.length - HEADER_LENGTH - 1);
         System.err.println(resByte.length + Arrays.toString(resByte));
+        RpcResponse response = decode2(bytes);
+
+        System.err.println(Arrays.toString(response.getRequestId().getBytes())+ Arrays.toString(response.getBytes()));
+
         //buffer.writeBytes(resByte);
         //Unpooled.copiedBuffer(resByte);
 //        buffer.writeBytes(byteBuf, 4, 8);
