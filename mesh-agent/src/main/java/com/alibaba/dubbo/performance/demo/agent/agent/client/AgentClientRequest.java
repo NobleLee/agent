@@ -38,7 +38,7 @@ public class AgentClientRequest {
                 interfaceName + COMMON.AttributeSeparator +
                 method + COMMON.AttributeSeparator +
                 parameterTypesString + COMMON.AttributeSeparator +
-                parameter ;//+ COMMON.MessageSeparator;
+                parameter + COMMON.MessageSeparator;
         return Unpooled.copiedBuffer(msg.getBytes());
     }
 

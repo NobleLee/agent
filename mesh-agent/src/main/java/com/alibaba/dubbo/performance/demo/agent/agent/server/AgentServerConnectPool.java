@@ -31,17 +31,15 @@ public class AgentServerConnectPool {
     // server init
     public void init() {
         serverBootstrap.group(bossGroup, workerGroup)
-                //我要指定使用NioServerSocketChannel这种类型的通道
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                //一定要使用 childHandler 去绑定具体的 事件处理器
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel sc) throws Exception {
                         ChannelPipeline pipeline = sc.pipeline();
-                    //    pipeline.addLast(new LineBasedFrameDecoder(2048));
+                        pipeline.addLast(new LineBasedFrameDecoder(2048));
                         pipeline.addLast(new AgentServerRpcHandler());
                     }
                 });
