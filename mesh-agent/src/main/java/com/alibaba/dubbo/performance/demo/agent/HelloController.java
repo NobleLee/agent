@@ -37,13 +37,14 @@ public class HelloController {
                          @RequestParam("method") String method,
                          @RequestParam("parameterTypesString") String parameterTypesString,
                          @RequestParam("parameter") String parameter) throws Exception {
-        logger.info(interfaceName + method + parameterTypesString + parameter);
         String type = System.getProperty("type");   // 获取type参数
         if ("consumer".equals(type)) {
+
             System.err.println(interfaceName);
             System.err.println(method);
             System.err.println(parameterTypesString);
             System.err.println(parameter);
+
             return agentClientConnectPool.sendToServer(endpointHelper.getBalancePoint(),
                     new AgentClientRequest(interfaceName, method, parameterTypesString, parameter));
         } else {
@@ -59,31 +60,6 @@ public class HelloController {
             agentServerConnectPool = new AgentServerConnectPool();
     }
 
-//    public Integer consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
-//
-//        String url = endpointHelper.getBalancePointUrl();
-//
-//        logger.info("chose server: " + url + "all host: " + Arrays.toString(endpointHelper.getEndpoints().toArray()));
-//
-//
-//        RequestBody requestBody = new FormBody.Builder()
-//                .add("interface", interfaceName)
-//                .add("method", method)
-//                .add("parameterTypesString", parameterTypesString)
-//                .add("parameter", parameter)
-//                .build();
-//
-//        Request request = new Request.Builder()
-//                .url(url)
-//                .post(requestBody)
-//                .build();
-//
-//        try (Response response = httpClient.newCall(request).execute()) {
-//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//            byte[] bytes = response.body().bytes();
-//            return JSON.parseObject(bytes, Integer.class);
-//        }
-//    }
 
 
 }

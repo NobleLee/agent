@@ -67,7 +67,6 @@ public class AgentClientConnectPool {
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast(new LineBasedFrameDecoder(1024));
                             pipeline.addLast(new AgentClientResponseDecoder());
-                            pipeline.addLast(new AgentClientRpcHandler());
                         }
                     });  // 创建单个服务器的连接通道
             channelMap.put(endpoint, connecManager.getChannel());
