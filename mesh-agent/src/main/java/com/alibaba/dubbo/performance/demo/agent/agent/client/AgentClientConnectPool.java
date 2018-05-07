@@ -65,7 +65,7 @@ public class AgentClientConnectPool {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ChannelPipeline pipeline = ch.pipeline();
-                        //    pipeline.addLast(new LineBasedFrameDecoder(2048));
+                            pipeline.addLast(new LineBasedFrameDecoder(2048));
                             pipeline.addLast(new AgentClientResponseDecoder());
                         }
                     });  // 创建单个服务器的连接通道

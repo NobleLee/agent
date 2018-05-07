@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
     // header length.
-    protected static final int HEADER_LENGTH = 16;
+    protected static final int HEADER_LENGTH = 17;
 
     // 接收dubbo消息，并将消息传送给client
     @Override
@@ -23,7 +23,7 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
             ByteBuf byteBuf = decode3(data);
             AgentServerRpcHandler.channel.writeAndFlush(byteBuf);
         } finally {
-            //  data.release();
+            data.release();
         }
 
     }
@@ -33,8 +33,6 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
 //        byteBuf.readBytes(data);
 
         byte[] subArray = Arrays.copyOfRange(data, HEADER_LENGTH + 1, data.length);
-
-        String s = new String(subArray);
 
         byte[] requestIdBytes = Arrays.copyOfRange(data, 4, 12);
         long requestId = Bytes.bytes2long(requestIdBytes, 0);
@@ -57,9 +55,9 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
         Bytes.copy(0, resByte, bytes, 4, 8);
         Bytes.copy(8, resByte, bytes, HEADER_LENGTH + 1, bytes.length - HEADER_LENGTH - 1);
         System.err.println(resByte.length + Arrays.toString(resByte));
-        RpcResponse response = decode2(bytes);
+        //RpcResponse response = decode2(bytes);
 
-        System.err.println(Arrays.toString(response.getRequestId().getBytes())+ Arrays.toString(response.getBytes()));
+       // System.err.println(Arrays.toString(response.getRequestId().getBytes()) + Arrays.toString(response.getBytes()));
 
         //buffer.writeBytes(resByte);
         //Unpooled.copiedBuffer(resByte);
