@@ -16,7 +16,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class AgentClientRpcHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
 
-    private RpcRequestHolder requestHolder = RpcRequestHolder.getRpcRequestHolderByName("agentClient");
+    private RpcRequestHolder<RpcFuture> requestHolder = RpcRequestHolder.getRpcRequestHolderByName("agentClient");
 
 
     @Override

@@ -9,7 +9,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
-import io.netty.handler.codec.string.StringDecoder;
 
 /**
  * 描述:
@@ -42,7 +41,6 @@ public class AgentServerConnectPool {
                     protected void initChannel(SocketChannel sc) throws Exception {
                         ChannelPipeline pipeline = sc.pipeline();
                         pipeline.addLast(new LineBasedFrameDecoder(1024));
-                        pipeline.addLast(new StringDecoder());
                         pipeline.addLast(new AgentServerRpcHandler());
                     }
                 });

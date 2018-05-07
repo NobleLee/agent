@@ -40,6 +40,10 @@ public class HelloController {
         logger.info(interfaceName + method + parameterTypesString + parameter);
         String type = System.getProperty("type");   // 获取type参数
         if ("consumer".equals(type)) {
+            System.err.println(interfaceName);
+            System.err.println(method);
+            System.err.println(parameterTypesString);
+            System.err.println(parameter);
             return agentClientConnectPool.sendToServer(endpointHelper.getBalancePoint(),
                     new AgentClientRequest(interfaceName, method, parameterTypesString, parameter));
         } else {

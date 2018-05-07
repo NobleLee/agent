@@ -4,7 +4,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DubboRequest {
-    private static AtomicLong atomicLong = new AtomicLong();
+
     private long id;
     private String interfaceName = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
     private String methodName = "hash";
@@ -17,8 +17,8 @@ public class DubboRequest {
 
     private Object mData;
 
-    public DubboRequest(){
-        id = atomicLong.getAndIncrement();
+    public DubboRequest( long id){
+        this.id =id;
     }
 
     public long getId() {

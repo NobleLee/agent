@@ -12,6 +12,7 @@ public class COMMON {
     public static final String MessageSeparator = "\n";
     // 消息内部属性的分割符号
     public static final String AttributeSeparator = "+";
+    public static final char AttributeSeparatorChar = '+';
 
-    public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
+    public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloServiceGGL";
 }

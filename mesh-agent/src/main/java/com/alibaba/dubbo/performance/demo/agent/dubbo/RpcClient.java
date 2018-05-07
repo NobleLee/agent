@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
@@ -23,30 +24,21 @@ public class RpcClient {
 
     private RpcRequestHolder requestHolder = RpcRequestHolder.getRpcRequestHolderByName("dubboClient");
 
-    public RpcClient(IRegistry registry) {
+    public RpcClient() {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
                 4, new RpcClientInitializer());
     }
 
-    public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
+    public Object invoke(String[] msgs)  {
 
-        Channel channel = connectManager.getChannel();
+        Channel channel = null;
+        try {
+            channel = connectManager.getChannel();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        RpcInvocation invocation = new RpcInvocation();
-        invocation.setMethodName(method);
-        invocation.setAttachment("path", interfaceName);
-        invocation.setParameterTypes(parameterTypesString);    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        JsonUtils.writeObject(parameter, writer);
-        invocation.setArguments(out.toByteArray());
-
-        DubboRequest request = new DubboRequest();
-        request.setVersion("2.0.0");
-        request.setTwoWay(true);
-        request.setData(invocation);
-
+        DubboRequest request = getDubboRequest(msgs);
         logger.info("requestId=" + request.getId());
 
         RpcFuture future = new RpcFuture();
@@ -62,4 +54,35 @@ public class RpcClient {
         }
         return result;
     }
+
+    // 获取Dubbo请求数据
+    private DubboRequest getDubboRequest(String[] msgs) {
+        if (msgs == null || msgs.length != 5) {
+            return new DubboRequest(0);
+        }
+
+        RpcInvocation invocation = new RpcInvocation();
+
+        invocation.setAttachment("path", msgs[1]);
+        invocation.setMethodName(msgs[2]);
+        invocation.setParameterTypes(msgs[3]);    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+        try {
+            JsonUtils.writeObject(msgs[4], writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        invocation.setArguments(out.toByteArray());
+
+        DubboRequest request = new DubboRequest(Long.parseLong(msgs[0]));
+        request.setVersion("2.0.0");
+        request.setTwoWay(true);
+        request.setData(invocation);
+
+        return request;
+
+    }
+
 }

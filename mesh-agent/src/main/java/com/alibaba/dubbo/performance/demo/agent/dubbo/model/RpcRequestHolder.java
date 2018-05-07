@@ -1,16 +1,21 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RpcRequestHolder {
+public class RpcRequestHolder<T> {
 
     private static HashMap<String, RpcRequestHolder> requestHolderMap = new HashMap<>();
 
     static {
-        requestHolderMap.put("agentClient", new RpcRequestHolder());
-        requestHolderMap.put("agentServer", new RpcRequestHolder());
-        requestHolderMap.put("dubboClient", new RpcRequestHolder());
+        requestHolderMap.put("agentClient", new RpcRequestHolder<RpcFuture>());
+        requestHolderMap.put("agentServer", new RpcRequestHolder<RpcFuture>());
+        requestHolderMap.put("dubboClient", new RpcRequestHolder<RpcFuture>());
+
+
+        requestHolderMap.put("agentServerResponse",new RpcRequestHolder<ChannelHandlerContext>());
     }
 
     private RpcRequestHolder() {
@@ -22,13 +27,13 @@ public class RpcRequestHolder {
 
 
     // key: requestId     value: RpcFuture
-    private ConcurrentHashMap<String, RpcFuture> processingRpc = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, T> processingRpc = new ConcurrentHashMap<>();
 
-    public void put(String requestId, RpcFuture rpcFuture) {
+    public void put(String requestId, T rpcFuture) {
         processingRpc.put(requestId, rpcFuture);
     }
 
-    public RpcFuture get(String requestId) {
+    public T get(String requestId) {
         return processingRpc.get(requestId);
     }
 

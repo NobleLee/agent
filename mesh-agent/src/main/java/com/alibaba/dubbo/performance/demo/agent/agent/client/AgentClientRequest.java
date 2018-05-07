@@ -1,12 +1,10 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.concurrent.atomic.AtomicLong;
-
-import io.netty.buffer.ByteBuf;
 
 /**
  * 描述:
@@ -43,7 +41,8 @@ public class AgentClientRequest {
         String msg = String.valueOf(id) + COMMON.AttributeSeparator +
                 interfaceName + COMMON.AttributeSeparator +
                 method + COMMON.AttributeSeparator +
-                parameterTypesString + parameter + COMMON.MessageSeparator;
+                parameterTypesString + COMMON.AttributeSeparator +
+                parameter + COMMON.MessageSeparator;
         return Unpooled.copiedBuffer(msg.getBytes());
     }
 
