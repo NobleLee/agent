@@ -10,8 +10,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
-import io.netty.handler.codec.string.StringDecoder;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +30,7 @@ public class AgentClientConnectPool {
 
     private EndpointHelper endpointHelper = EndpointHelper.getInstance();
 
-    public AgentClientConnectPool()  {
+    public AgentClientConnectPool() {
         try {
             putServers(endpointHelper.getEndpoints());
         } catch (Exception e) {
@@ -45,6 +43,7 @@ public class AgentClientConnectPool {
         while (FLAG.etcdLock.get()) ;
 
         RpcFuture future = new RpcFuture();
+        // 因为是请求是HTTP连接，因此需要存储id的连接请求
         requestHolder.put(String.valueOf(request.getId()), future);
         channelMap.get(server).writeAndFlush(request.getBuyteBuff());
 
@@ -67,7 +66,7 @@ public class AgentClientConnectPool {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast(new LineBasedFrameDecoder(1024));
-                            pipeline.addLast(new StringDecoder());
+                            pipeline.addLast(new AgentClientResponseDecoder());
                             pipeline.addLast(new AgentClientRpcHandler());
                         }
                     });  // 创建单个服务器的连接通道

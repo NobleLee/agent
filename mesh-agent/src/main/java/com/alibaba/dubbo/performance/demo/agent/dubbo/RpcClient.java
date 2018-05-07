@@ -29,7 +29,7 @@ public class RpcClient {
                 4, new RpcClientInitializer());
     }
 
-    public Object invoke(String[] msgs)  {
+    public void invoke(String[] msgs)  {
 
         Channel channel = null;
         try {
@@ -40,19 +40,8 @@ public class RpcClient {
 
         DubboRequest request = getDubboRequest(msgs);
         logger.info("requestId=" + request.getId());
-
-        RpcFuture future = new RpcFuture();
-        requestHolder.put(String.valueOf(request.getId()), future);
-
         channel.writeAndFlush(request);
 
-        Object result = null;
-        try {
-            result = future.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
     // 获取Dubbo请求数据

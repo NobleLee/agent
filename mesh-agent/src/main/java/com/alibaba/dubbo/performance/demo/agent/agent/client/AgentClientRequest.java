@@ -23,10 +23,6 @@ public class AgentClientRequest {
     private String parameterTypesString;
     private String parameter;
 
-    public AgentClientRequest() {
-        id = atomicLong.getAndIncrement();
-    }
-
     public AgentClientRequest(String interfaceName, String method, String parameterTypesString, String parameter) {
         id = atomicLong.getAndIncrement();
         this.interfaceName = interfaceName;
