@@ -23,6 +23,14 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 public class Bytes {
 
+
+    public static void copy(int from, byte[] dst, byte[] src, int srcFrom, int length) {
+        for (int i = srcFrom; i < srcFrom + length; i++) {
+            dst[from++] = src[i];
+        }
+    }
+
+
     private Bytes() {
     }
 

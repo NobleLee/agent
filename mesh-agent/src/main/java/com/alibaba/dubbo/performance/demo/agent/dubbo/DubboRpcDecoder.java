@@ -3,15 +3,13 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.Arrays;
-import java.util.List;
+
 
 public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
     // header length.
@@ -20,9 +18,14 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
     // 接收dubbo消息，并将消息传送给client
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf byteBuf = decode3(msg);
-        AgentServerRpcHandler.channel.writeAndFlush(byteBuf);
-        byteBuf.release();
+        ByteBuf data = (ByteBuf) msg;
+        try {
+            ByteBuf byteBuf = decode3(data);
+            AgentServerRpcHandler.channel.writeAndFlush(byteBuf);
+        } finally {
+          //  data.release();
+        }
+
     }
 
     private Object decode2(ByteBuf byteBuf) {
@@ -40,15 +43,23 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
         response.setRequestId(String.valueOf(requestId));
         response.setBytes(subArray);
 
-
         return response;
     }
 
-    private ByteBuf decode3(Object byteBuf) {
-        ByteBuf result = (ByteBuf) byteBuf;
-        ByteBuf heapBuf = Unpooled.buffer(result.readableBytes() - HEADER_LENGTH + 7);
-        heapBuf.setBytes(0, result, 4, 8);
-        heapBuf.setBytes(8, result, HEADER_LENGTH, result.readableBytes());
-        return heapBuf;
+    private ByteBuf decode3(ByteBuf byteBuf) {
+        //ByteBuf buffer = PooledByteBufAllocator.DEFAULT.buffer(byteBuf.readableBytes() - HEADER_LENGTH + 7);
+        byte[] bytes = new byte[byteBuf.readableBytes()];
+        byteBuf.readBytes(bytes);
+
+        byte[] resByte = new byte[bytes.length - HEADER_LENGTH + 7];
+        Bytes.copy(0, resByte, bytes, 4, 8);
+        Bytes.copy(8, resByte, bytes, HEADER_LENGTH + 1, bytes.length - HEADER_LENGTH - 1);
+        System.err.println(Arrays.toString(resByte));
+        //buffer.writeBytes(resByte);
+        //Unpooled.copiedBuffer(resByte);
+//        buffer.writeBytes(byteBuf, 4, 8);
+//        buffer.writeBytes(byteBuf, HEADER_LENGTH + 1, byteBuf.readableBytes());
+
+        return Unpooled.copiedBuffer(resByte);
     }
 }
