@@ -28,7 +28,6 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
         String message = msg.toString(Charset.defaultCharset());
         String[] msgs = message.split("\\" + COMMON.AttributeSeparator);
         rpcClient.invoke(msgs);
-        System.out.println(message);
     }
 
 

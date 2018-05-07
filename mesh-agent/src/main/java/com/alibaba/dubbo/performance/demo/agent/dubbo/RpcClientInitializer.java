@@ -11,4 +11,4 @@ public class RpcClientInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(new DubboRpcEncoder());
         pipeline.addLast(new DubboRpcDecoder());
     }
-}
+ }

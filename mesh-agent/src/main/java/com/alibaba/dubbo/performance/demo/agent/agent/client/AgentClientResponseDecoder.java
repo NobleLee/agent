@@ -29,8 +29,6 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
             byte[] rev = new byte[in.readableBytes()];
 
             in.readBytes(rev);
-            System.err.println(rev.length + Arrays.toString(rev));
-
 
             byte[] requestIdBytes = Arrays.copyOfRange(rev, 0, 8);
             long requestId = Bytes.bytes2long(requestIdBytes, 0);
@@ -39,8 +37,6 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
             RpcResponse response = new RpcResponse();
             response.setBytes(subArray);
             response.setRequestId(String.valueOf(requestId));
-
-            System.err.println(Arrays.toString(response.getRequestId().getBytes()) + Arrays.toString(response.getBytes()));
 
             RpcFuture future = requestHolder.get(response.getRequestId());
             if (null != future) {
