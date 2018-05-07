@@ -1,10 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.server;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -35,6 +33,9 @@ public class AgentServerConnectPool {
         serverBootstrap.group(bossGroup, workerGroup)
                 //我要指定使用NioServerSocketChannel这种类型的通道
                 .channel(NioServerSocketChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
                 //一定要使用 childHandler 去绑定具体的 事件处理器
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
