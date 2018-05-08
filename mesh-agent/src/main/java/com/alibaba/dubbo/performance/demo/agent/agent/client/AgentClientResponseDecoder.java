@@ -39,7 +39,7 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
 
             RpcResponse response = new RpcResponse();
             response.setBytes(subArray);
-            response.setRequestId(new String(requestIdBytes));
+            response.setRequestId(Bytes.str2numstr(requestIdBytes));
 
             System.err.println(Arrays.toString(response.getRequestId().getBytes()) + Arrays.toString(response.getBytes()));
 
