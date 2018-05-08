@@ -10,9 +10,9 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 public class RpcClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel socketChannel) {
-        ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{-38, -69, 6, 20});
+        ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{-38, -69});
         ChannelPipeline pipeline = socketChannel.pipeline();
-        pipeline.addLast(new DelimiterBasedFrameDecoder(2048,delimiter));
+        pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
         pipeline.addLast(new DubboRpcEncoder());
         pipeline.addLast(new DubboRpcDecoder());
     }

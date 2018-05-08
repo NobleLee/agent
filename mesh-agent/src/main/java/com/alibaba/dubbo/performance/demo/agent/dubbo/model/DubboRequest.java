@@ -3,7 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 public class DubboRequest {
 
-    private String id;
+    private long id;
     private String interfaceName = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
     private String methodName = "hash";
     private String dubboVersion = "2.6.0";
@@ -15,15 +15,15 @@ public class DubboRequest {
 
     private Object mData;
 
-    public DubboRequest( String id){
+    public DubboRequest( long id){
         this.id =id;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 

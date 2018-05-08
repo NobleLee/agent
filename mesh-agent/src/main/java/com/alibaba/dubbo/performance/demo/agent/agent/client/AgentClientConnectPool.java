@@ -5,10 +5,13 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcFuture;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 
 import java.util.HashMap;
@@ -62,10 +65,11 @@ public class AgentClientConnectPool {
         for (Endpoint endpoint : endpoints) {
             ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), 4,
                     new ChannelInitializer<SocketChannel>() {
+                        ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{-38, -69});
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast(new LineBasedFrameDecoder(2048));
+                            pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                             pipeline.addLast(new AgentClientResponseDecoder());
                         }
                     });  // 创建单个服务器的连接通道

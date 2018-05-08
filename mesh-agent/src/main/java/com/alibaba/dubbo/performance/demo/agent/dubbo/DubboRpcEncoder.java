@@ -5,6 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
@@ -12,8 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
-public class DubboRpcEncoder extends MessageToByteEncoder{
+public class DubboRpcEncoder extends MessageToByteEncoder {
     // header length.
     protected static final int HEADER_LENGTH = 16;
     // magic header.
@@ -23,23 +25,57 @@ public class DubboRpcEncoder extends MessageToByteEncoder{
     protected static final byte FLAG_TWOWAY = (byte) 0x40;
     protected static final byte FLAG_EVENT = (byte) 0x20;
 
+//    @Override
+//    protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf buffer) throws Exception {
+//        DubboRequest req = (DubboRequest)msg;
+//
+//        // header.
+//        byte[] header = new byte[HEADER_LENGTH];
+//        // set magic number.
+//        Bytes.short2bytes(MAGIC, header);
+//
+//        // set request and serialization flag.
+//        //固化
+//        header[2] = (byte) (FLAG_REQUEST | 6);
+//
+//        if (req.isTwoWay()) header[2] |= FLAG_TWOWAY;
+//        if (req.isEvent()) header[2] |= FLAG_EVENT;
+//
+//        // set request id.
+//        Bytes.str2bytes(req.getId(), header, 4);
+//
+//        // encode request data.
+//        int savedWriteIndex = buffer.writerIndex();
+//        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        encodeRequestData(bos, req.getData());
+//
+//        int len = bos.size();
+//        buffer.writeBytes(bos.toByteArray());
+//        Bytes.int2bytes(len, header, 12);
+//
+//        // write
+//        buffer.writerIndex(savedWriteIndex);
+//        buffer.writeBytes(header); // write header.
+//        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
+//        System.err.println(Arrays.toString(header));
+//    }
+
+    protected static final byte[] header = new byte[HEADER_LENGTH];
+
+    static {
+        header[0] = -38;
+        header[1] = -69;
+        header[2] = -58;
+        header[3] = 0;
+    }
+
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf buffer) throws Exception {
-        DubboRequest req = (DubboRequest)msg;
-
-        // header.
-        byte[] header = new byte[HEADER_LENGTH];
-        // set magic number.
-        Bytes.short2bytes(MAGIC, header);
-
-        // set request and serialization flag.
-        header[2] = (byte) (FLAG_REQUEST | 6);
-
-        if (req.isTwoWay()) header[2] |= FLAG_TWOWAY;
-        if (req.isEvent()) header[2] |= FLAG_EVENT;
+        DubboRequest req = (DubboRequest) msg;
 
         // set request id.
-        Bytes.str2bytes(req.getId(), header, 4);
+        Bytes.long2bytes(req.getId(), header, 4);
 
         // encode request data.
         int savedWriteIndex = buffer.writerIndex();
@@ -50,15 +86,16 @@ public class DubboRpcEncoder extends MessageToByteEncoder{
         int len = bos.size();
         buffer.writeBytes(bos.toByteArray());
         Bytes.int2bytes(len, header, 12);
-
         // write
         buffer.writerIndex(savedWriteIndex);
         buffer.writeBytes(header); // write header.
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
+        // System.err.println(Arrays.toString(header));
     }
 
+
     public void encodeRequestData(OutputStream out, Object data) throws Exception {
-        RpcInvocation inv = (RpcInvocation)data;
+        RpcInvocation inv = (RpcInvocation) data;
 
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 

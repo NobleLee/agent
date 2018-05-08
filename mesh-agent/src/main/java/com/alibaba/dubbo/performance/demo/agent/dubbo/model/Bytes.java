@@ -17,6 +17,8 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 
+import io.netty.buffer.ByteBuf;
+
 import java.util.HashMap;
 
 /**
@@ -86,6 +88,7 @@ public class Bytes {
         b[off + 1] = bytes[1];
         b[off + 0] = bytes[0];
     }
+
 
 
     private Bytes() {
