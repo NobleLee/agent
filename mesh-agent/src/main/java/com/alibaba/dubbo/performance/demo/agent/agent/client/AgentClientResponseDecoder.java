@@ -26,7 +26,7 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf in = (ByteBuf) msg;
         try {
-            if(in.readableBytes()<8) return;
+            if (in.readableBytes() < 8) return;
             byte[] rev = new byte[in.readableBytes()];
 
             in.readBytes(rev);
