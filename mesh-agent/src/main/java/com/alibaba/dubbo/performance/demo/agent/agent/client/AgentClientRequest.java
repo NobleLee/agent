@@ -3,7 +3,6 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.buffer.Unpooled;
 
 import java.util.concurrent.atomic.AtomicLong;
 

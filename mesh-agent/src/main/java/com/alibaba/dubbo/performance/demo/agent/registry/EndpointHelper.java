@@ -3,7 +3,6 @@ package com.alibaba.dubbo.performance.demo.agent.registry;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Random;

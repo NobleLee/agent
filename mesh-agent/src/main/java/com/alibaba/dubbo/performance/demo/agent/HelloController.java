@@ -4,18 +4,12 @@ import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectP
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientRequest;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
-import com.alibaba.fastjson.JSON;
-import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.util.Arrays;
 
-@RestController
 public class HelloController {
 
     private Logger logger = LoggerFactory.getLogger(HelloController.class);

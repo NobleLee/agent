@@ -17,8 +17,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 
-import io.netty.buffer.ByteBuf;
-
 import java.util.HashMap;
 
 /**
