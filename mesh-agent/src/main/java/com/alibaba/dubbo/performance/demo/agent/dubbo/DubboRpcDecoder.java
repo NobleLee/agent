@@ -14,14 +14,16 @@ import java.util.Arrays;
 
 public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
     // header length.
-    protected static final int HEADER_LENGTH = 17;
+    protected static final int HEADER_LENGTH = 13;
 
     // 接收dubbo消息，并将消息传送给client
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf data = (ByteBuf) msg;
         try {
+            //ByteBufUtils.println(data, "");
             ByteBuf byteBuf = decode3(data);
+            // ByteBufUtils.println(byteBuf,"");
             AgentServerRpcHandler.channel.writeAndFlush(byteBuf);
         } finally {
             data.release();
@@ -46,7 +48,7 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
     private ByteBuf decode3(ByteBuf byteBuf) {
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(byteBuf.readableBytes() - HEADER_LENGTH + 7);
 
-        buffer.writeBytes(byteBuf, 4, 8);
+        buffer.writeBytes(byteBuf, 0, 8);
         buffer.writeBytes(byteBuf, HEADER_LENGTH + 1, byteBuf.readableBytes() - HEADER_LENGTH - 1);
 
         return buffer;

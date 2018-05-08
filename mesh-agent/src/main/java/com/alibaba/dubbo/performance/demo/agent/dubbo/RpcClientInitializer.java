@@ -1,14 +1,19 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
 public class RpcClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel socketChannel) {
+        ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{-38, -69, 6, 20});
         ChannelPipeline pipeline = socketChannel.pipeline();
+        pipeline.addLast(new DelimiterBasedFrameDecoder(2048,delimiter));
         pipeline.addLast(new DubboRpcEncoder());
         pipeline.addLast(new DubboRpcDecoder());
     }
- }
+}
