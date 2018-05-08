@@ -55,6 +55,16 @@ public class Bytes {
 
 
     /**
+     * 获取字符串id
+     *
+     * @param str
+     * @return
+     */
+    public static String str2numstr(byte[] str) {
+        return String.valueOf(Long.parseLong(new String(str)));
+    }
+
+    /**
      * 获取定长的stringid
      *
      * @param str
