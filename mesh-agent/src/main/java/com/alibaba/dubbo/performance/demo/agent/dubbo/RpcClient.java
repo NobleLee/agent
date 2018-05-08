@@ -1,7 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.JsonUtils;
+import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;

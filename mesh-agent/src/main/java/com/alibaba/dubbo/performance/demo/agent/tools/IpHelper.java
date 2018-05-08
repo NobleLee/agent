@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.registry;
+package com.alibaba.dubbo.performance.demo.agent.tools;
 
 import java.net.InetAddress;
 

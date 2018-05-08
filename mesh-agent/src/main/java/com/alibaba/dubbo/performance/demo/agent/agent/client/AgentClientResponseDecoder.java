@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Bytes;
+import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcFuture;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;

@@ -1,8 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Bytes;
+import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.JsonUtils;
+import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
