@@ -47,7 +47,7 @@ public class RpcClient {
     // 获取Dubbo请求数据
     private DubboRequest getDubboRequest(String[] msgs) {
         if (msgs == null || msgs.length != 5) {
-            return new DubboRequest(0);
+            return new DubboRequest("0");
         }
 
         RpcInvocation invocation = new RpcInvocation();
@@ -65,7 +65,7 @@ public class RpcClient {
         }
         invocation.setArguments(out.toByteArray());
 
-        DubboRequest request = new DubboRequest(Long.parseLong(msgs[0]));
+        DubboRequest request = new DubboRequest(Bytes.str2_8Byte(msgs[0]));
         request.setVersion("2.0.0");
         request.setTwoWay(true);
         request.setData(invocation);

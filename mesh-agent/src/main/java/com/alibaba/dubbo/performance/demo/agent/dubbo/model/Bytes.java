@@ -17,17 +17,64 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 
+import java.util.HashMap;
+
 /**
  * CodecUtils.
  */
 
 public class Bytes {
 
+    private static HashMap<Integer, String> strMap = new HashMap<>(7);
 
+    static {
+        strMap.put(1, "0000000");
+        strMap.put(2, "000000");
+        strMap.put(3, "00000");
+        strMap.put(4, "0000");
+        strMap.put(5, "000");
+        strMap.put(6, "00");
+        strMap.put(7, "0");
+        strMap.put(8, "");
+    }
+
+    /**
+     * 字节数组拷贝
+     *
+     * @param from
+     * @param dst
+     * @param src
+     * @param srcFrom
+     * @param length
+     */
     public static void copy(int from, byte[] dst, byte[] src, int srcFrom, int length) {
         for (int i = srcFrom; i < srcFrom + length; i++) {
             dst[from++] = src[i];
         }
+    }
+
+
+    /**
+     * 获取定长的stringid
+     *
+     * @param str
+     * @return
+     */
+    public static String str2_8Byte(String str) {
+        return strMap.get(str.length()) + str;
+    }
+
+
+    public static void str2bytes(String v, byte[] b, int off) {
+        byte[] bytes = v.getBytes();
+        b[off + 7] = bytes[7];
+        b[off + 6] = bytes[6];
+        b[off + 5] = bytes[5];
+        b[off + 4] = bytes[4];
+        b[off + 3] = bytes[3];
+        b[off + 2] = bytes[2];
+        b[off + 1] = bytes[1];
+        b[off + 0] = bytes[0];
     }
 
 

@@ -1,10 +1,11 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
+import com.alibaba.dubbo.performance.demo.agent.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -21,6 +22,7 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
         ByteBuf data = (ByteBuf) msg;
         try {
             ByteBuf byteBuf = decode3(data);
+            ByteBufUtils.println(byteBuf, "send: ");
             AgentServerRpcHandler.channel.writeAndFlush(byteBuf);
         } finally {
             data.release();
@@ -45,25 +47,11 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
     }
 
     private ByteBuf decode3(ByteBuf byteBuf) {
-        //ByteBuf buffer = PooledByteBufAllocator.DEFAULT.buffer(byteBuf.readableBytes() - HEADER_LENGTH + 7);
-        byte[] bytes = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(bytes);
+        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(byteBuf.readableBytes() - HEADER_LENGTH + 7);
 
-        System.err.println(bytes.length + Arrays.toString(bytes));
+        buffer.writeBytes(byteBuf, 4, 8);
+        buffer.writeBytes(byteBuf, HEADER_LENGTH + 1, byteBuf.readableBytes() - HEADER_LENGTH - 1);
 
-        byte[] resByte = new byte[bytes.length - HEADER_LENGTH + 7];
-        Bytes.copy(0, resByte, bytes, 4, 8);
-        Bytes.copy(8, resByte, bytes, HEADER_LENGTH + 1, bytes.length - HEADER_LENGTH - 1);
-        System.err.println(resByte.length + Arrays.toString(resByte));
-        //RpcResponse response = decode2(bytes);
-
-       // System.err.println(Arrays.toString(response.getRequestId().getBytes()) + Arrays.toString(response.getBytes()));
-
-        //buffer.writeBytes(resByte);
-        //Unpooled.copiedBuffer(resByte);
-//        buffer.writeBytes(byteBuf, 4, 8);
-//        buffer.writeBytes(byteBuf, HEADER_LENGTH + 1, byteBuf.readableBytes());
-
-        return Unpooled.copiedBuffer(resByte);
+        return buffer;
     }
 }
