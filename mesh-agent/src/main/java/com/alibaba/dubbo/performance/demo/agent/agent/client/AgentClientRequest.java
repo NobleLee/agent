@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,7 +40,8 @@ public class AgentClientRequest {
                 method + COMMON.AttributeSeparator +
                 parameterTypesString + COMMON.AttributeSeparator +
                 parameter + COMMON.MessageSeparator;
-        return Unpooled.copiedBuffer(msg.getBytes());
+        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(msg.length());
+        return buffer.writeBytes(msg.getBytes());
     }
 
     public Long getId() {
