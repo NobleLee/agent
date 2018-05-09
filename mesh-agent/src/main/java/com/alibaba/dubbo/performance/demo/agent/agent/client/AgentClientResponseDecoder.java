@@ -2,7 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
 import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcFuture;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
+import com.alibaba.dubbo.performance.demo.agent.tools.RpcRequestHolder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -36,11 +36,11 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
             response.setBytes(subArray);
             response.setRequestId(String.valueOf(requestId));
 
-            RpcFuture future = requestHolder.get(response.getRequestId());
-            if (null != future) {
-                requestHolder.remove(response.getRequestId());
-                future.done(response);
-            }
+//            RpcFuture future = requestHolder.get(response.getRequestId());
+//            if (null != future) {
+//                requestHolder.remove(response.getRequestId());
+//                future.done(response);
+//            }
         } finally {
             in.release();
         }

@@ -23,8 +23,10 @@ public class HTTPServer {
             bootstrap.group(bossGroup, workGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new HttpChannelInitializer());
+
             ChannelFuture future = bootstrap.bind("localhost", port).sync();
-            System.out.println("HTTP Server startup.");
+
+            System.err.println("HTTP Server startup.");
 
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {

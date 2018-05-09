@@ -1,22 +1,15 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
-import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientRequest;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerConnectPool;
-import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 public class HelloController {
 
     private Logger logger = LoggerFactory.getLogger(HelloController.class);
 
-
-    // 生成这个对象的时候，已经产生获取了服务注册地址
-    private EndpointHelper endpointHelper = EndpointHelper.getInstance();
 
     public HelloController() {
         init();
@@ -26,20 +19,18 @@ public class HelloController {
 
     private AgentClientConnectPool agentClientConnectPool;
 
-    @RequestMapping(value = "")
-    public Object invoke(@RequestParam("interface") String interfaceName,
-                         @RequestParam("method") String method,
-                         @RequestParam("parameterTypesString") String parameterTypesString,
-                         @RequestParam("parameter") String parameter) throws Exception {
-        String type = System.getProperty("type");   // 获取type参数
-        if ("consumer".equals(type)) {
-
-            return agentClientConnectPool.sendToServer(endpointHelper.getBalancePoint(),
-                    new AgentClientRequest(interfaceName, method, parameterTypesString, parameter));
-        } else {
-            return "Environment variable type is needed to set to provider or consumer.";
-        }
-    }
+//    @RequestMapping(value = "")
+//    public Object invoke(@RequestParam("interface") String interfaceName,
+//                         @RequestParam("method") String method,
+//                         @RequestParam("parameterTypesString") String parameterTypesString,
+//                         @RequestParam("parameter") String parameter) throws Exception {
+//        String type = System.getProperty("type");   // 获取type参数
+//        if ("consumer".equals(type)) {
+//            return agentClientConnectPool.sendToServer(new AgentClientRequest(interfaceName, method, parameterTypesString, parameter));
+//        } else {
+//            return "Environment variable type is needed to set to provider or consumer.";
+//        }
+//    }
 
 
     void init() {
