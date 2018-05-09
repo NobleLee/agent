@@ -22,7 +22,7 @@ public class EndpointHelper {
     private List<Endpoint> endpoints; //之后可以考虑把初始化的过程放到前面
     private Random random = new Random();
 
-    private IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
+    private static IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
 
     private static EndpointHelper instance;
 

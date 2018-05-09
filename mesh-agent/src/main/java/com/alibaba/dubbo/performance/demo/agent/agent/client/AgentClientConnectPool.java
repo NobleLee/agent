@@ -60,24 +60,22 @@ public class AgentClientConnectPool {
 
     // 发送消息 还是有多个连接
     public void sendToServer(ByteBuf buf, Channel channel) throws Exception {
-        try {
 
-            // 将请求的id写入ByteBuf
-            ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() + 8);
-            long id = requestId.getAndIncrement();
-            // 写入消息头标志符
-            buffer.writeShort(COMMON.MAGIC);
-            // 写入请求id
-            buffer.writeLong(id);
-            // 写入消息体
-            buffer.writeBytes(buf);
-            // 因为是请求是HTTP连接，因此需要存储id的连接通道
-            requestHolder.put(Long.valueOf(id), channel);
-            // 根据负载均衡算法，选择一个节点发送数据
-            channelMap.get(endpointHelper.getBalancePoint()).writeAndFlush(buffer);
-        } finally {
-            buf.release();
-        }
+
+        // 将请求的id写入ByteBuf
+        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() + 8);
+        long id = requestId.getAndIncrement();
+        // 写入消息头标志符
+        buffer.writeShort(COMMON.MAGIC);
+        // 写入请求id
+        buffer.writeLong(id);
+        // 写入消息体
+        buffer.writeBytes(buf);
+        // 因为是请求是HTTP连接，因此需要存储id的连接通道
+        requestHolder.put(Long.valueOf(id), channel);
+        // 根据负载均衡算法，选择一个节点发送数据
+        channelMap.get(endpointHelper.getBalancePoint()).writeAndFlush(buffer);
+
     }
 
 
