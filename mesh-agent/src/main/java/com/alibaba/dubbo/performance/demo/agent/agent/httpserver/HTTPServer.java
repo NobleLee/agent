@@ -26,7 +26,7 @@ public class HTTPServer {
 
             ChannelFuture future = bootstrap.bind("localhost", port).sync();
 
-            System.err.println("HTTP Server startup.");
+            System.out.println("HTTP Server startup.");
 
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {

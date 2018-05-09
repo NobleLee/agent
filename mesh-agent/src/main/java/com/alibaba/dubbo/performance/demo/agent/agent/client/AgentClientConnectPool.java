@@ -65,11 +65,13 @@ public class AgentClientConnectPool {
 
 
         // 将请求的id写入ByteBuf
-        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() + 8);
+        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
         long id = requestId.getAndIncrement();
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
         // 写入请求id
+        buffer.writeLong(id);
+        // 跳过前面的固定字符串
         buf.skipBytes(136);
         // 写入消息体
         buffer.writeBytes(buf);
