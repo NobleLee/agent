@@ -52,8 +52,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         ByteBuf copy = buffer.copy();
         byte[] body = new byte[copy.readableBytes()];
         copy.readBytes(body);
-        long l = Bytes.bytes2long(Arrays.copyOfRange(body, 0, 16), 0);
-        System.err.println(l);
+        System.err.println(len);
         System.err.println(Arrays.toString(Arrays.copyOfRange(body,0,16)));
         String s = new String(Arrays.copyOfRange(body, 16, body.length));
         System.err.println(s);
