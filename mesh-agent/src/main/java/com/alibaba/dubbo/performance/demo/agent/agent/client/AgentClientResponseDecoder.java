@@ -20,7 +20,7 @@ import java.util.Arrays;
 public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
 
 
-    private RpcRequestHolder<RpcFuture> requestHolder = RpcRequestHolder.getRpcRequestHolderByName("agentClient");
+    private static RpcRequestHolder<RpcFuture> requestHolder = RpcRequestHolder.getRpcRequestHolderByName("agentClient");
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
