@@ -4,7 +4,6 @@ import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.ConnecManager;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
-import com.alibaba.dubbo.performance.demo.agent.tools.RpcRequestHolder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
@@ -16,6 +15,7 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -27,10 +27,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AgentClientConnectPool {
 
+    public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
+
     // key 节点 value 通道
     private HashMap<Endpoint, Channel> channelMap = new HashMap<>();
-
-    private static RpcRequestHolder<Channel> requestHolder = RpcRequestHolder.getRpcRequestHolderByName("agentClient");
 
     private static AtomicLong requestId = new AtomicLong(1);
 
@@ -72,7 +72,7 @@ public class AgentClientConnectPool {
         // 写入消息体
         buffer.writeBytes(buf);
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
-        requestHolder.put(Long.valueOf(id), channel);
+        requestHolderMap.put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         channelMap.get(endpointHelper.getBalancePoint()).writeAndFlush(buffer);
 

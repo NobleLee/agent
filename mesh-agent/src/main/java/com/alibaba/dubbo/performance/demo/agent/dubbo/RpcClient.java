@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
@@ -14,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URLDecoder;
 
 /**
  * 描述: Dubbo 和 agent 的调用RPCß
@@ -47,31 +49,53 @@ public class RpcClient {
 
     // 将数据封装之后发送给dubbo
     public void sendDubbo(ByteBuf buf) {
-//        int len = buf.readableBytes();
-//        byte[] body = new byte[len];
-//        buf.readBytes(body);
 
         // 前8个字节是请求id
         long id = buf.readLong();
         String bodyString = buf.toString(Charsets.UTF_8);
-        System.err.println(bodyString);
-        System.err.println(id);
+        // 获取哈希参数
+        String parameter = bodyString.substring(bodyString.indexOf("&parameter=") + 11);
+        // 封装请求对象
+        DubboRequest dubboRequest = getDubboRequest(parameter, id);
+        // 发送数据
+        send(dubboRequest);
     }
 
 
-    public void invoke(String[] msgs) {
-
+    public void send(DubboRequest request) {
         Channel channel = null;
         try {
             channel = connectManager.getChannel();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        DubboRequest request = getDubboRequest(msgs);
         channel.writeAndFlush(request);
-
     }
+
+    // 获取Dubbo请求数据
+    private DubboRequest getDubboRequest(String parameter, long id) {
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment("path", COMMON.Request.interfacename);
+        invocation.setMethodName(COMMON.Request.method);
+        invocation.setParameterTypes(COMMON.Request.parameterTypesString);    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+        try {
+            JsonUtils.writeObject(parameter, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        invocation.setArguments(out.toByteArray());
+
+        DubboRequest request = new DubboRequest(id);
+        request.setVersion("2.0.0");
+        request.setTwoWay(true);
+        request.setData(invocation);
+        return request;
+    }
+
 
     // 获取Dubbo请求数据
     private DubboRequest getDubboRequest(String[] msgs) {
