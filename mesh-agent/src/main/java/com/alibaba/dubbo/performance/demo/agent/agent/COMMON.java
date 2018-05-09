@@ -8,14 +8,9 @@ package com.alibaba.dubbo.performance.demo.agent.agent;
  * @create 2018-05-06 下午8:26
  */
 public class COMMON {
-    // 消息之间的分割符号
-    public static final String MessageSeparator = "\n";
-    // 消息内部属性的分割符号
-    public static final String AttributeSeparator = "+";
-    public static final char AttributeSeparatorChar = '+';
 
     public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloServiceGGL";
-
+    // 消息分割符号
     public static final short MAGIC = (short) 0xdabb;
 
     /**

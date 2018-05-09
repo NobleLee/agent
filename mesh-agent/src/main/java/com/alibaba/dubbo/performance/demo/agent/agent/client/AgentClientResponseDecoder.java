@@ -5,6 +5,14 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
  * 描述:
@@ -15,6 +23,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  */
 public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
 
+    public static AtomicLong count = new AtomicLong(1);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -23,15 +32,21 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
             if (in.readableBytes() < 8) return;
             // 获取请求id
             long requestId = in.readLong();
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+            response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+            response.content().writeBytes(in);
+            ByteBuf copy = response.content().copy();
             // 发送请求数据
             ChannelFuture channelFuture = AgentClientConnectPool
                     .requestHolderMap
                     .remove(requestId)
-                    .writeAndFlush(in);
+                    .writeAndFlush(response);
             channelFuture.addListener(ChannelFutureListener.CLOSE);
+            byte[] content=new byte[copy.readableBytes()];
+            copy.readBytes(content);
+            System.err.println(count.getAndIncrement() +"  " +new String(content));
         } finally {
             in.release();
         }
-
     }
 }
