@@ -16,8 +16,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class HTTPServer {
     // 开启服务
     public void start(final int port) {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(2);
-        EventLoopGroup workGroup = new NioEventLoopGroup(4);
+        EventLoopGroup bossGroup = new NioEventLoopGroup(100);
+        EventLoopGroup workGroup = new NioEventLoopGroup(20);
         ServerBootstrap bootstrap = new ServerBootstrap();
         try {
             bootstrap.group(bossGroup, workGroup)

@@ -22,7 +22,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static AgentClientConnectPool agentClientConnectPool =  AgentClientConnectPool.getInstance();
+    private static AgentClientConnectPool agentClientConnectPool = AgentClientConnectPool.getInstance();
 
 
     @Override
@@ -32,29 +32,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
             sendError(ctx, HttpResponseStatus.BAD_REQUEST);
             return;
         }
-
-        String bodyString = request.content().toString(Charsets.UTF_8);
-        System.err.println(bodyString);
-
         agentClientConnectPool.sendToServer(request.content(), ctx.channel());
-
-
-        //       String bodyString = buf.toString(Charsets.UTF_8);
-
-//            System.out.println("body: " + bodyString);
-//
-//
-//
-//
-//        Map<String, String> parmMap = new RequestParser(request).parse();
-//        System.err.println(parmMap);
-
-        //     System.err.println(ctx.channel());
-
-//        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
-//
-//
-//       ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     private static void sendError(ChannelHandlerContext ctx,

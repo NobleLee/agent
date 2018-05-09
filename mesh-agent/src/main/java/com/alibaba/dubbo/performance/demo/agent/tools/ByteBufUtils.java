@@ -19,4 +19,12 @@ public class ByteBufUtils {
         copy.readBytes(bytes);
         System.err.println(str + Arrays.toString(bytes));
     }
+
+    public static void printStringln(ByteBuf buf, String str) {
+        ByteBuf copy = buf.copy();
+        byte[] bytes = new byte[copy.readableBytes()];
+        copy.readBytes(bytes);
+        System.err.println(str + new String(bytes));
+
+    }
 }

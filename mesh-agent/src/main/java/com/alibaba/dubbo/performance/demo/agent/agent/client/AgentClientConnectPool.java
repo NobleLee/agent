@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.ConnecManager;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
@@ -13,6 +14,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +70,7 @@ public class AgentClientConnectPool {
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
         // 写入请求id
-        buffer.writeLong(id);
+        buf.skipBytes(136);
         // 写入消息体
         buffer.writeBytes(buf);
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
