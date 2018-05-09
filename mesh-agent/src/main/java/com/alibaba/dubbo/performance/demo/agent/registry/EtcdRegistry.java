@@ -23,7 +23,6 @@ public class EtcdRegistry implements IRegistry {
     // 该EtcdRegistry没有使用etcd的Watch机制来监听etcd的事件
     // 添加watch，在本地内存缓存地址列表，可减少网络调用的次数
     // 使用的是简单的随机负载均衡，如果provider性能不一致，随机策略会影响性能
-
     private final String rootPath = "dubbomesh";
     private Lease lease;
     private KV kv;
@@ -60,7 +59,7 @@ public class EtcdRegistry implements IRegistry {
         if ("provider".equals(type)) {
             // 如果是provider，去etcd注册服务
             try {
-                int port = Integer.valueOf(System.getProperty("nio.port"));
+                int port = Integer.valueOf(System.getProperty("server.port"));
                 register(COMMON.ServiceName, port);
             } catch (Exception e) {
                 e.printStackTrace();

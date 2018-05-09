@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
@@ -25,9 +26,22 @@ public class RpcClient {
     private ConnecManager connectManager;
 
 
-    public RpcClient() {
+    private RpcClient() {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
                 4, new RpcClientInitializer());
+    }
+
+    private static RpcClient instance;
+
+    public static RpcClient getInstance() {
+        if (instance == null) {
+            synchronized (RpcClient.class) {
+                if (instance == null) {
+                    instance = new RpcClient();
+                }
+            }
+        }
+        return instance;
     }
 
 

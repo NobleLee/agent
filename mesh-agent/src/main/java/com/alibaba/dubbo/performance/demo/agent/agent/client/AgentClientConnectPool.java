@@ -36,7 +36,21 @@ public class AgentClientConnectPool {
 
     private EndpointHelper endpointHelper = EndpointHelper.getInstance();
 
-    public AgentClientConnectPool() {
+    private static AgentClientConnectPool instance;
+
+    public static AgentClientConnectPool getInstance() {
+        if (instance == null) {
+            synchronized (AgentClientConnectPool.class) {
+                if (instance == null) {
+                    instance = new AgentClientConnectPool();
+                }
+            }
+        }
+        return instance;
+    }
+
+
+    private AgentClientConnectPool() {
         try {
             putServers(endpointHelper.getEndpoints());
         } catch (Exception e) {

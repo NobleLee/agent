@@ -18,7 +18,7 @@ import java.nio.charset.Charset;
  */
 public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
-    private RpcClient rpcClient = new RpcClient();
+    private static RpcClient rpcClient = RpcClient.getInstance();
 
     public static Channel channel;
 
