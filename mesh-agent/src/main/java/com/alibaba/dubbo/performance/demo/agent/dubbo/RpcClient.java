@@ -47,6 +47,10 @@ public class RpcClient {
 
     // 将数据封装之后发送给dubbo
     public void sendDubbo(ByteBuf buf) {
+//        int len = buf.readableBytes();
+//        byte[] body = new byte[len];
+//        buf.readBytes(body);
+
         // 前8个字节是请求id
         long id = buf.readLong();
         String bodyString = buf.toString(Charsets.UTF_8);

@@ -36,6 +36,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
 //            copy[4] = "";
 //            msgs = copy;
 //        }
+        if (msg.readableBytes() < 9) return;
         rpcClient.sendDubbo(msg);
     }
 

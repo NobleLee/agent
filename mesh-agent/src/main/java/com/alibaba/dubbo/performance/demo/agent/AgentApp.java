@@ -27,8 +27,8 @@ public class AgentApp {
             EndpointHelper.getInstance();
             new HTTPServer().start(Integer.parseInt(System.getProperty("server.port")));
         } else {
-            new AgentServerConnectPool(Integer.parseInt(System.getProperty("server.port"))).init();
             EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
+            new AgentServerConnectPool(Integer.parseInt(System.getProperty("server.port"))).init();
         }
     }
 }
