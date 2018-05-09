@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import com.alibaba.dubbo.performance.demo.agent.exception.NotFindServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,8 @@ public class EndpointHelper {
     private static IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
 
     private static EndpointHelper instance;
+
+    public static double[] weights;
 
     // 单例模式
     public static EndpointHelper getInstance() {
@@ -51,19 +54,6 @@ public class EndpointHelper {
     private void watch() {
     }
 
-    public String getBalancePointUrl() throws Exception {
-        if (endpoints == null) {
-            synchronized (EndpointHelper.class) {
-                if (endpoints == null) {
-                    endpoints = registry.find(COMMON.ServiceName);
-                }
-            }
-        }
-
-        Endpoint endpoint = getBlancePoint();
-
-        return "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-    }
 
     // 采用负载均衡算法对结果进行处理
     public Endpoint getBalancePoint() throws Exception {
@@ -71,6 +61,7 @@ public class EndpointHelper {
             synchronized (EndpointHelper.class) {
                 if (endpoints == null) {
                     endpoints = registry.find(COMMON.ServiceName);
+                    getWeights();
                 }
             }
         }
@@ -80,11 +71,44 @@ public class EndpointHelper {
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
     private Endpoint getBlancePoint() {
-        return endpoints.get(random.nextInt(endpoints.size()));
+        if (endpoints.size() == 1)
+            return endpoints.get(0);
+        else {
+            double random = Math.random();
+            for (int i = 0; i < weights.length; i++) {
+                if (random < weights[i]) return endpoints.get(i);
+            }
+            return endpoints.get(weights.length - 1);
+        }
     }
 
 
     public List<Endpoint> getEndpoints() {
         return endpoints;
     }
+
+
+    // 获取概率分配请求函数
+    private void getWeights() {
+        if (endpoints.size() == 0) throw new NotFindServiceException();
+        weights = new double[endpoints.size()];
+        if (weights.length < 2) weights[0] = 1;
+        else {
+            double sum = 1;
+            // 更新权重大小
+            long refer = endpoints.get(0).getMemary();
+            for (int i = 1; i < weights.length; i++) {
+                double tmp = endpoints.get(i).getMemary() * 1.0 / refer;
+                weights[i] = 2 - Math.exp(-tmp * 8);
+                sum += weights[i];
+            }
+            for (int i = 0; i < weights.length; i++) {
+                weights[i] /= sum;
+            }
+            for (int i = 1; i < weights.length; i++) {
+                weights[i] += weights[i - 1];
+            }
+        }
+    }
+
 }
