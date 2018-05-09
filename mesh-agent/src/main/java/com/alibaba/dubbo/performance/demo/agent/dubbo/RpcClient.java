@@ -36,7 +36,8 @@ public class RpcClient {
         // 前8个字节是请求id
         long id = buf.readLong();
         String bodyString = buf.toString(Charsets.UTF_8);
-
+        System.err.println(bodyString);
+        System.err.println(id);
     }
 
 

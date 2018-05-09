@@ -25,18 +25,18 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         // TCP 拆包问题  //将ctx上下文放到一个map中，最后根据id，返回给相应的客户端
-        String message = msg.toString(Charset.defaultCharset());
-
-
-        String[] msgs = message.split("\\" + COMMON.AttributeSeparator);
-        if (msgs.length == 4) {
-            String[] copy = new String[5];
-            for (int i = 0; i < 4; i++)
-                copy[i] = msgs[i];
-            copy[4] = "";
-            msgs = copy;
-        }
-        rpcClient.invoke(msgs);
+//        String message = msg.toString(Charset.defaultCharset());
+//
+//
+//        String[] msgs = message.split("\\" + COMMON.AttributeSeparator);
+//        if (msgs.length == 4) {
+//            String[] copy = new String[5];
+//            for (int i = 0; i < 4; i++)
+//                copy[i] = msgs[i];
+//            copy[4] = "";
+//            msgs = copy;
+//        }
+        rpcClient.sendDubbo(msg);
     }
 
 
