@@ -35,16 +35,12 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
             FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
             response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
             response.content().writeBytes(in);
-            ByteBuf copy = response.content().copy();
             // 发送请求数据
             ChannelFuture channelFuture = AgentClientConnectPool
                     .requestHolderMap
                     .remove(requestId)
                     .writeAndFlush(response);
             channelFuture.addListener(ChannelFutureListener.CLOSE);
-            byte[] content=new byte[copy.readableBytes()];
-            copy.readBytes(content);
-            System.err.println(count.getAndIncrement() +"  " +new String(content));
         } finally {
             in.release();
         }
