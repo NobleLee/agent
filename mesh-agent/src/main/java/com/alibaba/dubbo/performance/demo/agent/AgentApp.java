@@ -1,14 +1,9 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerConnectPool;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 public class AgentApp {
