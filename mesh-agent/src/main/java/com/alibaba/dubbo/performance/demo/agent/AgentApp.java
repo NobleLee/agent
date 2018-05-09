@@ -5,6 +5,8 @@ import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -18,13 +20,15 @@ public class AgentApp {
     //    public static void main(String[] args) {
 //        SpringApplication.run(AgentApp.class,args);
 //    }
-    private AgentClientConnectPool agentClientConnectPool = AgentClientConnectPool.getInstance();
 
     public static void main(String[] args) {
 
-        if (System.getProperty("type").equals("consumer"))
+        if (System.getProperty("type").equals("consumer")) {
+            EndpointHelper.getInstance();
             new HTTPServer().start(Integer.parseInt(System.getProperty("server.port")));
-        else
+        } else {
             new AgentServerConnectPool(Integer.parseInt(System.getProperty("server.port"))).init();
+            EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
+        }
     }
 }

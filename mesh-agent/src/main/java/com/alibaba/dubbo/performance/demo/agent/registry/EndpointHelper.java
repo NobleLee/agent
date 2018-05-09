@@ -32,11 +32,6 @@ public class EndpointHelper {
             synchronized (EndpointHelper.class) {
                 if (instance == null) {
                     instance = new EndpointHelper();
-                    try {
-                        instance.getBalancePoint();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }
@@ -44,6 +39,11 @@ public class EndpointHelper {
     }
 
     private EndpointHelper() {
+        try {
+            getBalancePoint();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

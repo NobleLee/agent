@@ -22,7 +22,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static AgentClientConnectPool agentClientConnectPool = new AgentClientConnectPool();
+    private static AgentClientConnectPool agentClientConnectPool =  AgentClientConnectPool.getInstance();
 
 
     @Override
