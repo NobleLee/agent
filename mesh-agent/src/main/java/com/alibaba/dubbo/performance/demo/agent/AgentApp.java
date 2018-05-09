@@ -17,9 +17,6 @@ public class AgentApp {
     // 在Consumer端启动agent时，添加JVM参数-Dtype=consumer -Dserver.port=20000
     // 添加日志保存目录: -Dlogs.dir=/path/to/your/logs/dir。请安装自己的环境来设置日志目录。
 
-    //    public static void main(String[] args) {
-//        SpringApplication.run(AgentApp.class,args);
-//    }
 
     public static void main(String[] args) {
 
