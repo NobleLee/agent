@@ -1,11 +1,15 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
+import com.google.common.base.Charsets;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+
+import java.util.Arrays;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -18,8 +22,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final String BASE_DIR = System.getProperty("user.dir") + "/src/main/java/com/luangeng/netty/http/i";
-    ;
+    private static AgentClientConnectPool agentClientConnectPool = new AgentClientConnectPool();
+
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
@@ -29,44 +33,28 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
             return;
         }
 
-        //405
-        if (request.method() != HttpMethod.GET) {
-            sendError(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED);
-            return;
-        }
+        String bodyString = request.content().toString(Charsets.UTF_8);
+        System.err.println(bodyString);
 
-        //404
-        String uri = request.uri();
-//        uri = URLDecoder.decode(uri, "UTF-8");
-//        uri = uri.replace('/', File.separatorChar);
-//        File file = new File(BASE_DIR + uri);
-//        if (!file.exists() || !file.isFile()) {
-//            sendError(ctx, HttpResponseStatus.NOT_FOUND);
-//            return;
-//        }
-
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
-
-//        FileChannel channel = new FileInputStream(file).getChannel();
-//        ByteBuffer buffer = ByteBuffer.allocate(1024);
-//        while (channel.read(buffer) != -1) {
-//            buffer.flip();
-//            response.content().writeBytes(buffer);
-//            buffer.clear();
-//        }
-//        channel.close();
+        agentClientConnectPool.sendToServer(request.content(), ctx.channel());
 
 
+        //       String bodyString = buf.toString(Charsets.UTF_8);
 
-        if (uri.endsWith(".css")) {
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/css; charset=UTF-8");
-        } else {
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
-        }
-        long fileLength = response.content().readableBytes();
-        HttpUtil.setContentLength(response, fileLength);
+//            System.out.println("body: " + bodyString);
+//
+//
+//
+//
+//        Map<String, String> parmMap = new RequestParser(request).parse();
+//        System.err.println(parmMap);
 
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        //     System.err.println(ctx.channel());
+
+//        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
+//
+//
+//       ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     private static void sendError(ChannelHandlerContext ctx,
@@ -77,4 +65,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
+
+
 }

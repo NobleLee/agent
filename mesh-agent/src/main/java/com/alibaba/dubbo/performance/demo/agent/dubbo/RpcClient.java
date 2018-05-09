@@ -3,6 +3,8 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.google.common.base.Charsets;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,16 @@ public class RpcClient {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
                 4, new RpcClientInitializer());
     }
+
+
+    // 将数据封装之后发送给dubbo
+    public void sendDubbo(ByteBuf buf) {
+        // 前8个字节是请求id
+        long id = buf.readLong();
+        String bodyString = buf.toString(Charsets.UTF_8);
+
+    }
+
 
     public void invoke(String[] msgs) {
 

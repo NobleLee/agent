@@ -15,4 +15,6 @@ public class COMMON {
     public static final char AttributeSeparatorChar = '+';
 
     public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloServiceGGL";
+
+    public static final short MAGIC = (short) 0xdabb;
 }
