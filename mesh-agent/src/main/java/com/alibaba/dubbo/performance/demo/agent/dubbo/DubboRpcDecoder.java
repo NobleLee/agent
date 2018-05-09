@@ -24,8 +24,8 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
             buffer.writeBytes(MAGIC);
             buffer.writeBytes(byteBuf, 2, 8);
             buffer.writeBytes(byteBuf, 16, readlength - 17);
-
             AgentServerRpcHandler.channel.writeAndFlush(buffer);
+
         } finally {
             byteBuf.release();
         }

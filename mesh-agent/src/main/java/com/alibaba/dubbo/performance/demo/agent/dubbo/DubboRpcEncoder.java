@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.Buffer;
+import java.util.Arrays;
 
 public class DubboRpcEncoder extends MessageToByteEncoder {
     // header length.
@@ -46,6 +48,14 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         buffer.writerIndex(savedWriteIndex);
         buffer.writeBytes(header); // write header.
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
+
+//        ByteBuf copy = buffer.copy();
+//        byte[] body = new byte[copy.readableBytes()];
+//        copy.readBytes(body);
+//        System.err.println(len);
+//        System.err.println(Arrays.toString(Arrays.copyOfRange(body,0,16)));
+//        String s = new String(Arrays.copyOfRange(body, 16, body.length));
+//        System.err.println(s);
     }
 
 

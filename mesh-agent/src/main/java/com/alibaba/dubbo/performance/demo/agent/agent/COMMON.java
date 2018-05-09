@@ -19,7 +19,7 @@ public class COMMON {
     public static class Request {
         public static final String interfacename = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
         public static final String method = "hash";
-        public static final String parameterTypesString = "Ljava/lang/String";
+        public static final String parameterTypesString = "Ljava/lang/String;";
     }
 
 
