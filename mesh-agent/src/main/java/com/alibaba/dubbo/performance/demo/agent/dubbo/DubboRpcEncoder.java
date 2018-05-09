@@ -49,13 +49,13 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         buffer.writeBytes(header); // write header.
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
 
-        ByteBuf copy = buffer.copy();
-        byte[] body = new byte[copy.readableBytes()];
-        copy.readBytes(body);
-        System.err.println(len);
-        System.err.println(Arrays.toString(Arrays.copyOfRange(body,0,16)));
-        String s = new String(Arrays.copyOfRange(body, 16, body.length));
-        System.err.println(s);
+//        ByteBuf copy = buffer.copy();
+//        byte[] body = new byte[copy.readableBytes()];
+//        copy.readBytes(body);
+//        System.err.println(len);
+//        System.err.println(Arrays.toString(Arrays.copyOfRange(body,0,16)));
+//        String s = new String(Arrays.copyOfRange(body, 16, body.length));
+//        System.err.println(s);
     }
 
 
