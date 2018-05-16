@@ -8,9 +8,9 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
-public class RpcClientInitializer extends ChannelInitializer<EpollSocketChannel> {
+public class RpcClientInitializer extends ChannelInitializer<EpollServerSocketChannel> {
     @Override
-    protected void initChannel(EpollSocketChannel socketChannel) {
+    protected void initChannel(EpollServerSocketChannel socketChannel) {
         ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{-38, -69});
         ChannelPipeline pipeline = socketChannel.pipeline();
         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));

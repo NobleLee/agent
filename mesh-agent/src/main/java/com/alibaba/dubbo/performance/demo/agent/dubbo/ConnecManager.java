@@ -23,7 +23,7 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, ChannelInitializer<EpollSocketChannel> initializer) {
+    public ConnecManager(String host, int port, int nThread, ChannelInitializer<EpollServerSocketChannel> initializer) {
         eventLoopGroup = new EpollEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
         initBootstrap(initializer);
@@ -45,7 +45,7 @@ public class ConnecManager {
         return channel;
     }
 
-    public void initBootstrap(ChannelInitializer<EpollSocketChannel> initializer) {
+    public void initBootstrap(ChannelInitializer<EpollServerSocketChannel> initializer) {
 
         bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
