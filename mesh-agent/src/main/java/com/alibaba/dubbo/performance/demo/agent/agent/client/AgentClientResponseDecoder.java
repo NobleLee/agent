@@ -10,8 +10,6 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**

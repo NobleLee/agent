@@ -1,7 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.server;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
-import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
