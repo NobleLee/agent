@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.server;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
@@ -43,12 +44,12 @@ public class AgentServerConnectPool {
                 .channel(EpollServerSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                .childHandler(new ChannelInitializer<EpollSocketChannel>() {
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                     @Override
-                    protected void initChannel(EpollSocketChannel sc) throws Exception {
+                    protected void initChannel(SocketChannel sc) throws Exception {
                         ChannelPipeline pipeline = sc.pipeline();
                         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                         pipeline.addLast(new AgentServerRpcHandler());
