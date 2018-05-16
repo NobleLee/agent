@@ -50,7 +50,6 @@ elif [[ "$1" == "provider-large" ]]; then
        -Ddubbo.protocol.port=20891 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
-       -Dnio.port=40002 \
        /root/dists/mesh-agent.jar
 else
   echo "Unrecognized arguments, exit."

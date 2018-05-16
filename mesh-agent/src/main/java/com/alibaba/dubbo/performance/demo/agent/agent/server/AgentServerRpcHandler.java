@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.server;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,6 +25,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
 
         // TCP 拆包问题  //将ctx上下文放到一个map中，最后根据id，返回给相应的客户端
         if (msg.readableBytes() < 9) return;
+        //System.err.println(msg.copy().toString(Charsets.UTF_8));
         rpcClient.sendDubbo(msg);
     }
 
