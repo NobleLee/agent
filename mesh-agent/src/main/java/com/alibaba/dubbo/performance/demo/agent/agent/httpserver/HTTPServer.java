@@ -3,6 +3,8 @@ package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
@@ -16,12 +18,12 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class HTTPServer {
     // 开启服务
     public void start(final int port) {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(100);
-        EventLoopGroup workGroup = new NioEventLoopGroup(20);
+        EventLoopGroup bossGroup = new EpollEventLoopGroup(1);
+        EventLoopGroup workGroup = new EpollEventLoopGroup(8);
         ServerBootstrap bootstrap = new ServerBootstrap();
         try {
             bootstrap.group(bossGroup, workGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EpollServerSocketChannel.class)
                     .childHandler(new HttpChannelInitializer());
 
             ChannelFuture future = bootstrap.bind("localhost", port).sync();

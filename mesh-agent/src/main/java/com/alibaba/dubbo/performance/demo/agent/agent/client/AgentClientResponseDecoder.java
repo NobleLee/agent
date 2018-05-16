@@ -23,7 +23,6 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
  */
 public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
 
-    public static AtomicLong count = new AtomicLong(1);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {

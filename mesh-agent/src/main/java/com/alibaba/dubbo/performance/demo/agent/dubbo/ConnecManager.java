@@ -7,6 +7,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -24,7 +26,7 @@ public class ConnecManager {
 
 
     public ConnecManager(String host, int port, int nThread, ChannelInitializer<SocketChannel> initializer) {
-        eventLoopGroup = new NioEventLoopGroup(nThread);
+        eventLoopGroup = new EpollEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
         initBootstrap(initializer);
     }
@@ -52,7 +54,7 @@ public class ConnecManager {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                .channel(NioSocketChannel.class)
+                .channel(EpollServerSocketChannel.class)
                 .handler(initializer);
     }
 }
