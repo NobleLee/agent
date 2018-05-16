@@ -51,19 +51,6 @@ public class EndpointHelper {
     private void watch() {
     }
 
-    public String getBalancePointUrl() throws Exception {
-        if (endpoints == null) {
-            synchronized (EndpointHelper.class) {
-                if (endpoints == null) {
-                    endpoints = registry.find(COMMON.ServiceName);
-                }
-            }
-        }
-
-        Endpoint endpoint = getBlancePoint();
-
-        return "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-    }
 
     // 采用负载均衡算法对结果进行处理
     public Endpoint getBalancePoint() throws Exception {

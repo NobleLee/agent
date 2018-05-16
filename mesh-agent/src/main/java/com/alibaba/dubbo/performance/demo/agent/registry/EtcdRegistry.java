@@ -5,6 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.tools.IpHelper;
 import com.coreos.jetcd.Client;
 import com.coreos.jetcd.KV;
 import com.coreos.jetcd.Lease;
+import com.coreos.jetcd.Watch;
 import com.coreos.jetcd.data.ByteSequence;
 import com.coreos.jetcd.kv.GetResponse;
 import com.coreos.jetcd.options.GetOption;
@@ -45,6 +46,8 @@ public class EtcdRegistry implements IRegistry {
     // 获取监听内容
     private EtcdRegistry(String registryAddress) {
         Client client = Client.builder().endpoints(registryAddress).build();
+        Watch.Watcher watch = client.getWatchClient().watch(ByteSequence.fromString(COMMON.ServiceName));
+
         this.lease = client.getLeaseClient();
         this.kv = client.getKVClient();
         try {
