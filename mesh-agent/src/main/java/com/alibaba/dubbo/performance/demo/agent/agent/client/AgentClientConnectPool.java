@@ -88,11 +88,11 @@ public class AgentClientConnectPool {
     private boolean putServers(List<Endpoint> endpoints) throws Exception {
         for (Endpoint endpoint : endpoints) {
             ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), 4,
-                    new ChannelInitializer<EpollServerSocketChannel>() {
+                    new ChannelInitializer<EpollSocketChannel>() {
                         ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                         @Override
-                        protected void initChannel(EpollServerSocketChannel ch) {
+                        protected void initChannel(EpollSocketChannel ch) {
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                             pipeline.addLast(new AgentClientResponseDecoder());
