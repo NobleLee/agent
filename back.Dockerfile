@@ -1,6 +1,5 @@
 # Builder container
-# FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/services AS builder
-FROM service:0.0.1 AS builder
+FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/services AS builder
 
 COPY . /root/workspace/agent
 WORKDIR /root/workspace/agent
@@ -17,6 +16,10 @@ COPY --from=builder /root/workspace/agent/mesh-agent/target/mesh-agent-1.0-SNAPS
 COPY --from=builder /usr/local/bin/docker-entrypoint.sh /usr/local/bin
 COPY start-agent.sh /usr/local/bin
 
-RUN set -ex && mkdir -p /root/logs
+RUN set -ex \
+ && chmod a+x /usr/local/bin/start-agent.sh \
+ && mkdir -p /root/logs
 
-#ENTRYPOINT ["sh docker-entrypoint.sh"]
+EXPOSE 8087
+
+ENTRYPOINT ["docker-entrypoint.sh"]
