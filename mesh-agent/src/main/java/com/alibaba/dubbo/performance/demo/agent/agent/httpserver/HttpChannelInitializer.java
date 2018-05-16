@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ServerChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -15,9 +16,9 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  * @author gaoguili
  * @create 2018-05-09 上午12:36
  */
-public class HttpChannelInitializer extends ChannelInitializer<ServerChannel> {
+public class HttpChannelInitializer extends ChannelInitializer<EpollSocketChannel> {
     @Override
-    protected void initChannel(ServerChannel ch) throws Exception {
+    protected void initChannel(EpollSocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
 
         // HTTP请求消息解码器
