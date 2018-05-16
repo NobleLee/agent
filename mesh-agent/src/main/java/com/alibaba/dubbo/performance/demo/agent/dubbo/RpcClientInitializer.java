@@ -4,12 +4,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ServerChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
-public class RpcClientInitializer extends ChannelInitializer<SocketChannel> {
+public class RpcClientInitializer extends ChannelInitializer<ServerChannel> {
     @Override
-    protected void initChannel(SocketChannel socketChannel) {
+    protected void initChannel(ServerChannel socketChannel) {
         ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{-38, -69});
         ChannelPipeline pipeline = socketChannel.pipeline();
         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));

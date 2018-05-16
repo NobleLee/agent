@@ -3,10 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -25,7 +22,7 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, ChannelInitializer<SocketChannel> initializer) {
+    public ConnecManager(String host, int port, int nThread, ChannelInitializer<ServerChannel> initializer) {
         eventLoopGroup = new EpollEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
         initBootstrap(initializer);
@@ -47,7 +44,7 @@ public class ConnecManager {
         return channel;
     }
 
-    public void initBootstrap(ChannelInitializer<SocketChannel> initializer) {
+    public void initBootstrap(ChannelInitializer<ServerChannel> initializer) {
 
         bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
