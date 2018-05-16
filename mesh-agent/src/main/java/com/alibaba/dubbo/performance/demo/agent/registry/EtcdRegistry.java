@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
@@ -72,7 +70,7 @@ public class EtcdRegistry implements IRegistry {
     // 向ETCD中注册服务
     public void register(String serviceName, int port) throws Exception {
         // 服务注册的key为:    /dubbomesh/com.some.package.IHelloService/192.168.100.100:2000
-        String strKey = MessageFormat.format("/{0}/{1}/{2}:{3}:{4}", rootPath, serviceName, IpHelper.getHostIp(), String.valueOf(port), String.valueOf(Runtime.getRuntime().maxMemory()));
+        String strKey = MessageFormat.format("/{0}/{1}/{2}:{3}", rootPath, serviceName, IpHelper.getHostIp(), String.valueOf(port));
         ByteSequence key = ByteSequence.fromString(strKey);
         ByteSequence val = ByteSequence.fromString("");     // 目前只需要创建这个key,对应的value暂不使用,先留空
         kv.put(key, val, PutOption.newBuilder().withLeaseId(leaseId).build()).get();
@@ -101,7 +99,6 @@ public class EtcdRegistry implements IRegistry {
         GetResponse response = kv.get(key, GetOption.newBuilder().withPrefix(key).build()).get();
 
         List<Endpoint> endpoints = new ArrayList<>();
-        PriorityQueue<Endpoint> endpointQueue = new PriorityQueue<>(memoryComparator);
 
         for (com.coreos.jetcd.data.KeyValue kv : response.getKvs()) {
             String s = kv.getKey().toStringUtf8();
@@ -110,18 +107,9 @@ public class EtcdRegistry implements IRegistry {
 
             String host = endpointStr.split(":")[0];
             int port = Integer.valueOf(endpointStr.split(":")[1]);
-            long memory = Long.parseLong(endpointStr.split(":")[2]);
-            endpointQueue.add(new Endpoint(host, port, memory));
-        }
 
-        while (!endpointQueue.isEmpty()) {
-            endpoints.add(endpointQueue.poll());
+            endpoints.add(new Endpoint(host, port));
         }
-
         return endpoints;
     }
-
-    private static Comparator<Endpoint> memoryComparator = (c1, c2) -> (int) (c1.getMemary() - c2.getMemary());
-
-
 }
