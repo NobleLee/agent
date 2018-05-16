@@ -16,9 +16,9 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  * @author gaoguili
  * @create 2018-05-09 上午12:36
  */
-public class HttpChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class HttpChannelInitializer extends ChannelInitializer<EpollSocketChannel> {
     @Override
-    protected void initChannel(SocketChannel ch) throws Exception {
+    protected void initChannel(EpollSocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
 
         // HTTP请求消息解码器

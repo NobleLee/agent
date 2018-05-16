@@ -45,11 +45,11 @@ public class AgentServerConnectPool {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
+                .childHandler(new ChannelInitializer<EpollSocketChannel>() {
                     ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                     @Override
-                    protected void initChannel(SocketChannel sc) throws Exception {
+                    protected void initChannel(EpollSocketChannel sc) throws Exception {
                         ChannelPipeline pipeline = sc.pipeline();
                         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                         pipeline.addLast(new AgentServerRpcHandler());
