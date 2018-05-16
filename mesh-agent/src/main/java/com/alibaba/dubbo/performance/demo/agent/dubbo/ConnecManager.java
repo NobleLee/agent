@@ -23,9 +23,15 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
+    public ConnecManager(String host, int port, long memory, int nThread, ChannelInitializer<SocketChannel> initializer) {
+        eventLoopGroup = new NioEventLoopGroup(nThread);
+        endpoint = new Endpoint(host, port, memory);
+        initBootstrap(initializer);
+    }
+
     public ConnecManager(String host, int port, int nThread, ChannelInitializer<SocketChannel> initializer) {
         eventLoopGroup = new NioEventLoopGroup(nThread);
-        endpoint = new Endpoint(host, port);
+        endpoint = new Endpoint(host, port, 0);
         initBootstrap(initializer);
     }
 
