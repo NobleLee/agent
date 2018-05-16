@@ -22,7 +22,7 @@ import io.netty.handler.codec.LineBasedFrameDecoder;
 public class AgentServerConnectPool {
 
     // 接收client连接的线程
-    EventLoopGroup bossGroup = new NioEventLoopGroup();
+    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     // 工作处理线程
     EventLoopGroup workerGroup = new NioEventLoopGroup(4);
     // 辅助对象
