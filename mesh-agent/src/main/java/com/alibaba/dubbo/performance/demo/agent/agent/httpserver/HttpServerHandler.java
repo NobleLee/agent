@@ -1,15 +1,12 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
-import com.google.common.base.Charsets;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
-
-import java.util.Arrays;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -32,6 +29,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
             sendError(ctx, HttpResponseStatus.BAD_REQUEST);
             return;
         }
+       // System.err.println(request.content().copy().toString(Charsets.UTF_8));
         agentClientConnectPool.sendToServer(request.content(), ctx.channel());
     }
 

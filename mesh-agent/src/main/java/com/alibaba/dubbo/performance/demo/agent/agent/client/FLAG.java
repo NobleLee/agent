@@ -1,8 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
-import io.netty.channel.Channel;
-
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**

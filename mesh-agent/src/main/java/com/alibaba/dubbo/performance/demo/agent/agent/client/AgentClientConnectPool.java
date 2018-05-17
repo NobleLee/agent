@@ -10,7 +10,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
 import java.util.HashMap;
@@ -85,11 +85,11 @@ public class AgentClientConnectPool {
     private boolean putServers(List<Endpoint> endpoints) throws Exception {
         for (Endpoint endpoint : endpoints) {
             ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), 4,
-                    new ChannelInitializer<SocketChannel>() {
+                    new ChannelInitializer<EpollSocketChannel>() {
                         ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                         @Override
-                        protected void initChannel(SocketChannel ch) {
+                        protected void initChannel(EpollSocketChannel ch) {
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                             pipeline.addLast(new AgentClientResponseDecoder());

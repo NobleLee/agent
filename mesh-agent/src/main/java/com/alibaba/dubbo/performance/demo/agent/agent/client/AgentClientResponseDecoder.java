@@ -10,8 +10,6 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
@@ -23,7 +21,6 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
  */
 public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
 
-    public static AtomicLong count = new AtomicLong(1);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
