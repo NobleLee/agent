@@ -19,7 +19,6 @@ public class EndpointHelper {
 
     private Logger logger = LoggerFactory.getLogger(EndpointHelper.class);
 
-    private List<Endpoint> endpoints; //之后可以考虑把初始化的过程放到前面
     private Random random = new Random();
 
     private static IRegistry registry = EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
@@ -39,39 +38,12 @@ public class EndpointHelper {
     }
 
     private EndpointHelper() {
-        try {
-            getBalancePoint();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    // 对节点设置watcher监控rpc节点的变更
-    private void watch() {
-    }
-
-
-    // 采用负载均衡算法对结果进行处理
-    public Endpoint getBalancePoint() throws Exception {
-        if (endpoints == null) {
-            synchronized (EndpointHelper.class) {
-                if (endpoints == null) {
-                    endpoints = registry.find(COMMON.ServiceName);
-                }
-            }
-        }
-
-        return getBlancePoint();
     }
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
-    private Endpoint getBlancePoint() {
+    public Endpoint getBalancePoint(List<Endpoint> endpoints) throws Exception {
         return endpoints.get(random.nextInt(endpoints.size()));
     }
 
 
-    public List<Endpoint> getEndpoints() {
-        return endpoints;
-    }
 }
