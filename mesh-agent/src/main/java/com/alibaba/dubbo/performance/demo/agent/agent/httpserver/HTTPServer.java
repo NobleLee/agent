@@ -6,6 +6,10 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+
+import java.nio.channels.ServerSocketChannel;
 
 /**
  * 描述:
@@ -17,12 +21,12 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 public class HTTPServer {
     // 开启服务
     public void start(final int port) {
-        EventLoopGroup bossGroup = new EpollEventLoopGroup(COMMON.HTTPSERVER_BOSS_THREAD);
-        EventLoopGroup workGroup = new EpollEventLoopGroup(COMMON.HTTPSERVER_WORK_THREAD);
+        EventLoopGroup bossGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_BOSS_THREAD);
+        EventLoopGroup workGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_WORK_THREAD);
         ServerBootstrap bootstrap = new ServerBootstrap();
         try {
             bootstrap.group(bossGroup, workGroup)
-                    .channel(EpollServerSocketChannel.class)
+                    .channel(NioServerSocketChannel.class)
                     .childHandler(new HttpChannelInitializer());
 
             ChannelFuture future = bootstrap.bind("localhost", port).sync();

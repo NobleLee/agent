@@ -9,6 +9,8 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
 /**
@@ -21,9 +23,9 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 public class AgentServerConnectPool {
 
     // 接收client连接的线程
-    EventLoopGroup bossGroup = new EpollEventLoopGroup(COMMON.AGENTSERVER_BOSS_THREAD);
+    EventLoopGroup bossGroup = new NioEventLoopGroup(COMMON.AGENTSERVER_BOSS_THREAD);
     // 工作处理线程
-    EventLoopGroup workerGroup = new EpollEventLoopGroup(COMMON.AGENTSERVER_WORK_THREAD);
+    EventLoopGroup workerGroup = new NioEventLoopGroup(COMMON.AGENTSERVER_WORK_THREAD);
     // 辅助对象
     ServerBootstrap serverBootstrap = new ServerBootstrap();
 
@@ -40,11 +42,11 @@ public class AgentServerConnectPool {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new ChannelInitializer<EpollSocketChannel>() {
+                .childHandler(new ChannelInitializer<NioSocketChannel>() {
                     ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                     @Override
-                    protected void initChannel(EpollSocketChannel sc) throws Exception {
+                    protected void initChannel(NioSocketChannel sc) throws Exception {
                         ChannelPipeline pipeline = sc.pipeline();
                         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                         pipeline.addLast(new AgentServerRpcHandler());

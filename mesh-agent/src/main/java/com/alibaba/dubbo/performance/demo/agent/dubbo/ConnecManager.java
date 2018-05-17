@@ -9,6 +9,8 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.sctp.nio.NioSctpChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
@@ -22,7 +24,7 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, ChannelInitializer<EpollSocketChannel> initializer) {
+    public ConnecManager(String host, int port, int nThread, ChannelInitializer<NioSocketChannel> initializer) {
         eventLoopGroup = new EpollEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
         initBootstrap(initializer);
@@ -44,14 +46,14 @@ public class ConnecManager {
         return channel;
     }
 
-    public void initBootstrap(ChannelInitializer<EpollSocketChannel> initializer) {
+    public void initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
 
         bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)
-                .channel(EpollSocketChannel.class)
+                .channel(NioSocketChannel.class)
                 .handler(initializer);
     }
 }

@@ -6,7 +6,13 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +34,17 @@ public class RpcClient {
 
     private RpcClient() {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
-                COMMON.DUBBO_CLIENT_THREAD, new RpcClientInitializer());
+                COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<NioSocketChannel>() {
+            ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
+
+            @Override
+            protected void initChannel(NioSocketChannel ch) {
+                ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
+                pipeline.addLast(new DubboRpcEncoder());
+                pipeline.addLast(new DubboRpcDecoder());
+            }
+        });
     }
 
     private static RpcClient instance;
@@ -92,37 +108,6 @@ public class RpcClient {
         request.setTwoWay(true);
         request.setData(invocation);
         return request;
-    }
-
-
-    // 获取Dubbo请求数据
-    private DubboRequest getDubboRequest(String[] msgs) {
-        if (msgs == null || msgs.length != 5) {
-            return new DubboRequest(0);
-        }
-
-        RpcInvocation invocation = new RpcInvocation();
-
-        invocation.setAttachment("path", msgs[1]);
-        invocation.setMethodName(msgs[2]);
-        invocation.setParameterTypes(msgs[3]);    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        try {
-            JsonUtils.writeObject(msgs[4], writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        invocation.setArguments(out.toByteArray());
-
-        DubboRequest request = new DubboRequest(Long.parseLong(msgs[0]));
-        request.setVersion("2.0.0");
-        request.setTwoWay(true);
-        request.setData(invocation);
-
-        return request;
-
     }
 
 }
