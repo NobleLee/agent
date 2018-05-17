@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -16,8 +17,8 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 public class HTTPServer {
     // 开启服务
     public void start(final int port) {
-        EventLoopGroup bossGroup = new EpollEventLoopGroup(1);
-        EventLoopGroup workGroup = new EpollEventLoopGroup(8);
+        EventLoopGroup bossGroup = new EpollEventLoopGroup(COMMON.HTTPSERVER_BOSS_THREAD);
+        EventLoopGroup workGroup = new EpollEventLoopGroup(COMMON.HTTPSERVER_WORK_THREAD);
         ServerBootstrap bootstrap = new ServerBootstrap();
         try {
             bootstrap.group(bossGroup, workGroup)

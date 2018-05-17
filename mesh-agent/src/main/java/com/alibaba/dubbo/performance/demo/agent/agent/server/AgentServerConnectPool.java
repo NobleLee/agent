@@ -21,9 +21,9 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 public class AgentServerConnectPool {
 
     // 接收client连接的线程
-    EventLoopGroup bossGroup = new EpollEventLoopGroup(1);
+    EventLoopGroup bossGroup = new EpollEventLoopGroup(COMMON.AGENTSERVER_BOSS_THREAD);
     // 工作处理线程
-    EventLoopGroup workerGroup = new EpollEventLoopGroup(4);
+    EventLoopGroup workerGroup = new EpollEventLoopGroup(COMMON.AGENTSERVER_WORK_THREAD);
     // 辅助对象
     ServerBootstrap serverBootstrap = new ServerBootstrap();
 

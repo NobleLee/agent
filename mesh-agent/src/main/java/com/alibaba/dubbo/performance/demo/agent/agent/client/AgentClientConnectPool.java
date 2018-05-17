@@ -84,7 +84,7 @@ public class AgentClientConnectPool {
     // 对每一个endpoint节点都创建一个通道
     private boolean putServers(List<Endpoint> endpoints) throws Exception {
         for (Endpoint endpoint : endpoints) {
-            ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), 4,
+            ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD,
                     new ChannelInitializer<EpollSocketChannel>() {
                         ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 

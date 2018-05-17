@@ -28,7 +28,7 @@ public class RpcClient {
 
     private RpcClient() {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
-                4, new RpcClientInitializer());
+                COMMON.DUBBO_CLIENT_THREAD, new RpcClientInitializer());
     }
 
     private static RpcClient instance;
