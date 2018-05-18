@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -69,6 +70,8 @@ public class AgentClientConnectPool {
         return instance;
     }
 
+    Random r = new Random(1);
+
 
     private AgentClientConnectPool() {
     }
@@ -81,11 +84,13 @@ public class AgentClientConnectPool {
      * @throws Exception
      */
     public void sendToServer(ByteBuf buf, Channel channel) throws Exception {
-      //  ByteBufUtils.printStringln(buf, "");
+        //  ByteBufUtils.printStringln(buf, "");
         if (buf.readableBytes() < 136) return;
         // 将请求的id写入ByteBuf
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
-        long id = requestId.getAndIncrement();
+
+        // long id = requestId.getAndIncrement();
+        long id = System.currentTimeMillis() << 32 | r.nextInt(Integer.MAX_VALUE);
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
         // 写入请求id

@@ -88,7 +88,6 @@ public class Bytes {
     }
 
 
-
     private Bytes() {
     }
 
@@ -161,5 +160,15 @@ public class Bytes {
                 ((b[off + 2] & 0xFFL) << 40) +
                 ((b[off + 1] & 0xFFL) << 48) +
                 (((long) b[off + 0]) << 56);
+    }
+
+    /**
+     * to kong value.
+     *
+     * @param h high 4 byte.
+     * @param l low 4 byte.
+     */
+    public static long longfromTwonum(long h, int l) {
+        return h << 32 | l;
     }
 }
