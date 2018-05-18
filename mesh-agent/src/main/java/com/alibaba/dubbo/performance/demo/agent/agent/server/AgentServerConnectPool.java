@@ -31,13 +31,14 @@ public class AgentServerConnectPool {
     ServerBootstrap serverBootstrap = new ServerBootstrap();
 
     int port;
+    private ChannelFuture channelFuture;
 
     public AgentServerConnectPool(int port) {
         this.port = port;
     }
 
     // server init
-    public void init() {
+    public AgentServerConnectPool init() {
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -55,11 +56,21 @@ public class AgentServerConnectPool {
                 });
 
         try {
-
             ChannelFuture f = serverBootstrap.bind(port).sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return this;
 
+    }
 
-            f.channel().closeFuture().sync();
+    /**
+     * 监听事件关闭
+     */
+    public void bindSync() {
+        try {
+
+            channelFuture.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -68,7 +79,6 @@ public class AgentServerConnectPool {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-
     }
 
 

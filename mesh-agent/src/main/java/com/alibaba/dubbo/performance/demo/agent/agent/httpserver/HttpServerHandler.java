@@ -21,7 +21,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private static AgentClientConnectPool agentClientConnectPool = AgentClientConnectPool.getInstance();
 
-
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         //400

@@ -1,13 +1,10 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.server;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 描述:
@@ -17,7 +14,6 @@ import org.slf4j.LoggerFactory;
  * @create 2018-05-05 下午8:44
  */
 public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> {
-    private static Logger logger = LoggerFactory.getLogger(AgentServerRpcHandler.class);
 
     private static RpcClient rpcClient = RpcClient.getInstance();
 
@@ -37,6 +33,5 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         channel = ctx.channel();
-        logger.info("get client connected!");
     }
 }

@@ -1,15 +1,22 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.tools.IpHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import com.coreos.jetcd.Client;
 import com.coreos.jetcd.KV;
 import com.coreos.jetcd.Lease;
 import com.coreos.jetcd.Watch;
 import com.coreos.jetcd.data.ByteSequence;
+import com.coreos.jetcd.data.KeyValue;
 import com.coreos.jetcd.kv.GetResponse;
 import com.coreos.jetcd.options.GetOption;
 import com.coreos.jetcd.options.PutOption;
+import com.coreos.jetcd.options.WatchOption;
+import com.coreos.jetcd.watch.WatchEvent;
+import com.google.common.collect.Lists;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +32,7 @@ public class EtcdRegistry implements IRegistry {
     // 添加watch，在本地内存缓存地址列表，可减少网络调用的次数
     // 使用的是简单的随机负载均衡，如果provider性能不一致，随机策略会影响性能
     private final String rootPath = "dubbomesh";
+    private Client client;
     private Lease lease;
     private KV kv;
     private long leaseId;
@@ -45,30 +53,21 @@ public class EtcdRegistry implements IRegistry {
 
     // 获取监听内容
     private EtcdRegistry(String registryAddress) {
-        Client client = Client.builder().endpoints(registryAddress).build();
-        Watch.Watcher watch = client.getWatchClient().watch(ByteSequence.fromString(COMMON.ServiceName));
-
-        this.lease = client.getLeaseClient();
+        this.client = Client.builder().endpoints(registryAddress).build();
         this.kv = client.getKVClient();
-        try {
-            this.leaseId = lease.grant(10).get().getID();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    }
 
-        keepAlive();  // 对于consumer的agent，并不需要进行租期续约
 
+    public void leaseOrWatch(String service) {
         String type = System.getProperty("type");   // 获取type参数
         if ("provider".equals(type)) {
-            // 如果是provider，去etcd注册服务
-            try {
-                int port = Integer.valueOf(System.getProperty("server.port"));
-                register(COMMON.ServiceName, port);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            keepAlive();  // 对于consumer的agent，并不需要进行租期续约
+        } else {
+            // 监听key过期和服务
+            watch(MessageFormat.format("/{0}/{1}", rootPath,service));
         }
     }
+
 
     // 向ETCD中注册服务
     public void register(String serviceName, int port) throws Exception {
@@ -80,8 +79,52 @@ public class EtcdRegistry implements IRegistry {
         logger.info("Register a new service at:" + strKey);
     }
 
+    // 监控key的变化
+    public void watch(String watchkey) {
+        Watch watchClient = client.getWatchClient();
+        Watch.Watcher watch = watchClient.watch(ByteSequence.fromString(watchkey), WatchOption.newBuilder().withPrefix(ByteSequence.fromString(watchkey)).build());
+        // 启动时首先进行服务发现，然后再进行监控
+        find(COMMON.ServiceName);
+        // 对服务进行监听
+        new Thread(() -> {
+            while (true) {
+                try {
+                    System.err.println("watching.....");
+                    for (WatchEvent event : watch.listen().getEvents()) {
+                        KeyValue kv = event.getKeyValue();
+                        logger.info("get etcd change message, action:" + event.getEventType() + " key: " + kv.getKey().toStringUtf8() + " value" + kv.getValue().toStringUtf8());
+                        // 如果是删除操作
+                        if (WatchEvent.EventType.DELETE.equals(event.getEventType())) {
+                            String key = kv.getKey().toStringUtf8();
+                            List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(key));
+                            AgentClientConnectPool.deleteServers(endpoints);
+                            logger.info("delete complete!");
+                        } else if (WatchEvent.EventType.PUT.equals(event.getEventType())) {
+                            // 如果是加入操作
+                            String key = kv.getKey().toStringUtf8();
+                            List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(key));
+                            AgentClientConnectPool.putServers(endpoints);
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        ).start();
+    }
+
     // 发送心跳到ETCD,表明该host是活着的
     public void keepAlive() {
+        this.lease = client.getLeaseClient();
+        try {
+            this.leaseId = lease.grant(30).get().getID();
+            // 如果是provider，去etcd注册服务
+            int port = Integer.valueOf(System.getProperty("server.port"));
+            register(COMMON.ServiceName, port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Executors.newSingleThreadExecutor().submit(
                 () -> {
                     try {
@@ -95,24 +138,36 @@ public class EtcdRegistry implements IRegistry {
         );
     }
 
-    public List<Endpoint> find(String serviceName) throws Exception {
-
-        String strKey = MessageFormat.format("/{0}/{1}", rootPath, serviceName);
-        ByteSequence key = ByteSequence.fromString(strKey);
-        GetResponse response = kv.get(key, GetOption.newBuilder().withPrefix(key).build()).get();
-
-        List<Endpoint> endpoints = new ArrayList<>();
-
-        for (com.coreos.jetcd.data.KeyValue kv : response.getKvs()) {
-            String s = kv.getKey().toStringUtf8();
-            int index = s.lastIndexOf("/");
-            String endpointStr = s.substring(index + 1, s.length());
-
-            String host = endpointStr.split(":")[0];
-            int port = Integer.valueOf(endpointStr.split(":")[1]);
-
-            endpoints.add(new Endpoint(host, port));
+    // 发现查找服务
+    public void find(String serviceName) {
+        try {
+            String strKey = MessageFormat.format("/{0}/{1}", rootPath, serviceName);
+            ByteSequence key = ByteSequence.fromString(strKey);
+            GetResponse response = kv.get(key, GetOption.newBuilder().withPrefix(key).build()).get();
+            List<Endpoint> endpoints = new ArrayList<>();
+            for (com.coreos.jetcd.data.KeyValue kv : response.getKvs()) {
+                endpoints.add(getEndpointFromStr(kv.getKey().toStringUtf8()));
+            }
+            AgentClientConnectPool.putServers(endpoints);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return endpoints;
+
+    }
+
+
+    /**
+     *   从字符串构造Endpoint
+     *
+     * @param key
+     * @return
+     */
+    private Endpoint getEndpointFromStr(String key) {
+        int index = key.lastIndexOf("/");
+        String endpointStr = key.substring(index + 1, key.length());
+
+        String host = endpointStr.split(":")[0];
+        int port = Integer.valueOf(endpointStr.split(":")[1]);
+        return new Endpoint(host, port);
     }
 }

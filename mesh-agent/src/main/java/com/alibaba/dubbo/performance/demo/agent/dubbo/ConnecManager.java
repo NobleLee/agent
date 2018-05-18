@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -12,9 +13,14 @@ import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.sctp.nio.NioSctpChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
+    private static Logger logger = LoggerFactory.getLogger(AgentServerRpcHandler.class);
+
+
     private EventLoopGroup eventLoopGroup;
 
     private Bootstrap bootstrap;
@@ -26,30 +32,26 @@ public class ConnecManager {
 
 
     public ConnecManager(String host, int port, int nThread, ChannelInitializer<NioSocketChannel> initializer) {
+        logger.info("new connect to " + host + ":" + port);
         eventLoopGroup = new NioEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
-        initBootstrap(initializer);
+        bootstrap = initBootstrap(initializer);
+        try {
+            logger.info("get channel!");
+            channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        logger.info("connected " + host + ":" + port);
     }
 
-    public Channel getChannel() throws Exception {
-        if (null != channel) {
-            return channel;
-        }
-
-        if (null == channel) {
-            synchronized (lock) {
-                if (null == channel) {
-                    channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
-                }
-            }
-        }
-
+    public Channel getChannel() {
         return channel;
     }
 
-    public void initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
-
-        bootstrap = new Bootstrap()
+    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
+        logger.info("init bootstrap....");
+        return bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
