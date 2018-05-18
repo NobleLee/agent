@@ -40,8 +40,15 @@ public class AgentClientConnectPool {
 
     private static Logger logger = LoggerFactory.getLogger(AgentClientConnectPool.class);
 
-    public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
-    public static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
+    //public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
+    public static List<ConcurrentHashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
+
+    static {
+        for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
+            requestList.add(new ConcurrentHashMap<>());
+        }
+    }
+
     // key 节点 value 通道
     private static HashMap<Endpoint, Channel> channelMap = new HashMap<>();
     // 连接节点数
@@ -74,7 +81,7 @@ public class AgentClientConnectPool {
      * @throws Exception
      */
     public void sendToServer(ByteBuf buf, Channel channel) throws Exception {
-        ByteBufUtils.printStringln(buf, "");
+      //  ByteBufUtils.printStringln(buf, "");
         if (buf.readableBytes() < 136) return;
         // 将请求的id写入ByteBuf
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
@@ -110,7 +117,7 @@ public class AgentClientConnectPool {
         response.content().writeBytes(buf);
         // 发送请求数据
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
-        ChannelFuture channelFuture = requestList.get((int)requestId%COMMON.HTTPSERVER_WORK_THREAD).
+        ChannelFuture channelFuture = requestList.get((int) requestId % COMMON.HTTPSERVER_WORK_THREAD).
                 remove(requestId).writeAndFlush(response);
 
         channelFuture.addListener(ChannelFutureListener.CLOSE);
