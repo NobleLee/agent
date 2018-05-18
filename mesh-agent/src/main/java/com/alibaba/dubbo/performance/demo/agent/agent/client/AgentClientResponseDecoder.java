@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -25,6 +24,8 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
     private static Logger logger = LoggerFactory.getLogger(AgentClientResponseDecoder.class);
 
+    AgentClientConnectPool agentClientConnectPool = AgentClientConnectPool.getInstance();
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
@@ -36,17 +37,7 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
         ByteBuf in = (ByteBuf) msg;
         try {
             if (in.readableBytes() < 8) return;
-            // 获取请求id
-            long requestId = in.readLong();
-            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-            response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-            response.content().writeBytes(in);
-            // 发送请求数据
-            ChannelFuture channelFuture = AgentClientConnectPool
-                    .requestHolderMap
-                    .remove(requestId)
-                    .writeAndFlush(response);
-            channelFuture.addListener(ChannelFutureListener.CLOSE);
+            agentClientConnectPool.response(in);
         } finally {
             in.release();
         }

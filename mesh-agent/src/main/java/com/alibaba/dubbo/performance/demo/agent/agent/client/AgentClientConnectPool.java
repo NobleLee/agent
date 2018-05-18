@@ -14,6 +14,10 @@ import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
  * 描述: 用于管理agent之间的连接
@@ -35,14 +41,13 @@ public class AgentClientConnectPool {
     private static Logger logger = LoggerFactory.getLogger(AgentClientConnectPool.class);
 
     public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
+    public static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
     // key 节点 value 通道
     private static HashMap<Endpoint, Channel> channelMap = new HashMap<>();
     // 连接节点数
     private static List<Endpoint> endpoints = new ArrayList<>(); //之后可以考虑把初始化的过程放到前面
     // 附带请求id
     private static AtomicLong requestId = new AtomicLong(1);
-
-    private EndpointHelper endpointHelper = EndpointHelper.getInstance();
 
     private static AgentClientConnectPool instance;
 
@@ -61,7 +66,13 @@ public class AgentClientConnectPool {
     private AgentClientConnectPool() {
     }
 
-    // 发送消息 还是有多个连接
+    /**
+     * 生成请求header，将http链接放到map中
+     *
+     * @param buf
+     * @param channel
+     * @throws Exception
+     */
     public void sendToServer(ByteBuf buf, Channel channel) throws Exception {
         ByteBufUtils.printStringln(buf, "");
         if (buf.readableBytes() < 136) return;
@@ -77,12 +88,34 @@ public class AgentClientConnectPool {
         // 写入消息体
         buffer.writeBytes(buf);
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
-        requestHolderMap.put(Long.valueOf(id), channel);
+        // TODO 更改成数组 hashmap 避免锁竞争
+        // requestHolderMap.put(Long.valueOf(id), channel);
+        requestList.get((int) id % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
-        channelMap.get(endpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
-
+        channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
     }
+
+    /**
+     * 将接收到的agent response返回
+     *
+     * @param buf
+     */
+    public void response(ByteBuf buf) {
+        // 获取请求id
+        long requestId = buf.readLong();
+        // 封装返回response
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.content().writeBytes(buf);
+        // 发送请求数据
+        // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
+        ChannelFuture channelFuture = requestList.get((int)requestId%COMMON.HTTPSERVER_WORK_THREAD).
+                remove(requestId).writeAndFlush(response);
+
+        channelFuture.addListener(ChannelFutureListener.CLOSE);
+    }
+
 
     /**
      * 对每一个endpoint节点都创建一个通道
@@ -93,7 +126,7 @@ public class AgentClientConnectPool {
      */
     public static boolean putServers(List<Endpoint> endpoints) {
         // TODO  应该加锁
-        //  LOCK.AgentChannelLock = true;
+        LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
             if (!channelMap.containsKey(endpoint)) {
                 logger.info("prepare connect server：" + endpoint.toString());
@@ -115,7 +148,7 @@ public class AgentClientConnectPool {
                 logger.info("the channel exist!; endpoint: " + endpoint.toString());
             }
         }
-        //    LOCK.AgentChannelLock = false;
+        LOCK.AgentChannelLock = false;
         return true;
     }
 
@@ -128,7 +161,7 @@ public class AgentClientConnectPool {
      */
     public static boolean deleteServers(List<Endpoint> endpoints) {
         // TODO 应该加锁
-        //    LOCK.AgentChannelLock = true;
+        LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
             if (AgentClientConnectPool.channelMap.containsKey(endpoint)) {
                 Channel removeChannel = AgentClientConnectPool.channelMap.remove(endpoint);
@@ -139,7 +172,7 @@ public class AgentClientConnectPool {
                 logger.info("the delete chanel don't exist!; endpoint: " + endpoint.toString());
             }
         }
-        //    LOCK.AgentChannelLock = false;
+        LOCK.AgentChannelLock = false;
         return true;
     }
 }

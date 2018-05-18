@@ -55,14 +55,19 @@ public class EtcdRegistry implements IRegistry {
     private EtcdRegistry(String registryAddress) {
         this.client = Client.builder().endpoints(registryAddress).build();
         this.kv = client.getKVClient();
+    }
+
+
+    public void leaseOrWatch(String service) {
         String type = System.getProperty("type");   // 获取type参数
         if ("provider".equals(type)) {
             keepAlive();  // 对于consumer的agent，并不需要进行租期续约
         } else {
             // 监听key过期和服务
-            watch(MessageFormat.format("/{0}/{1}", rootPath, COMMON.ServiceName));
+            watch(MessageFormat.format("/{0}/{1}", rootPath,service));
         }
     }
+
 
     // 向ETCD中注册服务
     public void register(String serviceName, int port) throws Exception {

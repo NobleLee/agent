@@ -1,8 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerConnectPool;
-import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 
 
@@ -16,11 +16,17 @@ public class AgentApp {
     public static void main(String[] args) {
 
         if (System.getProperty("type").equals("consumer")) {
-            EndpointHelper.getInstance();
+            // 开启监听etcd服务
+            EtcdRegistry.etcdFactory(System.getProperty("etcd.url")).leaseOrWatch(COMMON.ServiceName);
+            // 开启http服务
             new HTTPServer().start(Integer.parseInt(System.getProperty("server.port")));
         } else {
-            EtcdRegistry.etcdFactory(System.getProperty("etcd.url"));
-            new AgentServerConnectPool(Integer.parseInt(System.getProperty("server.port"))).init();
+            // 开启provider agent服务
+            AgentServerConnectPool agentServer = new AgentServerConnectPool(Integer.parseInt(System.getProperty("server.port"))).init();
+            // 注册服务
+            EtcdRegistry.etcdFactory(System.getProperty("etcd.url")).leaseOrWatch(COMMON.ServiceName);
+            // 监听事件关闭
+            agentServer.bindSync();
         }
     }
 }
