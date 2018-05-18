@@ -51,7 +51,7 @@ public class EtcdRegistry implements IRegistry {
         this.lease = client.getLeaseClient();
         this.kv = client.getKVClient();
         try {
-            this.leaseId = lease.grant(30).get().getID();
+            this.leaseId = lease.grant(10).get().getID();
         } catch (Exception e) {
             e.printStackTrace();
         }

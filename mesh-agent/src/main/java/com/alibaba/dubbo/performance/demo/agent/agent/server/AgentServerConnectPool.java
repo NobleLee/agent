@@ -57,6 +57,8 @@ public class AgentServerConnectPool {
         try {
 
             ChannelFuture f = serverBootstrap.bind(port).sync();
+
+
             f.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {
