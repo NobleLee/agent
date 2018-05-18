@@ -10,6 +10,7 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
@@ -36,7 +37,6 @@ public class AgentServerConnectPool {
     public AgentServerConnectPool(int port) {
         this.port = port;
     }
-
     // server init
     public AgentServerConnectPool init() {
         serverBootstrap.group(bossGroup, workerGroup)
@@ -44,11 +44,11 @@ public class AgentServerConnectPool {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new ChannelInitializer<NioSocketChannel>() {
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                     @Override
-                    protected void initChannel(NioSocketChannel sc) throws Exception {
+                    protected void initChannel(SocketChannel sc)  {
                         ChannelPipeline pipeline = sc.pipeline();
                         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                         pipeline.addLast(new AgentServerRpcHandler());
@@ -56,7 +56,7 @@ public class AgentServerConnectPool {
                 });
 
         try {
-            ChannelFuture f = serverBootstrap.bind(port).sync();
+            channelFuture = serverBootstrap.bind(port).sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -69,9 +69,7 @@ public class AgentServerConnectPool {
      */
     public void bindSync() {
         try {
-
             channelFuture.channel().closeFuture().sync();
-
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
