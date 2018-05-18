@@ -29,8 +29,10 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
 
         // TCP 拆包问题  //将ctx上下文放到一个map中，最后根据id，返回给相应的客户端
         if (msg.readableBytes() < 9) return;
-       // System.err.println(msg.copy().toString(Charsets.UTF_8));
-        rpcClient.sendDubbo(msg);
+        // System.err.println(msg.copy().toString(Charsets.UTF_8));
+        //rpcClient.sendDubbo(msg);
+        rpcClient.sendDubboDirect(msg);
+
     }
 
 

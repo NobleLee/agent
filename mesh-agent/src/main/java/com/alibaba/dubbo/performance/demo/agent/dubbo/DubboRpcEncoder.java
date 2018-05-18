@@ -1,10 +1,12 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
@@ -70,6 +72,18 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
 
         JsonUtils.writeBytes(inv.getArguments(), writer);
         JsonUtils.writeObject(inv.getAttachments(), writer);
+    }
+
+    public static ByteBuf directSend(ByteBuf buf) {
+        Bytes.long2bytes(buf.readLong(), header, 4);
+        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
+        Bytes.int2bytes(len, header, 12);
+        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len + HEADER_LENGTH);
+        byteBuf.writeBytes(header);
+        byteBuf.writeBytes(COMMON.Request.dubbo_msg_first);
+        byteBuf.writeBytes(buf);
+        byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
+        return byteBuf;
     }
 
 }

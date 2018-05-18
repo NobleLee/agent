@@ -32,6 +32,9 @@ public class COMMON {
         public static final String interfacename = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
         public static final String method = "hash";
         public static final String parameterTypesString = "Ljava/lang/String;";
+        // 定死消息体
+        public static final byte[] dubbo_msg_first = "\"2.0.1\"\n\"com.alibaba.dubbo.performance.demo.provider.IHelloService\"\nnull\n\"hash\"\n\"Ljava/lang/String;\"\n\"".getBytes();
+        public static final byte[] dubbo_msg_last = "\"\n{\"path\":\"com.alibaba.dubbo.performance.demo.provider.IHelloService\"}".getBytes();
     }
 
 

@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
@@ -41,7 +42,7 @@ public class RpcClient {
             protected void initChannel(NioSocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
-                pipeline.addLast(new DubboRpcEncoder());
+               // pipeline.addLast(new DubboRpcEncoder());
                 pipeline.addLast(new DubboRpcDecoder());
             }
         });
@@ -75,7 +76,6 @@ public class RpcClient {
         send(dubboRequest);
     }
 
-
     public void send(DubboRequest request) {
         Channel channel = null;
         try {
@@ -108,6 +108,22 @@ public class RpcClient {
         request.setTwoWay(true);
         request.setData(invocation);
         return request;
+    }
+
+    /**
+     *  直接将请求发送Dubbo
+     * @param buf
+     */
+    public void sendDubboDirect(ByteBuf buf){
+        Channel channel = null;
+        try {
+            channel = connectManager.getChannel();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
+       // ByteBufUtils.printStringln(byteBuf,16,"");
+        channel.writeAndFlush(byteBuf);
     }
 
 }

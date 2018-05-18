@@ -20,8 +20,9 @@ public class ByteBufUtils {
         System.err.println(str + Arrays.toString(bytes));
     }
 
-    public static void printStringln(ByteBuf buf, String str) {
+    public static void printStringln(ByteBuf buf, int skip, String str) {
         ByteBuf copy = buf.copy();
+        copy.skipBytes(skip);
         byte[] bytes = new byte[copy.readableBytes()];
         copy.readBytes(bytes);
         System.err.println(str + new String(bytes));
