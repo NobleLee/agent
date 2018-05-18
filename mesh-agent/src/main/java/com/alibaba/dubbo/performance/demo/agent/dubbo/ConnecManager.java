@@ -26,7 +26,6 @@ public class ConnecManager {
     private Bootstrap bootstrap;
 
     private Channel channel;
-    private Object lock = new Object();
 
     private Endpoint endpoint;
 
