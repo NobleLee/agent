@@ -8,10 +8,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.sctp.nio.NioSctpChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +16,6 @@ import org.slf4j.LoggerFactory;
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
     private static Logger logger = LoggerFactory.getLogger(AgentServerRpcHandler.class);
-
 
     private EventLoopGroup eventLoopGroup;
 
