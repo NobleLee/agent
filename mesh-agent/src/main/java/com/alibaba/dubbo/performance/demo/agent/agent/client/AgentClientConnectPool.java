@@ -90,7 +90,7 @@ public class AgentClientConnectPool {
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
 
         // long id = requestId.getAndIncrement();
-        long id = requestId.getAndIncrement();//System.currentTimeMillis() << 32 | r.nextInt(Integer.MAX_VALUE);
+        long id = System.currentTimeMillis() << 32 | r.nextInt(Integer.MAX_VALUE);
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
         // 写入请求id
