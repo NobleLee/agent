@@ -2,7 +2,9 @@ package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
@@ -27,6 +29,10 @@ public class HTTPServer {
         try {
             bootstrap.group(bossGroup, workGroup)
                     .channel(NioServerSocketChannel.class)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .option(ChannelOption.SO_BACKLOG, COMMON.BACK_LOG)
+                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .childHandler(new HttpChannelInitializer());
 
             ChannelFuture future = bootstrap.bind("localhost", port).sync();
