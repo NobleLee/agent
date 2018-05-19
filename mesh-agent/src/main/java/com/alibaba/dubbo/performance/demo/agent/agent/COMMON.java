@@ -24,6 +24,9 @@ public class COMMON {
     // dubbo client
     public static final int DUBBO_CLIENT_THREAD = 8;
 
+    // socket
+    public static final int BACK_LOG = 256;
+
 
     /**
      * 一个请求中公共的字段
