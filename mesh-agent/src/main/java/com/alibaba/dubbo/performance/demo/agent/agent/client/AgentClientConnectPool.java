@@ -134,8 +134,6 @@ public class AgentClientConnectPool {
             ChannelFuture channelFuture = remove.writeAndFlush(response);
             channelFuture.addListener(ChannelFutureListener.CLOSE);
         }
-
-
     }
 
 
@@ -153,11 +151,11 @@ public class AgentClientConnectPool {
             if (!channelMap.containsKey(endpoint)) {
                 logger.info("prepare connect server：" + endpoint.toString());
                 ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD,
-                        new ChannelInitializer<EpollSocketChannel>() {
+                        new ChannelInitializer<NioSocketChannel>() {
                             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                             @Override
-                            protected void initChannel(EpollSocketChannel ch) {
+                            protected void initChannel(NioSocketChannel ch) {
                                 ChannelPipeline pipeline = ch.pipeline();
                                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                                 pipeline.addLast(new AgentClientResponseDecoder());
