@@ -9,6 +9,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, ChannelInitializer<NioSocketChannel> initializer) {
+    public ConnecManager(String host, int port, int nThread, ChannelInitializer<EpollSocketChannel> initializer) {
         logger.info("new connect to " + host + ":" + port);
         eventLoopGroup = new NioEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
@@ -45,14 +46,14 @@ public class ConnecManager {
         return channel;
     }
 
-    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
+    public Bootstrap initBootstrap(ChannelInitializer<EpollSocketChannel> initializer) {
         logger.info("init bootstrap....");
         return bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .channel(NioSocketChannel.class)
+                .channel(EpollSocketChannel.class)
                 .handler(initializer);
     }
 }
