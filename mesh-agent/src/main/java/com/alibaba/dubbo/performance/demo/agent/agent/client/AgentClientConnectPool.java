@@ -122,10 +122,14 @@ public class AgentClientConnectPool {
         response.content().writeBytes(buf);
         // 发送请求数据
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
-        ChannelFuture channelFuture = requestList.get((int) requestId % COMMON.HTTPSERVER_WORK_THREAD).
-                remove(requestId).writeAndFlush(response);
+        Channel remove = requestList.get((int) requestId % COMMON.HTTPSERVER_WORK_THREAD).
+                remove(requestId);
+        if (remove.isActive()) {
+            ChannelFuture channelFuture = remove.writeAndFlush(response);
+            channelFuture.addListener(ChannelFutureListener.CLOSE);
+        }
 
-        channelFuture.addListener(ChannelFutureListener.CLOSE);
+
     }
 
 
