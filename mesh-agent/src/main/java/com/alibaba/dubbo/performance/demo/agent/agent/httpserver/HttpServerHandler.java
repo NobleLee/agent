@@ -29,8 +29,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
             return;
         }
        // System.err.println(request.content().copy().toString(Charsets.UTF_8));
-        //agentClientConnectPool.sendToServer(request.content(), ctx.channel());
-        agentClientConnectPool.responseTest(request.content(), ctx.channel());
+        agentClientConnectPool.sendToServer(request.content(), ctx.channel());
+        //agentClientConnectPool.responseTest(request.content(), ctx.channel());
     }
 
     private static void sendError(ChannelHandlerContext ctx,

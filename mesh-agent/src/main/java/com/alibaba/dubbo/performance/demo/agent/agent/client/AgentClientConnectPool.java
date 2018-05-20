@@ -158,7 +158,7 @@ public class AgentClientConnectPool {
             ChannelFuture channelFuture = channel.writeAndFlush(response);
             channelFuture.addListener(ChannelFutureListener.CLOSE);
            // System.err.println("send back!" + hashcode);
-        }, 10, TimeUnit.MILLISECONDS);
+        }, 50, TimeUnit.MILLISECONDS);
     }
 
 
