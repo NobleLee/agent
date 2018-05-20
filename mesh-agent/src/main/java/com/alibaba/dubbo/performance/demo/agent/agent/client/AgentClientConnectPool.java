@@ -7,6 +7,7 @@ import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
+import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -91,9 +92,9 @@ public class AgentClientConnectPool {
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
 
         // long id = requestId.getAndIncrement();
-        byte index = (byte)(Thread.currentThread().getId()%COMMON.HTTPSERVER_WORK_THREAD);
+        byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
         long id = System.currentTimeMillis() << 40 | r.nextInt(Integer.MAX_VALUE) << 8 | index;
-       // System.err.println("request:" + index +" thread id:" + Thread.currentThread().getId() + " id:" +Long.toHexString(id));
+        // System.err.println("request:" + index +" thread id:" + Thread.currentThread().getId() + " id:" +Long.toHexString(id));
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
         // 写入请求id
@@ -108,7 +109,8 @@ public class AgentClientConnectPool {
         requestList.get(index % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
-        channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
+        ChannelFuture channelFuture = channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
+        // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
 
     /**
@@ -125,7 +127,7 @@ public class AgentClientConnectPool {
         response.content().writeBytes(buf);
 
         byte index = (byte) (requestId & 0xFFL);
-       // System.err.println("response: " + index + " id:" + Long.toHexString(requestId));
+        // System.err.println("response: " + index + " id:" + Long.toHexString(requestId));
         // 发送请求数据
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
         Channel remove = requestList.get(index).
@@ -134,6 +136,29 @@ public class AgentClientConnectPool {
             ChannelFuture channelFuture = remove.writeAndFlush(response);
             channelFuture.addListener(ChannelFutureListener.CLOSE);
         }
+    }
+
+    /**
+     * 直接睡眠将结果返回
+     *
+     * @param buf
+     * @param channel
+     */
+
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
+
+    public void responseTest(ByteBuf buf, Channel channel) {
+        buf.skipBytes(136);
+        String hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode());
+
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.content().writeBytes(hashcode.getBytes());
+        executorService.schedule(() -> {
+            ChannelFuture channelFuture = channel.writeAndFlush(response);
+            channelFuture.addListener(ChannelFutureListener.CLOSE);
+           // System.err.println("send back!" + hashcode);
+        }, 10, TimeUnit.MILLISECONDS);
     }
 
 
