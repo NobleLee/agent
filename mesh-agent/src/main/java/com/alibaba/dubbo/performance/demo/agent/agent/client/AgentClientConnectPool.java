@@ -145,21 +145,21 @@ public class AgentClientConnectPool {
      * @param channel
      */
 
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
-
-    public void responseTest(ByteBuf buf, Channel channel) {
-        buf.skipBytes(136);
-        String hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode());
-
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-        response.content().writeBytes(hashcode.getBytes());
-        executorService.schedule(() -> {
-            ChannelFuture channelFuture = channel.writeAndFlush(response);
-            channelFuture.addListener(ChannelFutureListener.CLOSE);
-           // System.err.println("send back!" + hashcode);
-        }, 50, TimeUnit.MILLISECONDS);
-    }
+//    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
+//
+//    public void responseTest(ByteBuf buf, Channel channel) {
+//        buf.skipBytes(136);
+//        String hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode());
+//
+//        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+//        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+//        response.content().writeBytes(hashcode.getBytes());
+//        executorService.schedule(() -> {
+//            ChannelFuture channelFuture = channel.writeAndFlush(response);
+//            channelFuture.addListener(ChannelFutureListener.CLOSE);
+//           // System.err.println("send back!" + hashcode);
+//        }, 50, TimeUnit.MILLISECONDS);
+//    }
 
 
     /**
