@@ -28,4 +28,9 @@ public class ByteBufUtils {
         System.err.println(str + new String(bytes));
 
     }
+
+    public static void printStringln(ByteBuf buf, String str) {
+        printStringln(buf, 0, str);
+
+    }
 }
