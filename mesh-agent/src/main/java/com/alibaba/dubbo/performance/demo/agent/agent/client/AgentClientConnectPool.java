@@ -28,6 +28,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
@@ -122,6 +123,7 @@ public class AgentClientConnectPool {
         // 封装返回response
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.headers().set(CONTENT_LENGTH, buf.readableBytes());
         response.content().writeBytes(buf);
 
         byte index = (byte) (requestId & 0xFFL);
@@ -132,7 +134,7 @@ public class AgentClientConnectPool {
                 remove(requestId);
         if (remove != null && remove.isActive()) {
             ChannelFuture channelFuture = remove.writeAndFlush(response);
-            channelFuture.addListener(ChannelFutureListener.CLOSE);
+           // channelFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
 
@@ -152,7 +154,7 @@ public class AgentClientConnectPool {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
         response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH,hashcode.length());
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, hashcode.length());
         response.content().writeBytes(hashcode.getBytes());
         executorService.schedule(() -> {
             ChannelFuture channelFuture = channel.writeAndFlush(response);
