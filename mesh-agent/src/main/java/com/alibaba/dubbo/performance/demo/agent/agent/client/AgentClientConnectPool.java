@@ -92,7 +92,7 @@ public class AgentClientConnectPool {
 
         // long id = requestId.getAndIncrement();
         byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
-        long id = System.currentTimeMillis() << 40 | ((long) r.nextInt(Integer.MAX_VALUE)) << 8 | index;
+        long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
         // System.err.println("request:" + index +" thread id:" + Thread.currentThread().getId() + " id:" +Long.toHexString(id));
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
@@ -126,7 +126,7 @@ public class AgentClientConnectPool {
         response.headers().set(CONTENT_LENGTH, buf.readableBytes());
         response.content().writeBytes(buf);
 
-        int index = (int) (requestId & 0xFF);
+        int index = (int) (requestId & 0x7);
         // System.err.println("response: " + index + " id:" + Long.toHexString(requestId));
         // 发送请求数据
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
