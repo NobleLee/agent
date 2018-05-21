@@ -30,7 +30,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        logger.error(connectCount.getAndIncrement() + " get consumer http connected!!!");
+      //  logger.error(connectCount.getAndIncrement() + " get consumer http connected!!!");
     }
 
     @Override
@@ -42,7 +42,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         }
         // System.err.println(request.content().copy().toString(Charsets.UTF_8));
         //agentClientConnectPool.sendToServer(request.content(), ctx.channel());
-        logger.info("the channel is "+ctx.channel().toString() +" the ctx name is "+ctx.name());
+      //  logger.info("the channel is "+ctx.channel().toString() +" the ctx name is "+ctx.name());
         agentClientConnectPool.sendToServer(request.content(), ctx.channel());
     }
 
