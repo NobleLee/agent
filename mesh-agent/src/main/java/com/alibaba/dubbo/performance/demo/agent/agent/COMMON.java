@@ -15,14 +15,14 @@ public class COMMON {
 
     // 作为HTTP server的线程配置
     public static final int HTTPSERVER_BOSS_THREAD = 2;
-    public static final int HTTPSERVER_WORK_THREAD = 8;
+    public static final int HTTPSERVER_WORK_THREAD = 200;
     // agent client
     public static final int AGENT_CLIENT_THREAD = 8;
     // agent server
     public static final int AGENTSERVER_BOSS_THREAD = 1;
-    public static final int AGENTSERVER_WORK_THREAD = 8;
+    public static final int AGENTSERVER_WORK_THREAD = 200;
     // dubbo client
-    public static final int DUBBO_CLIENT_THREAD = 8;
+    public static final int DUBBO_CLIENT_THREAD = 200;
 
     // socket
     public static final int BACK_LOG = 300;
