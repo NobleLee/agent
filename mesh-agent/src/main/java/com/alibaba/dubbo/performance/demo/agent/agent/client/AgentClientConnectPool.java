@@ -16,10 +16,7 @@ import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +27,7 @@ import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
@@ -132,7 +130,7 @@ public class AgentClientConnectPool {
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
         Channel remove = requestList.get(index).
                 remove(requestId);
-        if (remove!=null&&remove.isActive()) {
+        if (remove != null && remove.isActive()) {
             ChannelFuture channelFuture = remove.writeAndFlush(response);
             channelFuture.addListener(ChannelFutureListener.CLOSE);
         }
@@ -153,12 +151,12 @@ public class AgentClientConnectPool {
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH,hashcode.length());
         response.content().writeBytes(hashcode.getBytes());
-      //  executorService.schedule(() -> {
+        executorService.schedule(() -> {
             ChannelFuture channelFuture = channel.writeAndFlush(response);
-            channelFuture.addListener(ChannelFutureListener.CLOSE);
-           // System.err.println("send back!" + hashcode);
-      //  }, 50, TimeUnit.MILLISECONDS);
+        }, 50, TimeUnit.MILLISECONDS);
     }
 
 

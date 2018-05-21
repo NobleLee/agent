@@ -2,16 +2,14 @@ package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
@@ -21,21 +19,21 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     private ByteBuf groubleBuf;
     private int length;
 
+    private static AtomicInteger connectCount = new AtomicInteger(0);
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        logger.info("get consumer http connected!!!");
+        logger.error(connectCount.getAndIncrement() + " get consumer http connected!!!");
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf) msg;
-        ByteBufUtils.printStringln(buf, "get msg:\n");
+        logger.info("the channel is "+ctx.channel().toString() +" the ctx name is "+ctx.name());
         if (getBody(buf)) {
-            ByteBufUtils.printStringln(groubleBuf, "get complete:\n");
             agentClientConnectPool.responseTest(groubleBuf, ctx.channel());
         }
-
     }
 
 
@@ -51,7 +49,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
             }
             buf.skipBytes(i + 4);
 
-            buf.readBytes(groubleBuf,buf.readableBytes());
+            buf.readBytes(groubleBuf, buf.readableBytes());
             if (groubleBuf.readableBytes() == length) {
                 return true;
             }
