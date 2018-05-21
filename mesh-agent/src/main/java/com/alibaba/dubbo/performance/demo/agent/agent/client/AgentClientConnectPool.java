@@ -44,11 +44,14 @@ public class AgentClientConnectPool {
 
     //public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
     public static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
+    private static FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+
 
     static {
         for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
             requestList.add(new HashMap<>());
         }
+        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
     }
 
     // key 节点 value 通道
@@ -121,8 +124,7 @@ public class AgentClientConnectPool {
         // 获取请求id
         long requestId = buf.readLong();
         // 封装返回response
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+//        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_LENGTH, buf.readableBytes());
         response.content().writeBytes(buf);
 
