@@ -17,7 +17,7 @@ public class COMMON {
     public static final int HTTPSERVER_BOSS_THREAD = 2;
     public static final int HTTPSERVER_WORK_THREAD = 200;
     // agent client
-    public static final int AGENT_CLIENT_THREAD = 8;
+    public static final int AGENT_CLIENT_THREAD = 200;
     // agent server
     public static final int AGENTSERVER_BOSS_THREAD = 1;
     public static final int AGENTSERVER_WORK_THREAD = 200;
