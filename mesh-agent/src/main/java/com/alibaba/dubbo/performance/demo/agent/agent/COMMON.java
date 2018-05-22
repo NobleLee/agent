@@ -25,7 +25,7 @@ public class COMMON {
     public static final int DUBBO_CLIENT_THREAD = 8;
 
     // socket
-    public static final int BACK_LOG = 256;
+    public static final int BACK_LOG = 1024;
 
 
     /**
