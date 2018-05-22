@@ -46,11 +46,11 @@ public class RpcClient {
 
     private RpcClient() {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
-                COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<EpollDomainSocketChannel>() {
+                COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<NioSocketChannel>() {
             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
             @Override
-            protected void initChannel(EpollDomainSocketChannel ch) {
+            protected void initChannel(NioSocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                 // pipeline.addLast(new DubboRpcEncoder());

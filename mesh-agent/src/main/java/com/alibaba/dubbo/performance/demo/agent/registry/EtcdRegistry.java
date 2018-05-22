@@ -60,11 +60,12 @@ public class EtcdRegistry implements IRegistry {
 
     public void leaseOrWatch(String service) {
         String type = System.getProperty("type");   // 获取type参数
+        logger.info("start type: " + type);
         if ("provider".equals(type)) {
             keepAlive();  // 对于consumer的agent，并不需要进行租期续约
         } else {
             // 监听key过期和服务
-            watch(MessageFormat.format("/{0}/{1}", rootPath,service));
+            watch(MessageFormat.format("/{0}/{1}", rootPath, service));
         }
     }
 
@@ -72,6 +73,7 @@ public class EtcdRegistry implements IRegistry {
     // 向ETCD中注册服务
     public void register(String serviceName, int port) throws Exception {
         // 服务注册的key为:    /dubbomesh/com.some.package.IHelloService/192.168.100.100:2000
+        logger.info("try to register a new endpoint.....");
         String strKey = MessageFormat.format("/{0}/{1}/{2}:{3}", rootPath, serviceName, IpHelper.getHostIp(), String.valueOf(port));
         ByteSequence key = ByteSequence.fromString(strKey);
         ByteSequence val = ByteSequence.fromString("");     // 目前只需要创建这个key,对应的value暂不使用,先留空
@@ -89,7 +91,7 @@ public class EtcdRegistry implements IRegistry {
         new Thread(() -> {
             while (true) {
                 try {
-                    System.err.println("watching.....");
+                    logger.info("watching etcd service ....");
                     for (WatchEvent event : watch.listen().getEvents()) {
                         KeyValue kv = event.getKeyValue();
                         logger.info("get etcd change message, action:" + event.getEventType() + " key: " + kv.getKey().toStringUtf8() + " value" + kv.getValue().toStringUtf8());
@@ -123,7 +125,7 @@ public class EtcdRegistry implements IRegistry {
             int port = Integer.valueOf(System.getProperty("server.port"));
             register(COMMON.ServiceName, port);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getStackTrace().toString());
         }
         Executors.newSingleThreadExecutor().submit(
                 () -> {
@@ -152,7 +154,6 @@ public class EtcdRegistry implements IRegistry {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 

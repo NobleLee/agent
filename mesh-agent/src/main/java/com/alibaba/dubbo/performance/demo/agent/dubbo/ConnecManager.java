@@ -30,9 +30,9 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, ChannelInitializer<EpollDomainSocketChannel> initializer) {
+    public ConnecManager(String host, int port, int nThread, ChannelInitializer<NioSocketChannel> initializer) {
         logger.info("new connect to " + host + ":" + port);
-        eventLoopGroup = new EpollEventLoopGroup(nThread);
+        eventLoopGroup = new NioEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
         bootstrap = initBootstrap(initializer);
         try {
@@ -48,14 +48,14 @@ public class ConnecManager {
         return channel;
     }
 
-    public Bootstrap initBootstrap(ChannelInitializer<EpollDomainSocketChannel> initializer) {
+    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
         logger.info("init bootstrap....");
         return bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .channel(EpollDomainSocketChannel.class)
+                .channel(NioSocketChannel.class)
                 .handler(initializer);
     }
 }

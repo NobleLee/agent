@@ -4,20 +4,21 @@ import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.ConnecManager;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
-import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
-import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.epoll.EpollDomainSocketChannel;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +26,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
@@ -199,11 +199,11 @@ public class AgentClientConnectPool {
             if (!channelMap.containsKey(endpoint)) {
                 logger.info("prepare connect server：" + endpoint.toString());
                 ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD,
-                        new ChannelInitializer<EpollDomainSocketChannel>() {
+                        new ChannelInitializer<NioSocketChannel>() {
                             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                             @Override
-                            protected void initChannel(EpollDomainSocketChannel ch) {
+                            protected void initChannel(NioSocketChannel ch) {
                                 ChannelPipeline pipeline = ch.pipeline();
                                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                                 pipeline.addLast(new AgentClientResponseDecoder());
