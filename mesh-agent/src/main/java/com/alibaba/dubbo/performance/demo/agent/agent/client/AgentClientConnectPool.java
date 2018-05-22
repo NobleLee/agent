@@ -45,6 +45,7 @@ public class AgentClientConnectPool {
     //public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
     public static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
 
+
     static {
         for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
             requestList.add(new HashMap<>());
@@ -90,9 +91,9 @@ public class AgentClientConnectPool {
         // 将请求的id写入ByteBuf
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
 
-        // long id = requestId.getAndIncrement();
-        byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
-        long id = System.currentTimeMillis() << 40 | r.nextInt(Integer.MAX_VALUE) << 8 | index;
+        long id = requestId.getAndIncrement();
+        //byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
+        //long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
         // System.err.println("request:" + index +" thread id:" + Thread.currentThread().getId() + " id:" +Long.toHexString(id));
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
@@ -105,10 +106,35 @@ public class AgentClientConnectPool {
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
         // TODO 更改成数组 hashmap 避免锁竞争
         // requestHolderMap.put(Long.valueOf(id), channel);
-        requestList.get(index % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
+        requestList.get((int) id % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         ChannelFuture channelFuture = channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
+        // TODO 考虑采用channelFuture添加监听器的方式来进行返回
+    }
+
+    /**
+     * 生成请求header，directly 采用一个buffer读写
+     *
+     * @param buf
+     * @param channel
+     * @throws Exception
+     */
+    public void sendToServerDirectly(ByteBuf buf, Channel channel) throws Exception {
+        //  ByteBufUtils.printStringln(buf, "");
+        if (buf.readableBytes() < 136) return;
+        long id = requestId.getAndIncrement();
+        buf.skipBytes(126);
+        int readIndex = buf.readerIndex();
+        buf.setShort(readIndex, COMMON.MAGIC);
+        buf.setLong(readIndex + 2, id);
+        // 因为是请求是HTTP连接，因此需要存储id的连接通道
+        // TODO 更改成数组 hashmap 避免锁竞争
+        // requestHolderMap.put(Long.valueOf(id), channel);
+        requestList.get((int) id % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
+        // 根据负载均衡算法，选择一个节点发送数据
+        // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
+        ChannelFuture channelFuture = channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buf);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
 
@@ -126,15 +152,15 @@ public class AgentClientConnectPool {
         response.headers().set(CONTENT_LENGTH, buf.readableBytes());
         response.content().writeBytes(buf);
 
-        byte index = (byte) (requestId & 0xFFL);
+        //int index = (int) (requestId & 0x7);
         // System.err.println("response: " + index + " id:" + Long.toHexString(requestId));
         // 发送请求数据
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
-        Channel remove = requestList.get(index).
+        Channel remove = requestList.get((int) requestId % COMMON.HTTPSERVER_WORK_THREAD).
                 remove(requestId);
         if (remove != null && remove.isActive()) {
-            ChannelFuture channelFuture = remove.writeAndFlush(response);
-           // channelFuture.addListener(ChannelFutureListener.CLOSE);
+            remove.writeAndFlush(response);
+            // channelFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
 
@@ -153,7 +179,6 @@ public class AgentClientConnectPool {
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-        response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, hashcode.length());
         response.content().writeBytes(hashcode.getBytes());
         executorService.schedule(() -> {

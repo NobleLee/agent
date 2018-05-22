@@ -28,3 +28,4 @@ target/
 # system ignore
 .DS_Store
 Thumbs.db
+/mesh-agent/src/main/java/com/alibaba/dubbo/performance/demo/agent/dubbo/RpcClient.java
