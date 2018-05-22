@@ -42,13 +42,11 @@ public class AgentClientConnectPool {
 
     private static Logger logger = LoggerFactory.getLogger(AgentClientConnectPool.class);
 
-    //public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
-    public static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
-
+    public static List<ConcurrentHashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
 
     static {
         for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
-            requestList.add(new HashMap<>());
+            requestList.add(new ConcurrentHashMap<>());
         }
     }
 
@@ -91,9 +89,9 @@ public class AgentClientConnectPool {
         // 将请求的id写入ByteBuf
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
 
-        long id = requestId.getAndIncrement();
-        //byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
-        //long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
+        // long id = requestId.getAndIncrement();
+        byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
+        long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
         // System.err.println("request:" + index +" thread id:" + Thread.currentThread().getId() + " id:" +Long.toHexString(id));
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
@@ -106,7 +104,7 @@ public class AgentClientConnectPool {
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
         // TODO 更改成数组 hashmap 避免锁竞争
         // requestHolderMap.put(Long.valueOf(id), channel);
-        requestList.get((int) id % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
+        requestList.get(index).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         ChannelFuture channelFuture = channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
@@ -152,12 +150,11 @@ public class AgentClientConnectPool {
         response.headers().set(CONTENT_LENGTH, buf.readableBytes());
         response.content().writeBytes(buf);
 
-        //int index = (int) (requestId & 0x7);
+        int index = (int) (requestId & 0x7);
         // System.err.println("response: " + index + " id:" + Long.toHexString(requestId));
         // 发送请求数据
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
-        Channel remove = requestList.get((int) requestId % COMMON.HTTPSERVER_WORK_THREAD).
-                remove(requestId);
+        Channel remove = requestList.get(index).remove(requestId);
         if (remove != null && remove.isActive()) {
             remove.writeAndFlush(response);
             // channelFuture.addListener(ChannelFutureListener.CLOSE);
@@ -201,11 +198,11 @@ public class AgentClientConnectPool {
             if (!channelMap.containsKey(endpoint)) {
                 logger.info("prepare connect server：" + endpoint.toString());
                 ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD,
-                        new ChannelInitializer<EpollSocketChannel>() {
+                        new ChannelInitializer<NioSocketChannel>() {
                             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                             @Override
-                            protected void initChannel(EpollSocketChannel ch) {
+                            protected void initChannel(NioSocketChannel ch) {
                                 ChannelPipeline pipeline = ch.pipeline();
                                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                                 pipeline.addLast(new AgentClientResponseDecoder());

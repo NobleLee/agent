@@ -31,9 +31,9 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
         if (msg.readableBytes() < 9) return;
         // System.err.println(msg.copy().toString(Charsets.UTF_8));
         //rpcClient.sendDubbo(msg);
-        // rpcClient.sendDubboDirect(msg);
-        rpcClient.sendBackTest(msg);
-        msg.release();
+        rpcClient.sendDubboDirect(msg);
+        // rpcClient.sendBackTest(msg);
+
     }
 
 

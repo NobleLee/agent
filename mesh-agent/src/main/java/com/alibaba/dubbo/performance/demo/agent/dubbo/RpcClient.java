@@ -45,11 +45,11 @@ public class RpcClient {
 
     private RpcClient() {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
-                COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<EpollSocketChannel>() {
+                COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<NioSocketChannel>() {
             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
             @Override
-            protected void initChannel(EpollSocketChannel ch) {
+            protected void initChannel(NioSocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                 // pipeline.addLast(new DubboRpcEncoder());
@@ -138,23 +138,23 @@ public class RpcClient {
     }
 
 
-    /**
-     * 测试直接将结果返回
-     *
-     * @param buf
-     * @param channel
-     */
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
-
-    public void sendBackTest(ByteBuf buf) {
-        long reqid = buf.readLong();
-        byte[] hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode()).getBytes();
-        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(hashcode.length + 8);
-        buffer.writeLong(reqid);
-        buffer.writeBytes(hashcode);
-        executorService.schedule(() -> {
-            AgentServerRpcHandler.channel.writeAndFlush(buffer);
-        }, 50, TimeUnit.MILLISECONDS);
-    }
+//    /**
+//     * 测试直接将结果返回
+//     *
+//     * @param buf
+//     * @param channel
+//     */
+//    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
+//
+//    public void sendBackTest(ByteBuf buf) {
+//        long reqid = buf.readLong();
+//        byte[] hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode()).getBytes();
+//        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(hashcode.length + 8);
+//        buffer.writeLong(reqid);
+//        buffer.writeBytes(hashcode);
+//        executorService.schedule(() -> {
+//            AgentServerRpcHandler.channel.writeAndFlush(buffer);
+//        }, 50, TimeUnit.MILLISECONDS);
+//    }
 
 }
