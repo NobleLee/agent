@@ -3,7 +3,6 @@ package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -15,12 +14,13 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  * @author gaoguili
  * @create 2018-05-09 上午12:36
  */
-public class HttpChannelInitializer extends ChannelInitializer<NioSocketChannel> {
+public class HttpChannelInitializer extends ChannelInitializer<EpollSocketChannel> {
+
     @Override
-    protected void initChannel(NioSocketChannel ch) throws Exception {
+    protected void initChannel(EpollSocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
 
-        // HTTP请求消息解码器
+        //HTTP请求消息解码器
         pipeline.addLast("http-decoder", new HttpRequestDecoder());
 
         /*
@@ -29,11 +29,22 @@ public class HttpChannelInitializer extends ChannelInitializer<NioSocketChannel>
          */
         pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
 
-        // HTTP响应编码器,对HTTP响应进行编码
+//        pipeline.addLast(new MessageToByteEncoder() {
+//
+//            @Override
+//            protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
+//                ByteBuf in = (ByteBuf) msg;
+//                ByteBufUtils.printStringln((ByteBuf) msg, "return:\n");
+//                out.writeBytes(in);
+//            }
+//        });
+//        // HTTP响应编码器,对HTTP响应进行编码
         pipeline.addLast("http-encoder", new HttpResponseEncoder());
-
-        // 对请求的处理逻辑
+//
+//        // 对请求的处理逻辑
         pipeline.addLast("server-handler", new HttpServerHandler());
+
+//        pipeline.addLast("simple-handler", new HttpSimpleHandler());
 
     }
 

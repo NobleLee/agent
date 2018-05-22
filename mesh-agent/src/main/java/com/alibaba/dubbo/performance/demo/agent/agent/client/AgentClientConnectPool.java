@@ -7,17 +7,16 @@ import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
+import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +24,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
@@ -42,11 +43,12 @@ public class AgentClientConnectPool {
     private static Logger logger = LoggerFactory.getLogger(AgentClientConnectPool.class);
 
     //public static ConcurrentHashMap<Long, Channel> requestHolderMap = new ConcurrentHashMap<>();
-    public static List<ConcurrentHashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
+    public static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
+
 
     static {
         for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
-            requestList.add(new ConcurrentHashMap<>());
+            requestList.add(new HashMap<>());
         }
     }
 
@@ -89,8 +91,10 @@ public class AgentClientConnectPool {
         // 将请求的id写入ByteBuf
         ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(buf.readableBytes() - 126);
 
-        // long id = requestId.getAndIncrement();
-        long id = System.currentTimeMillis() << 32 | r.nextInt(Integer.MAX_VALUE);
+        long id = requestId.getAndIncrement();
+        //byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
+        //long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
+        // System.err.println("request:" + index +" thread id:" + Thread.currentThread().getId() + " id:" +Long.toHexString(id));
         // 写入消息头标志符
         buffer.writeShort(COMMON.MAGIC);
         // 写入请求id
@@ -105,7 +109,8 @@ public class AgentClientConnectPool {
         requestList.get((int) id % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
-        channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
+        ChannelFuture channelFuture = channelMap.get(EndpointHelper.getBalancePoint(endpoints)).writeAndFlush(buffer);
+        // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
 
     /**
@@ -119,17 +124,42 @@ public class AgentClientConnectPool {
         // 封装返回response
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.headers().set(CONTENT_LENGTH, buf.readableBytes());
         response.content().writeBytes(buf);
+
+        //int index = (int) (requestId & 0x7);
+        // System.err.println("response: " + index + " id:" + Long.toHexString(requestId));
         // 发送请求数据
         // ChannelFuture channelFuture = requestHolderMap.remove(requestId).writeAndFlush(response);
         Channel remove = requestList.get((int) requestId % COMMON.HTTPSERVER_WORK_THREAD).
                 remove(requestId);
-        if (remove.isActive()) {
-            ChannelFuture channelFuture = remove.writeAndFlush(response);
-            channelFuture.addListener(ChannelFutureListener.CLOSE);
+        if (remove != null && remove.isActive()) {
+            remove.writeAndFlush(response);
+            // channelFuture.addListener(ChannelFutureListener.CLOSE);
         }
+    }
 
+    /**
+     * 直接睡眠将结果返回
+     *
+     * @param buf
+     * @param channel
+     */
 
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
+
+    public void responseTest(ByteBuf buf, Channel channel) {
+        buf.skipBytes(136);
+        String hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode());
+
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, hashcode.length());
+        response.content().writeBytes(hashcode.getBytes());
+        executorService.schedule(() -> {
+            ChannelFuture channelFuture = channel.writeAndFlush(response);
+        }, 50, TimeUnit.MILLISECONDS);
     }
 
 
@@ -147,11 +177,11 @@ public class AgentClientConnectPool {
             if (!channelMap.containsKey(endpoint)) {
                 logger.info("prepare connect server：" + endpoint.toString());
                 ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD,
-                        new ChannelInitializer<NioSocketChannel>() {
+                        new ChannelInitializer<EpollSocketChannel>() {
                             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
                             @Override
-                            protected void initChannel(NioSocketChannel ch) {
+                            protected void initChannel(EpollSocketChannel ch) {
                                 ChannelPipeline pipeline = ch.pipeline();
                                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                                 pipeline.addLast(new AgentClientResponseDecoder());
