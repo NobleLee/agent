@@ -6,7 +6,9 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollChannelConfig;
 import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerDomainSocketChannel;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -23,12 +25,12 @@ import java.nio.channels.ServerSocketChannel;
 public class HTTPServer {
     // 开启服务
     public void start(final int port) {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_BOSS_THREAD);
-        EventLoopGroup workGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_WORK_THREAD);
+        EventLoopGroup bossGroup = new EpollEventLoopGroup(COMMON.HTTPSERVER_BOSS_THREAD);
+        EventLoopGroup workGroup = new EpollEventLoopGroup(COMMON.HTTPSERVER_WORK_THREAD);
         ServerBootstrap bootstrap = new ServerBootstrap();
         try {
             bootstrap.group(bossGroup, workGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EpollServerDomainSocketChannel.class)
                     .option(ChannelOption.SO_KEEPALIVE, true)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .option(ChannelOption.SO_BACKLOG, COMMON.BACK_LOG)

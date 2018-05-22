@@ -9,6 +9,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -29,9 +30,9 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, ChannelInitializer<NioSocketChannel> initializer) {
+    public ConnecManager(String host, int port, int nThread, ChannelInitializer<EpollDomainSocketChannel> initializer) {
         logger.info("new connect to " + host + ":" + port);
-        eventLoopGroup = new NioEventLoopGroup(nThread);
+        eventLoopGroup = new EpollEventLoopGroup(nThread);
         endpoint = new Endpoint(host, port);
         bootstrap = initBootstrap(initializer);
         try {
@@ -47,14 +48,14 @@ public class ConnecManager {
         return channel;
     }
 
-    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
+    public Bootstrap initBootstrap(ChannelInitializer<EpollDomainSocketChannel> initializer) {
         logger.info("init bootstrap....");
         return bootstrap = new Bootstrap()
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .channel(NioSocketChannel.class)
+                .channel(EpollDomainSocketChannel.class)
                 .handler(initializer);
     }
 }

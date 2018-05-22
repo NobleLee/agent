@@ -14,6 +14,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
@@ -45,11 +46,11 @@ public class RpcClient {
 
     private RpcClient() {
         this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
-                COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<NioSocketChannel>() {
+                COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<EpollDomainSocketChannel>() {
             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
             @Override
-            protected void initChannel(NioSocketChannel ch) {
+            protected void initChannel(EpollDomainSocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                 // pipeline.addLast(new DubboRpcEncoder());
