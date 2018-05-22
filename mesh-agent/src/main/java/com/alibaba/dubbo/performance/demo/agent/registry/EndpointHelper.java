@@ -30,7 +30,7 @@ public class EndpointHelper {
     public static Endpoint getBalancePoint(List<Endpoint> endpoints) throws Exception {
         // return endpoints.get(random.nextInt(endpoints.size()));
         if (Math.random() < gate) {
-            return endpoints.get(0);
+            return endpoints.get(2);
         } else {
             return endpoints.get(1);
         }
