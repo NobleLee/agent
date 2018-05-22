@@ -32,7 +32,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
         ByteBuf buf = (ByteBuf) msg;
         logger.info("the channel is "+ctx.channel().toString() +" the ctx name is "+ctx.name());
         if (getBody(buf)) {
-            agentClientConnectPool.responseTest(groubleBuf, ctx.channel());
+          //  agentClientConnectPool.responseTest(groubleBuf, ctx.channel());
         }
     }
 

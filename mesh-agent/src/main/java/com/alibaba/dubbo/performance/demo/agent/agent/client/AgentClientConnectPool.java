@@ -162,27 +162,27 @@ public class AgentClientConnectPool {
         }
     }
 
-    /**
-     * 直接睡眠将结果返回
-     *
-     * @param buf
-     * @param channel
-     */
-
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
-
-    public void responseTest(ByteBuf buf, Channel channel) {
-        buf.skipBytes(136);
-        String hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode());
-
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, hashcode.length());
-        response.content().writeBytes(hashcode.getBytes());
-        executorService.schedule(() -> {
-            ChannelFuture channelFuture = channel.writeAndFlush(response);
-        }, 50, TimeUnit.MILLISECONDS);
-    }
+//    /**
+//     * 直接睡眠将结果返回
+//     *
+//     * @param buf
+//     * @param channel
+//     */
+//
+//    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
+//
+//    public void responseTest(ByteBuf buf, Channel channel) {
+//        buf.skipBytes(136);
+//        String hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode());
+//
+//        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+//        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+//        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, hashcode.length());
+//        response.content().writeBytes(hashcode.getBytes());
+//        executorService.schedule(() -> {
+//            ChannelFuture channelFuture = channel.writeAndFlush(response);
+//        }, 50, TimeUnit.MILLISECONDS);
+//    }
 
 
     /**
