@@ -23,9 +23,17 @@ public class EndpointHelper {
     private EndpointHelper() {
     }
 
+    // 设置门限值
+    private static final double gate = 30.0 / 32;
+
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
     public static Endpoint getBalancePoint(List<Endpoint> endpoints) throws Exception {
-        return endpoints.get(random.nextInt(endpoints.size()));
+        // return endpoints.get(random.nextInt(endpoints.size()));
+        if (Math.random() < gate) {
+            return endpoints.get(0);
+        } else {
+            return endpoints.get(1);
+        }
     }
 
 
