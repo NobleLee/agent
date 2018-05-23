@@ -23,7 +23,7 @@ import java.util.List;
 
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
-    private static Logger logger = LoggerFactory.getLogger(AgentServerRpcHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(ConnecManager.class);
 
     private List<Channel> channels = new ArrayList<>();
     int nThread;
@@ -66,7 +66,6 @@ public class ConnecManager {
      * @return
      */
     public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
-        logger.info("init bootstrap....");
         EventLoopGroup eventLoopGroup = new NioEventLoopGroup(nThread);
         return new Bootstrap()
                 .group(eventLoopGroup)

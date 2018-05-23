@@ -9,6 +9,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,7 +25,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
 
     private static RpcClient rpcClient = RpcClient.getInstance();
 
-    public static List<Channel> channels;
+    public static List<Channel> channels = new ArrayList<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
