@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.ConnecManager;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
@@ -110,6 +111,7 @@ public class AgentClientConnectPool {
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         List<Channel> channels = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
+        ByteBufUtils.printStringln(buffer,"send:");
         channels.get(index).writeAndFlush(buffer);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
@@ -244,17 +246,7 @@ public class AgentClientConnectPool {
         for (Endpoint endpoint : endpoints) {
             if (!channelMap.containsKey(endpoint)) {
                 logger.info("prepare connect server：" + endpoint.toString());
-                ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD,
-                        new ChannelInitializer<NioSocketChannel>() {
-                            ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
-
-                            @Override
-                            protected void initChannel(NioSocketChannel ch) {
-                                ChannelPipeline pipeline = ch.pipeline();
-                                pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
-                                pipeline.addLast(new AgentClientResponseDecoder());
-                            }
-                        });  // 创建单个服务器的连接通道
+                ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD, AgentClientInitializer.class);  // 创建单个服务器的连接通道
                 AgentClientConnectPool.endpoints.add(endpoint);
                 channelMap.put(endpoint, connecManager.getChannel());
                 logger.info("add a server channel!; endpoint: " + endpoint.toString());
