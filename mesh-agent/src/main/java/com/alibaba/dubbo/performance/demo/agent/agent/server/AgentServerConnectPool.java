@@ -50,7 +50,7 @@ public class AgentServerConnectPool {
                     @Override
                     protected void initChannel(NioSocketChannel sc) {
                         ChannelPipeline pipeline = sc.pipeline();
-                        pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
+                      //  pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
                         pipeline.addLast(new AgentServerRpcHandler());
                     }
                 });
