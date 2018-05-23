@@ -28,6 +28,9 @@ public class COMMON {
     public static final int BACK_LOG = 1024;
 
 
+    // 连接配置
+    public static final int DubboClient_NUM = 1;
+
     /**
      * 一个请求中公共的字段
      */

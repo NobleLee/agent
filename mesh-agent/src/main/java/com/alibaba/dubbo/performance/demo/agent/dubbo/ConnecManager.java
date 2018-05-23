@@ -26,14 +26,15 @@ public class ConnecManager {
     private static Logger logger = LoggerFactory.getLogger(ConnecManager.class);
 
     private List<Channel> channels = new ArrayList<>();
-    int nThread;
+    private int nThread;
+    private int clientNum;
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+    public ConnecManager(String host, int port, int nThread, int clientNum, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
         this.endpoint = new Endpoint(host, port);
         this.nThread = nThread;
-
+        this.clientNum = clientNum;
         try {
             init(initializer);
         } catch (IllegalAccessException e) {
@@ -49,7 +50,7 @@ public class ConnecManager {
      */
     private void init(Class<? extends ChannelInitializer<NioSocketChannel>> initializerClass) throws IllegalAccessException, InstantiationException {
         logger.info("connected number:" + COMMON.HTTPSERVER_WORK_THREAD + "new connect to " + endpoint.getHost() + ":" + endpoint.getPort());
-        for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
+        for (int i = 0; i < clientNum; i++) {
             ChannelInitializer<NioSocketChannel> initializer = initializerClass.newInstance();
             Bootstrap bootstrap = initBootstrap(initializer);
             try {
