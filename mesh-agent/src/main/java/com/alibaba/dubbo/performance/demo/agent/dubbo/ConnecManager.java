@@ -30,19 +30,27 @@ public class ConnecManager {
     private Endpoint endpoint;
 
 
-    public ConnecManager(String host, int port, int nThread, ChannelInitializer<NioSocketChannel> initializer) {
+    public ConnecManager(String host, int port, int nThread, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
         this.endpoint = new Endpoint(host, port);
         this.nThread = nThread;
-        init(initializer);
+
+        try {
+            init(initializer);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
     }
 
 
     /**
      * 初始化工作线程个数目的连接通道
      */
-    private void init(ChannelInitializer<NioSocketChannel> initializer) {
+    private void init(Class<? extends ChannelInitializer<NioSocketChannel>> initializerClass) throws IllegalAccessException, InstantiationException {
         logger.info("connected number:" + COMMON.HTTPSERVER_WORK_THREAD + "new connect to " + endpoint.getHost() + ":" + endpoint.getPort());
         for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
+            ChannelInitializer<NioSocketChannel> initializer = initializerClass.newInstance();
             Bootstrap bootstrap = initBootstrap(initializer);
             try {
                 Channel channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
