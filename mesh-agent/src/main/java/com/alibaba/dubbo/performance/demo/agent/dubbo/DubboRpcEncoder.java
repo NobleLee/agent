@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import io.netty.buffer.ByteBuf;
@@ -95,10 +96,13 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
      */
     public static ByteBuf directSend(ByteBuf buf) {
 
+        long id = buf.readLong();
+
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
+
         ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len + HEADER_LENGTH);
         byteBuf.writeBytes(header);
-        byteBuf.writeLong(buf.readLong());
+        byteBuf.writeLong(id);
         byteBuf.writeInt(len);
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_first);
         byteBuf.writeBytes(buf);
