@@ -127,7 +127,8 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf) {
         ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
         // ByteBufUtils.printStringln(byteBuf,16,"");
-        channels.get((int) (Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD)).writeAndFlush(byteBuf);
+        int index = (int) Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD;
+        channels.get(index).writeAndFlush(byteBuf);
     }
 
 
