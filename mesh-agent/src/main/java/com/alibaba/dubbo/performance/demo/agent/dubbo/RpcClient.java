@@ -26,6 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,11 +43,12 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
-    private ConnecManager connectManager;
+
+    private List<Channel> channels;
 
 
     private RpcClient() {
-        this.connectManager = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
+        this.channels = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
                 COMMON.DUBBO_CLIENT_THREAD, new ChannelInitializer<NioSocketChannel>() {
             ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
@@ -56,7 +59,7 @@ public class RpcClient {
                 // pipeline.addLast(new DubboRpcEncoder());
                 pipeline.addLast(new DubboRpcDecoder());
             }
-        });
+        }).getChannel();
     }
 
     private static RpcClient instance;
@@ -88,13 +91,8 @@ public class RpcClient {
     }
 
     public void send(DubboRequest request) {
-        Channel channel = null;
-        try {
-            channel = connectManager.getChannel();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        channel.writeAndFlush(request);
+        int index = (int) Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD;
+        channels.get(index).writeAndFlush(request);
     }
 
     // 获取Dubbo请求数据
@@ -127,15 +125,9 @@ public class RpcClient {
      * @param buf
      */
     public void sendDubboDirect(ByteBuf buf) {
-        Channel channel = null;
-        try {
-            channel = connectManager.getChannel();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
         // ByteBufUtils.printStringln(byteBuf,16,"");
-        channel.writeAndFlush(byteBuf);
+        channels.get((int) (Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD)).writeAndFlush(byteBuf);
     }
 
 

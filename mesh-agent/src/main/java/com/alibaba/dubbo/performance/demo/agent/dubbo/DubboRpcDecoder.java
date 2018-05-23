@@ -18,14 +18,13 @@ public class DubboRpcDecoder extends ChannelInboundHandlerAdapter {
         ByteBuf byteBuf = (ByteBuf) msg;
         try {
             if (byteBuf.readableBytes() < 6) return;
-
             int readlength = byteBuf.readableBytes();
             ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(readlength - 7);
             buffer.writeBytes(MAGIC);
             buffer.writeBytes(byteBuf, 2, 8);
             buffer.writeBytes(byteBuf, 16, readlength - 17);
-            AgentServerRpcHandler.channel.writeAndFlush(buffer);
-
+            int index = (int) (byteBuf.getLong(2) & 0x7);
+            AgentServerRpcHandler.channels.get(index).writeAndFlush(buffer);
         } finally {
             byteBuf.release();
         }

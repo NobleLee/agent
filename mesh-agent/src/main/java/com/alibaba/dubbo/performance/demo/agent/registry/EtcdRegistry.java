@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -150,6 +151,7 @@ public class EtcdRegistry implements IRegistry {
             for (com.coreos.jetcd.data.KeyValue kv : response.getKvs()) {
                 endpoints.add(getEndpointFromStr(kv.getKey().toStringUtf8()));
             }
+            logger.info("获得注册路径：" + Arrays.toString(endpoints.toArray()));
             AgentClientConnectPool.putServers(endpoints);
         } catch (Exception e) {
             e.printStackTrace();

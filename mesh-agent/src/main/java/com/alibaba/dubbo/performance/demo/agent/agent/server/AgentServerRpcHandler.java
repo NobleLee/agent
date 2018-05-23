@@ -9,6 +9,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * 描述:
  * ${DESCRIPTION}
@@ -22,7 +24,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
 
     private static RpcClient rpcClient = RpcClient.getInstance();
 
-    public static Channel channel;
+    public static List<Channel> channels;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
@@ -40,7 +42,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        channel = ctx.channel();
+        channels.add(ctx.channel());
         logger.info("agent server channel active!");
     }
 }
