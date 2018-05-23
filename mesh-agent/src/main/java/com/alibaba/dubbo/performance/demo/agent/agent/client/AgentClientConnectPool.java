@@ -246,7 +246,7 @@ public class AgentClientConnectPool {
         for (Endpoint endpoint : endpoints) {
             if (!channelMap.containsKey(endpoint)) {
                 logger.info("prepare connect server：" + endpoint.toString());
-                ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AGENT_CLIENT_THREAD, AgentClientInitializer.class);  // 创建单个服务器的连接通道
+                ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), 2,COMMON.HTTPSERVER_WORK_THREAD, AgentClientInitializer.class);  // 创建单个服务器的连接通道
                 AgentClientConnectPool.endpoints.add(endpoint);
                 channelMap.put(endpoint, connecManager.getChannel());
                 logger.info("add a server channel!; endpoint: " + endpoint.toString());
