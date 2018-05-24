@@ -60,6 +60,7 @@ public class AgentClientConnectPool {
     // 附带请求id
     private static AtomicLong requestId = new AtomicLong(1);
 
+    private static AtomicLong msgCount = new AtomicLong(1);
     private static AgentClientConnectPool instance;
 
     public static AgentClientConnectPool getInstance() {
@@ -96,14 +97,14 @@ public class AgentClientConnectPool {
         byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
         long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
         // System.err.println("request:" + index +" thread id:" + Thread.currentThread().getId() + " id:" +Long.toHexString(id));
-        // 写入消息头标志符
-        buffer.writeShort(COMMON.MAGIC);
+
         // 写入请求id
         buffer.writeLong(id);
         // 跳过前面的固定字符串
         buf.skipBytes(136);
         // 写入消息体
         buffer.writeBytes(buf);
+        buffer.writeShort(COMMON.MAGIC);
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
         // TODO 更改成数组 hashmap 避免锁竞争
         // requestHolderMap.put(Long.valueOf(id), channel);
@@ -112,6 +113,7 @@ public class AgentClientConnectPool {
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         List<Channel> channels = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
         //  ByteBufUtils.printStringln(buffer, 10, "send:\n");
+        logger.info("message number: " + msgCount.getAndIncrement()+" "+ByteBufUtils.getString(buffer,""));
         channels.get(index).writeAndFlush(buffer);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
