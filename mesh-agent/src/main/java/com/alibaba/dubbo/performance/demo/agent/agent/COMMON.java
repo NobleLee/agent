@@ -25,11 +25,11 @@ public class COMMON {
 
 
     // 连接配置
-    public static final int DubboClient_NUM = HTTPSERVER_WORK_THREAD;
-    public static final int DUBBO_CLIENT_THREAD = 2;
+    public static final int DubboChannel_NUM = HTTPSERVER_WORK_THREAD;
+    public static final int DubboClient_THREAD = DubboChannel_NUM;
 
-    public static final int AgentClient_NUM = HTTPSERVER_WORK_THREAD;
-    public static final int AgentClient_THREAD = 2;
+    public static final int AgentChannel_NUM = HTTPSERVER_WORK_THREAD;
+    public static final int AgentClient_THREAD = HTTPSERVER_WORK_THREAD;
 
 
     /**

@@ -57,10 +57,10 @@ public class AgentClientConnectPool {
     private static HashMap<Endpoint, List<Channel>> channelMap = new HashMap<>();
     // 连接节点数
     private static List<Endpoint> endpoints = new ArrayList<>(); //之后可以考虑把初始化的过程放到前面
-    // 附带请求id
-    private static AtomicLong requestId = new AtomicLong(1);
 
-    private static AtomicLong msgCount = new AtomicLong(1);
+    private static ConnecManager connecManager;
+
+
     private static AgentClientConnectPool instance;
 
     public static AgentClientConnectPool getInstance() {
@@ -244,17 +244,25 @@ public class AgentClientConnectPool {
     public static boolean putServers(List<Endpoint> endpoints) {
         // TODO  应该加锁
         LOCK.AgentChannelLock = true;
+        if (connecManager == null) {
+            synchronized (ConnecManager.class) {
+                if (connecManager == null)
+                    connecManager = new ConnecManager(COMMON.AGENTSERVER_WORK_THREAD, AgentClientInitializer.class);
+            }
+        }
+
         for (Endpoint endpoint : endpoints) {
             if (!channelMap.containsKey(endpoint)) {
                 // logger.info("prepare connect server：" + endpoint.toString());
-                ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AgentClient_THREAD, COMMON.AgentClient_NUM, AgentClientInitializer.class);  // 创建单个服务器的连接通道
+                List<Channel> channels = connecManager.bind(endpoint, COMMON.AgentChannel_NUM);// 创建单个服务器的连接通道
                 AgentClientConnectPool.endpoints.add(endpoint);
-                channelMap.put(endpoint, connecManager.getChannel());
+                channelMap.put(endpoint, channels);
                 logger.info("add a server channel!; endpoint: " + endpoint.toString());
             } else {
                 logger.info("the channel exist!; endpoint: " + endpoint.toString());
             }
         }
+
         LOCK.AgentChannelLock = false;
         return true;
     }
@@ -271,7 +279,7 @@ public class AgentClientConnectPool {
         LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
             if (AgentClientConnectPool.channelMap.containsKey(endpoint)) {
-                List<Channel> removeChannel = AgentClientConnectPool.channelMap.remove(endpoint);
+                List<Channel> removeChannel = channelMap.remove(endpoint);
                 for (Channel channel : removeChannel) {
                     channel.close();
                 }

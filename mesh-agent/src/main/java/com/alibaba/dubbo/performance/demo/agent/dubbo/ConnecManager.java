@@ -19,62 +19,60 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
     private static Logger logger = LoggerFactory.getLogger(ConnecManager.class);
 
-    private List<Channel> channels = new ArrayList<>();
+    private Bootstrap bootstrap;
     private int nThread;
-    private int clientNum;
-    private Endpoint endpoint;
 
-
-    public ConnecManager(String host, int port, int nThread, int clientNum, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
-        this.endpoint = new Endpoint(host, port);
-        this.nThread = nThread;
-        this.clientNum = clientNum;
-        try {
-            init(initializer);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        }
+    public ConnecManager(int nThred, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+        this.nThread = nThred;
+        bootstrap = initBootstrap(initializer);
     }
 
-
     /**
-     * 初始化工作线程个数目的连接通道
+     * 绑定一个Endpoint，并指定通道数目
+     *
+     * @param endpoint
+     * @param channelCount
+     * @return
      */
-    private void init(Class<? extends ChannelInitializer<NioSocketChannel>> initializerClass) throws IllegalAccessException, InstantiationException {
+    public List<Channel> bind(Endpoint endpoint, int channelCount) {
         logger.info("connected number:" + COMMON.HTTPSERVER_WORK_THREAD + "new connect to " + endpoint.getHost() + ":" + endpoint.getPort());
-        for (int i = 0; i < clientNum; i++) {
-            ChannelInitializer<NioSocketChannel> initializer = initializerClass.newInstance();
-            Bootstrap bootstrap = initBootstrap(initializer);
+        List<Channel> channelList = new ArrayList<>();
+        for (int i = 0; i < channelCount; i++) {
             try {
                 Channel channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
                 logger.info("get channel!" + channel.toString());
-                channels.add(channel);
+                channelList.add(channel);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        return channelList;
     }
 
-
-    public List<Channel> getChannel() {
-        return channels;
-    }
 
     /**
      * 初始化bootstrap
      *
-     * @param initializer
+     * @param initializerClass
      * @return
      */
-    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
+    public Bootstrap initBootstrap(Class<? extends ChannelInitializer<NioSocketChannel>> initializerClass) {
+        ChannelInitializer<NioSocketChannel> initializer = null;
+        try {
+            initializer = initializerClass.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
         EventLoopGroup eventLoopGroup = new NioEventLoopGroup(nThread);
         return new Bootstrap()
                 .group(eventLoopGroup)

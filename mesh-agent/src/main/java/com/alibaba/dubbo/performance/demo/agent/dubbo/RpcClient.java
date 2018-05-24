@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.google.common.base.Charsets;
@@ -46,10 +47,12 @@ public class RpcClient {
 
     private List<Channel> channels;
 
+    private ConnecManager connecManager;
 
     private RpcClient() {
-        this.channels = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
-                COMMON.DUBBO_CLIENT_THREAD, COMMON.DubboClient_NUM, DubboClientInitializer.class).getChannel();
+        connecManager = new ConnecManager(COMMON.DubboClient_THREAD, DubboClientInitializer.class);
+        Endpoint endpoint = new Endpoint("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
+        channels = connecManager.bind(endpoint, COMMON.DubboChannel_NUM);
     }
 
     private static RpcClient instance;
@@ -81,7 +84,7 @@ public class RpcClient {
     }
 
     public void send(DubboRequest request) {
-        int index = (int) Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD;
+        int index = (int) Thread.currentThread().getId() % COMMON.DubboChannel_NUM;
         channels.get(index).writeAndFlush(request);
     }
 
@@ -117,7 +120,7 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf) {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
-            int index = (int) (Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD);
+            int index = (int) (Thread.currentThread().getId() % COMMON.DubboChannel_NUM);
             // ByteBufUtils.println(byteBuf,"send dubbo:");
             channels.get(index).writeAndFlush(byteBuf);
         } catch (Exception e) {
