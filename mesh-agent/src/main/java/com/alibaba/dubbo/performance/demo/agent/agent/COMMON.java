@@ -9,7 +9,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent;
  */
 public class COMMON {
 
-    public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloServiceGGL";
+    public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloServiceQxc";
     // 消息分割符号
     public static final short MAGIC = (short) 0xdabb;
 
@@ -40,5 +40,14 @@ public class COMMON {
         public static final byte[] dubbo_msg_last = "\"\n{\"path\":\"com.alibaba.dubbo.performance.demo.provider.IHelloService\"}".getBytes();
     }
 
+    /**
+     * @author qiuxiaochen
+     */
+    // 是否开启在provider-agent端的请求控制
+    public static final boolean DUBBO_REQUEST_CONTROL_FLAG = false;
+    // Dubbo客户端缓冲队列的大小
+    public static final int DUBBO_CLIENT_BUFFER_SIZE = 100;
+    // Dubbo服务器端请求的上限
+    public static final int DUBBO_SERVER_HANDLE_THRESHOLD = 200;
 
 }

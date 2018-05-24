@@ -2,6 +2,8 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.LoadBalance.MyInBoundHandler;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.LoadBalance.MyOutBoundHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
@@ -19,6 +21,8 @@ import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.http.*;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +56,14 @@ public class RpcClient {
             @Override
             protected void initChannel(NioSocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
+                if(COMMON.DUBBO_REQUEST_CONTROL_FLAG)
+                    pipeline.addLast(new MyOutBoundHandler());
                 pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
-                // pipeline.addLast(new DubboRpcEncoder());
+                if(COMMON.DUBBO_REQUEST_CONTROL_FLAG)
+                    pipeline.addLast(new MyInBoundHandler());
+                //pipeline.addLast(new DubboRpcEncoder());
                 pipeline.addLast(new DubboRpcDecoder());
+
             }
         });
     }
