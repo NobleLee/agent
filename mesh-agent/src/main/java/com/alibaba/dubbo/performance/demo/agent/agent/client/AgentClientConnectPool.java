@@ -247,7 +247,7 @@ public class AgentClientConnectPool {
         if (connecManager == null) {
             synchronized (ConnecManager.class) {
                 if (connecManager == null)
-                    connecManager = new ConnecManager(COMMON.AGENTSERVER_WORK_THREAD, AgentClientInitializer.class);
+                    connecManager = new ConnecManager(COMMON.AgentClient_THREAD, AgentClientInitializer.class);
             }
         }
 

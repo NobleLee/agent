@@ -2,7 +2,6 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,7 +22,7 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf byteBuf = (ByteBuf) msg;
         try {
-          // ByteBufUtils.println(byteBuf, "dubbo total return byte:");
+            // ByteBufUtils.println(byteBuf, "dubbo total return byte:");
 
             if (byteBuf.readableBytes() < 6) return;
             int readlength = byteBuf.readableBytes();
@@ -33,12 +32,11 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
             buffer.writeBytes(byteBuf, 16, readlength - 17);
             int index = (int) (byteBuf.getLong(2) & 0x7);
             buffer.writeShort(COMMON.MAGIC);
-          //  ByteBufUtils.println(buffer, "agent return byte:");
+            //  ByteBufUtils.println(buffer, "agent return byte:");
             AgentServerRpcHandler.channels.get(index).writeAndFlush(buffer);
         } finally {
             byteBuf.release();
         }
-
     }
 
 }
