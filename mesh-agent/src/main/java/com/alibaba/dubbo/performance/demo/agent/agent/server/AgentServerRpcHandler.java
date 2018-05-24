@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 描述:
@@ -28,6 +29,9 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
 
     public static List<Channel> channels = new ArrayList<>();
 
+
+    public static AtomicLong msgVCount = new AtomicLong(1);
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         // ByteBufUtils.printStringln(msg,"send:");
@@ -35,6 +39,8 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
         if (msg.readableBytes() < 9) return;
         // System.err.println(msg.copy().toString(Charsets.UTF_8));
         //rpcClient.sendDubbo(msg);
+        logger.info("有效信息数目 : " + msgVCount.getAndIncrement());
+        //ByteBufUtils.printStringln(msg, "get agent msg:");
         rpcClient.sendDubboDirect(msg);
         // rpcClient.sendBackTest(msg);
     }

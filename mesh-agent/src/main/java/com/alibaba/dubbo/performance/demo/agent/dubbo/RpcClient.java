@@ -115,9 +115,17 @@ public class RpcClient {
      * @param buf
      */
     public void sendDubboDirect(ByteBuf buf) {
-        ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
-        int index = (int) (Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD);
-        channels.get(index).writeAndFlush(byteBuf);
+        try {
+            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
+            int index = (int) (Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD);
+            // ByteBufUtils.println(byteBuf,"send dubbo:");
+            channels.get(index).writeAndFlush(byteBuf);
+        } catch (Exception e) {
+            ByteBufUtils.println(buf, "agent server byte:");
+            ByteBufUtils.printStringln(buf, "agent server strg:");
+            e.printStackTrace();
+        }
+
     }
 
 

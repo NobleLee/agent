@@ -17,7 +17,7 @@ public class ByteBufUtils {
         ByteBuf copy = buf.copy();
         byte[] bytes = new byte[copy.readableBytes()];
         copy.readBytes(bytes);
-        System.err.println(str + Arrays.toString(bytes));
+        System.err.println(str + bytes.length + Arrays.toString(bytes));
     }
 
     public static void printStringln(ByteBuf buf, int skip, String str) {
@@ -28,6 +28,13 @@ public class ByteBufUtils {
         System.err.println(str + new String(bytes));
     }
 
+
+    public static String getString(ByteBuf buf, String str) {
+        ByteBuf copy = buf.copy();
+        byte[] bytes = new byte[copy.readableBytes()];
+        copy.readBytes(bytes);
+        return new String(bytes);
+    }
 
     public static String getString(ByteBuf buf, String str) {
         ByteBuf copy = buf.copy();
