@@ -21,8 +21,14 @@ public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel>
     @Override
     protected void initChannel(NioSocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
         // pipeline.addLast(new DubboRpcEncoder());
-        pipeline.addLast(new DubboRpcBackProcess());
+
+        if(COMMON.DUBBO_REQUEST_CONTROL_FLAG){
+            pipeline.addLast(new MyOutBoundHandler());
+        }
+        pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
+        if(COMMON.DUBBO_REQUEST_CONTROL_FLAG)
+            pipeline.addLast(new MyInBoundHandler());
+        pipeline.addLast(new DubbRpcBackProcess());
     }
 }
