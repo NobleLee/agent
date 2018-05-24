@@ -132,23 +132,33 @@ public class RpcClient {
     }
 
 
-//    /**
-//     * 测试直接将结果返回
-//     *
-//     * @param buf
-//     * @param channel
-//     */
-//    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(256);
-//
-//    public void sendBackTest(ByteBuf buf) {
-//        long reqid = buf.readLong();
-//        byte[] hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode()).getBytes();
-//        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(hashcode.length + 8);
-//        buffer.writeLong(reqid);
-//        buffer.writeBytes(hashcode);
-//        executorService.schedule(() -> {
-//            AgentServerRpcHandler.channel.writeAndFlush(buffer);
-//        }, 50, TimeUnit.MILLISECONDS);
-//    }
+    /**
+     * 测试直接将结果返回
+     *
+     * @param buf
+     * @param channel
+     */
+    private ScheduledExecutorService executorService;
+
+    public void sendBackTest(ByteBuf buf) {
+        if (executorService == null) {
+            synchronized (this) {
+                if (executorService == null)
+                    executorService = Executors.newScheduledThreadPool(256);
+            }
+        }
+
+
+        long reqid = buf.readLong();
+        byte[] hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode()).getBytes();
+        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(hashcode.length + 8);
+        buffer.writeLong(reqid);
+        buffer.writeBytes(hashcode);
+        executorService.schedule(() -> {
+            int index = (int) (reqid & 0x7);
+            buffer.writeShort(COMMON.MAGIC);
+            AgentServerRpcHandler.channels.get(index).writeAndFlush(buffer);
+        }, 50, TimeUnit.MILLISECONDS);
+    }
 
 }
