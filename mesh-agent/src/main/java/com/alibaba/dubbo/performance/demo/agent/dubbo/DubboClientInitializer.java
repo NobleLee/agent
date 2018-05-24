@@ -1,6 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.LoadBalance.MyInBoundHandler;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.LoadBalance.MyOutBoundHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
@@ -23,12 +25,12 @@ public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel>
         ChannelPipeline pipeline = ch.pipeline();
         // pipeline.addLast(new DubboRpcEncoder());
 
-        if(COMMON.DUBBO_REQUEST_CONTROL_FLAG){
+        if (COMMON.DUBBO_REQUEST_CONTROL_FLAG) {
             pipeline.addLast(new MyOutBoundHandler());
         }
         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
-        if(COMMON.DUBBO_REQUEST_CONTROL_FLAG)
+        if (COMMON.DUBBO_REQUEST_CONTROL_FLAG)
             pipeline.addLast(new MyInBoundHandler());
-        pipeline.addLast(new DubbRpcBackProcess());
+        pipeline.addLast(new DubboRpcBackProcess());
     }
 }
