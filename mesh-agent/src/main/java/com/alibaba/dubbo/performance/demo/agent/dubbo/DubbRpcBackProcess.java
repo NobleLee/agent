@@ -33,7 +33,6 @@ public class DubbRpcBackProcess extends ChannelInboundHandlerAdapter {
             buffer.writeBytes(byteBuf, 16, readlength - 17);
             int index = (int) (byteBuf.getLong(2) & 0x7);
             buffer.writeShort(COMMON.MAGIC);
-
           //  ByteBufUtils.println(buffer, "agent return byte:");
             AgentServerRpcHandler.channels.get(index).writeAndFlush(buffer);
         } finally {

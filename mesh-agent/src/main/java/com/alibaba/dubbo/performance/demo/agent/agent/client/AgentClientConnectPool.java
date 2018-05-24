@@ -113,7 +113,7 @@ public class AgentClientConnectPool {
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         List<Channel> channels = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
         //  ByteBufUtils.printStringln(buffer, 10, "send:\n");
-        logger.info("message number: " + msgCount.getAndIncrement()+" "+ByteBufUtils.getString(buffer,""));
+        //logger.info("message number: " + msgCount.getAndIncrement()+" "+ByteBufUtils.getString(buffer,""));
         channels.get(index).writeAndFlush(buffer);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
