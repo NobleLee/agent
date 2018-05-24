@@ -21,7 +21,7 @@ public class AgentClientResponseDecoder extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        logger.info("connect channel!" + ctx.name());
+       // logger.info("connect channel!" + ctx.name());
     }
 
     @Override
