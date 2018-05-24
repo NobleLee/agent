@@ -39,7 +39,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
         if (msg.readableBytes() < 9) return;
         // System.err.println(msg.copy().toString(Charsets.UTF_8));
         //rpcClient.sendDubbo(msg);
-       // logger.info("有效信息数目 : " + msgVCount.getAndIncrement());
+        // logger.info("有效信息数目 : " + msgVCount.getAndIncrement());
         //ByteBufUtils.printStringln(msg, "get agent msg:");
         rpcClient.sendDubboDirect(msg);
         // rpcClient.sendBackTest(msg);
@@ -49,7 +49,9 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        channels.add(ctx.channel());
+        synchronized (channels) {
+            channels.add(ctx.channel());
+        }
         logger.info("agent server channel active! " + ctx.channel());
     }
 }
