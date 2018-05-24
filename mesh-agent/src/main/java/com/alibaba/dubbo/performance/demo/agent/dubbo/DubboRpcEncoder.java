@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import io.netty.buffer.ByteBuf;
@@ -14,12 +15,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 public class DubboRpcEncoder extends MessageToByteEncoder {
     // header length.
     protected static final int HEADER_LENGTH = 16;
 
-    protected static final byte[] header = new byte[HEADER_LENGTH];
+    protected static final byte[] header = new byte[4];
 
     static {
         header[0] = -38;
@@ -74,12 +76,34 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         JsonUtils.writeObject(inv.getAttachments(), writer);
     }
 
+//    public static ByteBuf directSend(ByteBuf buf) {
+//        Bytes.long2bytes(buf.readLong(), header, 4);
+//        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
+//        Bytes.int2bytes(len, header, 12);
+//        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len + HEADER_LENGTH);
+//        byteBuf.writeBytes(header);
+//        byteBuf.writeBytes(COMMON.Request.dubbo_msg_first);
+//        byteBuf.writeBytes(buf);
+//        byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
+//        return byteBuf;
+//    }
+
+    /**
+     * 直接将数据封装成Dubbo Req
+     *
+     * @param buf
+     * @return
+     */
     public static ByteBuf directSend(ByteBuf buf) {
-        Bytes.long2bytes(buf.readLong(), header, 4);
+
+        long id = buf.readLong();
+
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
-        Bytes.int2bytes(len, header, 12);
+
         ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len + HEADER_LENGTH);
         byteBuf.writeBytes(header);
+        byteBuf.writeLong(id);
+        byteBuf.writeInt(len);
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_first);
         byteBuf.writeBytes(buf);
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);

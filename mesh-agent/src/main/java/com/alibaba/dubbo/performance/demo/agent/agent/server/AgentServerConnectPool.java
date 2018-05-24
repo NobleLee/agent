@@ -61,7 +61,6 @@ public class AgentServerConnectPool {
             e.printStackTrace();
         }
         return this;
-
     }
 
     /**
