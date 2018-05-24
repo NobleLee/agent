@@ -37,7 +37,6 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
         //rpcClient.sendDubbo(msg);
         rpcClient.sendDubboDirect(msg);
         // rpcClient.sendBackTest(msg);
-
     }
 
 
@@ -45,6 +44,6 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         channels.add(ctx.channel());
-        logger.info("agent server channel active!");
+        logger.info("agent server channel active! " + ctx.channel());
     }
 }

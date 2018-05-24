@@ -49,7 +49,7 @@ public class RpcClient {
 
     private RpcClient() {
         this.channels = new ConnecManager("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")),
-                2, COMMON.DUBBO_CLIENT_THREAD, DubboClientInitializer.class).getChannel();
+                COMMON.DUBBO_CLIENT_THREAD, COMMON.DubboClient_NUM, DubboClientInitializer.class).getChannel();
     }
 
     private static RpcClient instance;
@@ -116,7 +116,6 @@ public class RpcClient {
      */
     public void sendDubboDirect(ByteBuf buf) {
         ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
-
         int index = (int) (Thread.currentThread().getId() % COMMON.DUBBO_CLIENT_THREAD);
         channels.get(index).writeAndFlush(byteBuf);
     }

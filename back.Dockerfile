@@ -1,9 +1,14 @@
 # Builder container
-FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/services AS builder
+# FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/services AS builder
+
+# maven dependency
+#FROM registry.cn-hangzhou.aliyuncs.com/acs/maven
+FROM service:0.0.1 AS builder
 
 COPY . /root/workspace/agent
 WORKDIR /root/workspace/agent
-RUN set -ex && mvn clean package
+RUN set -ex
+#&& mvn clean package
 
 
 # Runner container
@@ -16,9 +21,7 @@ COPY --from=builder /root/workspace/agent/mesh-agent/target/mesh-agent-1.0-SNAPS
 COPY --from=builder /usr/local/bin/docker-entrypoint.sh /usr/local/bin
 COPY start-agent.sh /usr/local/bin
 
-RUN set -ex \
- && chmod a+x /usr/local/bin/start-agent.sh \
- && mkdir -p /root/logs
+RUN set -ex && mkdir -p /root/logs && chmod u+x /usr/local/bin/docker-entrypoint.sh && chmod u+x /usr/local/bin/start-agent.sh
 
 EXPOSE 8087
 

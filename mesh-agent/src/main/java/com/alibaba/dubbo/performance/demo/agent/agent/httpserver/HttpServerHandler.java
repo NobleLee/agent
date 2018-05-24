@@ -31,7 +31,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        logger.error(connectCount.getAndIncrement() + " get consumer http connected!!!");
+        logger.info(connectCount.getAndIncrement() + " get consumer http connected!!!");
     }
 
     @Override

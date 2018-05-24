@@ -111,7 +111,7 @@ public class AgentClientConnectPool {
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         List<Channel> channels = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
-      //  ByteBufUtils.printStringln(buffer, 10, "send:\n");
+        //  ByteBufUtils.printStringln(buffer, 10, "send:\n");
         channels.get(index).writeAndFlush(buffer);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
@@ -186,7 +186,6 @@ public class AgentClientConnectPool {
 
         buf.skipBytes(136);
         String hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode());
-
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, hashcode.length());
@@ -245,8 +244,8 @@ public class AgentClientConnectPool {
         LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
             if (!channelMap.containsKey(endpoint)) {
-                logger.info("prepare connect server：" + endpoint.toString());
-                ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), 2,COMMON.HTTPSERVER_WORK_THREAD, AgentClientInitializer.class);  // 创建单个服务器的连接通道
+                // logger.info("prepare connect server：" + endpoint.toString());
+                ConnecManager connecManager = new ConnecManager(endpoint.getHost(), endpoint.getPort(), COMMON.AgentClient_THREAD, COMMON.AgentClient_NUM, AgentClientInitializer.class);  // 创建单个服务器的连接通道
                 AgentClientConnectPool.endpoints.add(endpoint);
                 channelMap.put(endpoint, connecManager.getChannel());
                 logger.info("add a server channel!; endpoint: " + endpoint.toString());
