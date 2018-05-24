@@ -29,12 +29,6 @@ public class ByteBufUtils {
     }
 
 
-    public static String getString(ByteBuf buf, String str) {
-        ByteBuf copy = buf.copy();
-        byte[] bytes = new byte[copy.readableBytes()];
-        copy.readBytes(bytes);
-        return new String(bytes);
-    }
 
     public static String getString(ByteBuf buf, String str) {
         ByteBuf copy = buf.copy();
