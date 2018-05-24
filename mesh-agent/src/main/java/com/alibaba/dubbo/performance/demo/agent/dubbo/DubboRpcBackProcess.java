@@ -15,7 +15,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * @author gaoguili
  * @create 2018-05-24 下午3:37
  */
-public class DubbRpcBackProcess extends ChannelInboundHandlerAdapter {
+public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
 
 
     // 接收dubbo消息，并将消息传送给client

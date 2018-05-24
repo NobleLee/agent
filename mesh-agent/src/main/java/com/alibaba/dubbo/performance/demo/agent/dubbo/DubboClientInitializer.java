@@ -23,6 +23,6 @@ public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel>
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new DelimiterBasedFrameDecoder(2048, delimiter));
         // pipeline.addLast(new DubboRpcEncoder());
-        pipeline.addLast(new DubbRpcBackProcess());
+        pipeline.addLast(new DubboRpcBackProcess());
     }
 }
