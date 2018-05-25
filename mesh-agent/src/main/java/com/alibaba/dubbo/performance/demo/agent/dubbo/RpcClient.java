@@ -154,7 +154,7 @@ public class RpcClient {
         executorService.schedule(() -> {
             int index = (int) (reqid & 0x7);
             buffer.writeShort(COMMON.MAGIC);
-            AgentServerRpcHandler.channels.get(index).writeAndFlush(buffer);
+            AgentServerRpcHandler.channel.writeAndFlush(buffer);
         }, 50, TimeUnit.MILLISECONDS);
     }
 
