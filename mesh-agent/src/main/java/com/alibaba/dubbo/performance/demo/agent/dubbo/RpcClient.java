@@ -45,14 +45,14 @@ public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
 
-    private List<Channel> channels;
+    private Channel channel;
 
     private ConnecManager connecManager;
 
     private RpcClient() {
         connecManager = new ConnecManager(COMMON.DubboClient_THREAD, DubboClientInitializer.class);
         Endpoint endpoint = new Endpoint("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
-        channels = connecManager.bind(endpoint, COMMON.DubboChannel_NUM);
+        channel = connecManager.bind(endpoint);
     }
 
     private static RpcClient instance;
@@ -71,7 +71,6 @@ public class RpcClient {
 
     // 将数据封装之后发送给dubbo
     public void sendDubbo(ByteBuf buf) {
-
         // 前8个字节是请求id
         long id = buf.readLong();
         String bodyString = buf.toString(Charsets.UTF_8);
@@ -84,8 +83,7 @@ public class RpcClient {
     }
 
     public void send(DubboRequest request) {
-        int index = (int) Thread.currentThread().getId() % COMMON.DubboChannel_NUM;
-        channels.get(index).writeAndFlush(request);
+        this.channel.writeAndFlush(request);
     }
 
     // 获取Dubbo请求数据
@@ -120,9 +118,8 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf) {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
-            int index = (int) (Thread.currentThread().getId() % COMMON.DubboChannel_NUM);
             // ByteBufUtils.println(byteBuf,"send dubbo:");
-            channels.get(index).writeAndFlush(byteBuf);
+            this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
             ByteBufUtils.printStringln(buf, "agent server strg:");

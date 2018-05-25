@@ -54,7 +54,7 @@ public class AgentClientConnectPool {
     }
 
     // key 节点 value 通道
-    private static HashMap<Endpoint, List<Channel>> channelMap = new HashMap<>();
+    private static HashMap<Endpoint, Channel> channelMap = new HashMap<>();
     // 连接节点数
     private static List<Endpoint> endpoints = new ArrayList<>(); //之后可以考虑把初始化的过程放到前面
 
@@ -87,7 +87,7 @@ public class AgentClientConnectPool {
      * @param channel
      * @throws Exception
      */
-    public void sendToServer(ByteBuf buf, Channel channel) throws Exception {
+    public void sendToServer(ByteBuf buf, Channel channel) {
         //  ByteBufUtils.printStringln(buf, "");
         if (buf.readableBytes() < 136) return;
         // 将请求的id写入ByteBuf
@@ -111,10 +111,10 @@ public class AgentClientConnectPool {
         requestList.get(index).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
-        List<Channel> channels = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
+        Channel sendChannel = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
         //  ByteBufUtils.printStringln(buffer, 10, "send:\n");
         //logger.info("message number: " + msgCount.getAndIncrement()+" "+ByteBufUtils.getString(buffer,""));
-        channels.get(index).writeAndFlush(buffer);
+        sendChannel.writeAndFlush(buffer);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
 
@@ -125,7 +125,7 @@ public class AgentClientConnectPool {
      * @param channel
      * @throws Exception
      */
-    public void sendToServerDirectly(ByteBuf buf, Channel channel) throws Exception {
+    public void sendToServerDirectly(ByteBuf buf, Channel channel) {
         //  ByteBufUtils.printStringln(buf, "");
         if (buf.readableBytes() < 136) return;
         byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
@@ -140,8 +140,8 @@ public class AgentClientConnectPool {
         requestList.get((int) id % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
-        List<Channel> channels = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
-        channels.get(index).writeAndFlush(buf);
+        Channel sendChannel = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
+        sendChannel.writeAndFlush(buf);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
 
@@ -175,7 +175,6 @@ public class AgentClientConnectPool {
      * @param buf
      * @param channel
      */
-
     private static ScheduledExecutorService executorService;
 
     public void responseTest(ByteBuf buf, Channel channel) {
@@ -254,9 +253,11 @@ public class AgentClientConnectPool {
         for (Endpoint endpoint : endpoints) {
             if (!channelMap.containsKey(endpoint)) {
                 // logger.info("prepare connect server：" + endpoint.toString());
-                List<Channel> channels = connecManager.bind(endpoint, COMMON.AgentChannel_NUM);// 创建单个服务器的连接通道
+                Channel channel = connecManager.bind(endpoint);// 创建单个服务器的连接通道
                 AgentClientConnectPool.endpoints.add(endpoint);
-                channelMap.put(endpoint, channels);
+                synchronized (AgentClientConnectPool.class) {
+                    channelMap.put(endpoint, channel);
+                }
                 logger.info("add a server channel!; endpoint: " + endpoint.toString());
             } else {
                 logger.info("the channel exist!; endpoint: " + endpoint.toString());
@@ -279,9 +280,9 @@ public class AgentClientConnectPool {
         LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
             if (AgentClientConnectPool.channelMap.containsKey(endpoint)) {
-                List<Channel> removeChannel = channelMap.remove(endpoint);
-                for (Channel channel : removeChannel) {
-                    channel.close();
+                synchronized (AgentClientConnectPool.class) {
+                    Channel removeChannel = channelMap.remove(endpoint);
+                    removeChannel.close();
                 }
                 AgentClientConnectPool.endpoints.remove(endpoint);
                 logger.info("close channel; endpoint: " + endpoint.toString());

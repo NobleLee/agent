@@ -39,22 +39,19 @@ public class ConnecManager {
      * 绑定一个Endpoint，并指定通道数目
      *
      * @param endpoint
-     * @param channelCount
      * @return
      */
-    public List<Channel> bind(Endpoint endpoint, int channelCount) {
+    public Channel bind(Endpoint endpoint) {
         logger.info("connected number:" + COMMON.HTTPSERVER_WORK_THREAD + "new connect to " + endpoint.getHost() + ":" + endpoint.getPort());
-        List<Channel> channelList = new ArrayList<>();
-        for (int i = 0; i < channelCount; i++) {
-            try {
-                Channel channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
-                logger.info("get channel!" + channel.toString());
-                channelList.add(channel);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        Channel channel = null;
+        try {
+            channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
+            logger.info("get channel!" + channel.toString());
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        return channelList;
+        return channel;
     }
 
 

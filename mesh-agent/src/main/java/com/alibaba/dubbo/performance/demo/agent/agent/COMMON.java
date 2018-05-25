@@ -15,20 +15,18 @@ public class COMMON {
 
     // 作为HTTP server的线程配置
     public static final int HTTPSERVER_BOSS_THREAD = 1;
-    public static final int HTTPSERVER_WORK_THREAD = 1;
+    public static final int HTTPSERVER_WORK_THREAD = 8;
     // agent server
     public static final int AGENTSERVER_BOSS_THREAD = 1;
-    public static final int AGENTSERVER_WORK_THREAD = 1;
+    public static final int AGENTSERVER_WORK_THREAD = 8;
 
     // socket
     public static final int BACK_LOG = 1024;
 
 
     // 连接配置
-    public static final int DubboChannel_NUM = HTTPSERVER_WORK_THREAD;
-    public static final int DubboClient_THREAD = DubboChannel_NUM;
+    public static final int DubboClient_THREAD = HTTPSERVER_WORK_THREAD;
 
-    public static final int AgentChannel_NUM = HTTPSERVER_WORK_THREAD;
     public static final int AgentClient_THREAD = HTTPSERVER_WORK_THREAD;
 
 
