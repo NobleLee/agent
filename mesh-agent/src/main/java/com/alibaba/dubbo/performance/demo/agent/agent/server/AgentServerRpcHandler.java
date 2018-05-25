@@ -27,7 +27,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
 
     private static RpcClient rpcClient = RpcClient.getInstance();
 
-    public static List<Channel> channels = new ArrayList<>();
+    public static Channel channel;
 
 
     public static AtomicLong msgVCount = new AtomicLong(1);
@@ -49,9 +49,7 @@ public class AgentServerRpcHandler extends SimpleChannelInboundHandler<ByteBuf> 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        synchronized (channels) {
-            channels.add(ctx.channel());
-        }
+        channel = ctx.channel();
         logger.info("agent server channel active! " + ctx.channel());
     }
 }
