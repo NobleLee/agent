@@ -101,11 +101,17 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
 
         ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len + HEADER_LENGTH);
+        /** 加入头 */
         byteBuf.writeBytes(header);
+        /** 加入reqid */
         byteBuf.writeLong(id);
+        /** 信息长度 */
         byteBuf.writeInt(len);
+        /** 加入消息头 */
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_first);
+        /** 加入消息参数 */
         byteBuf.writeBytes(buf);
+        /** 加入消息尾 */
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
         return byteBuf;
     }
