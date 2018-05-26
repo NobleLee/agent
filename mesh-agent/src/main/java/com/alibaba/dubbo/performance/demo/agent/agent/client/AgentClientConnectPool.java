@@ -144,7 +144,7 @@ public class AgentClientConnectPool {
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         Channel sendChannel = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
         buf.retain();
-        ByteBufUtils.printStringln(buf, 8,"");
+       // ByteBufUtils.printStringln(buf, 8,""+id+"  ");
         sendChannel.writeAndFlush(buf);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }
