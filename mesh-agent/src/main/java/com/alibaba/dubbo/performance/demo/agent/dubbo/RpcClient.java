@@ -124,8 +124,6 @@ public class RpcClient {
             ByteBufUtils.println(buf, "agent server byte:");
             ByteBufUtils.printStringln(buf, "agent server strg:");
             e.printStackTrace();
-        } finally {
-            buf.release();
         }
 
     }

@@ -19,9 +19,9 @@ import java.util.Arrays;
 
 public class DubboRpcEncoder extends MessageToByteEncoder {
     // header length.
-    protected static final int HEADER_LENGTH = 16;
+    protected static final int HEADER_LENGTH = 4;
 
-    protected static final byte[] header = new byte[4];
+    protected static final byte[] header = new byte[HEADER_LENGTH];
 
     static {
         header[0] = -38;
@@ -113,6 +113,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         byteBuf.writeBytes(buf);
         /** 加入消息尾 */
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
+
         return byteBuf;
     }
 
