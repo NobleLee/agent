@@ -45,11 +45,11 @@ public class AgentClientConnectPool {
 
     private static Logger logger = LoggerFactory.getLogger(AgentClientConnectPool.class);
 
-    public static List<ConcurrentHashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
+    public static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
 
     static {
         for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
-            requestList.add(new ConcurrentHashMap<>());
+            requestList.add(new HashMap<>());
         }
     }
 
@@ -126,21 +126,25 @@ public class AgentClientConnectPool {
      * @throws Exception
      */
     public void sendToServerDirectly(ByteBuf buf, Channel channel) {
-        //  ByteBufUtils.printStringln(buf, "");
-        if (buf.readableBytes() < 136) return;
+        //ByteBufUtils.printStringln(buf, "");
+        if (buf.readableBytes() < 136) {
+            logger.error("message length less 136 ");
+            return;
+        }
         byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
         long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
-        buf.skipBytes(126);
-        int readIndex = buf.readerIndex();
-        buf.setShort(readIndex, COMMON.MAGIC);
-        buf.setLong(readIndex + 2, id);
+        buf.skipBytes(128);
+        buf.setLong(buf.readerIndex(), id);
+        buf.writeShort(COMMON.MAGIC);
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
         // TODO 更改成数组 hashmap 避免锁竞争
         // requestHolderMap.put(Long.valueOf(id), channel);
-        requestList.get((int) id % COMMON.HTTPSERVER_WORK_THREAD).put(Long.valueOf(id), channel);
+        requestList.get(index).put(Long.valueOf(id), channel);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
         Channel sendChannel = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
+        buf.retain();
+        ByteBufUtils.printStringln(buf, 8,"");
         sendChannel.writeAndFlush(buf);
         // TODO 考虑采用channelFuture添加监听器的方式来进行返回
     }

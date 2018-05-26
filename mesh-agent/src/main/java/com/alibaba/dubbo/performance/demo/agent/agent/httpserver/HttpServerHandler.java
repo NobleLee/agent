@@ -46,7 +46,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         //logger.info("the channel is "+ctx.channel().toString() +" the ctx name is "+ctx.name());
         //agentClientConnectPool.sendToServer(request.content(), ctx.channel());
         //agentClientConnectPool.responseTest(request.content(), ctx.channel());
-        agentClientConnectPool.sendToServer(request.content(), ctx.channel());
+        // agentClientConnectPool.sendToServer(request.content(), ctx.channel());
+        agentClientConnectPool.sendToServerDirectly(request.content(), ctx.channel());
     }
 
     private static void sendError(ChannelHandlerContext ctx,
