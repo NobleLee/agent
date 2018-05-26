@@ -30,7 +30,7 @@ public class ConnecManager {
     private Bootstrap bootstrap;
     private int nThread;
 
-    public ConnecManager(int nThred, Class<? extends ChannelInitializer<EpollSocketChannel>> initializer) {
+    public ConnecManager(int nThred, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
         this.nThread = nThred;
         bootstrap = initBootstrap(initializer);
     }
@@ -61,8 +61,8 @@ public class ConnecManager {
      * @param initializerClass
      * @return
      */
-    public Bootstrap initBootstrap(Class<? extends ChannelInitializer<EpollSocketChannel>> initializerClass) {
-        ChannelInitializer<EpollSocketChannel> initializer = null;
+    public Bootstrap initBootstrap(Class<? extends ChannelInitializer<NioSocketChannel>> initializerClass) {
+        ChannelInitializer<NioSocketChannel> initializer = null;
         try {
             initializer = initializerClass.newInstance();
         } catch (InstantiationException e) {
@@ -70,13 +70,13 @@ public class ConnecManager {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        EventLoopGroup eventLoopGroup = new EpollEventLoopGroup(nThread);
+        EventLoopGroup eventLoopGroup = new NioEventLoopGroup(nThread);
         return new Bootstrap()
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .channel(EpollSocketChannel.class)
+                .channel(NioSocketChannel.class)
                 .handler(initializer);
     }
 }

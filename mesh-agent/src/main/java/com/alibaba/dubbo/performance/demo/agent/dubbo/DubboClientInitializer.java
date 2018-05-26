@@ -18,11 +18,11 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
  * @author gaoguili
  * @create 2018-05-23 下午10:56
  */
-public class DubboClientInitializer extends ChannelInitializer<EpollSocketChannel> {
+public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel> {
     ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
     @Override
-    protected void initChannel(EpollSocketChannel ch) throws Exception {
+    protected void initChannel(NioSocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
         // pipeline.addLast(new DubboRpcEncoder());
 
