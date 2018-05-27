@@ -1,9 +1,8 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo;
+package com.alibaba.dubbo.performance.demo.agent.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
+import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.DubboRequest;
+import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import io.netty.buffer.ByteBuf;
@@ -15,7 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Arrays;
 
 public class DubboRpcEncoder extends MessageToByteEncoder {
     // header length.

@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.LoadBalance;
+package com.alibaba.dubbo.performance.demo.agent.agent.dubbo.LoadBalance;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import io.netty.buffer.ByteBuf;

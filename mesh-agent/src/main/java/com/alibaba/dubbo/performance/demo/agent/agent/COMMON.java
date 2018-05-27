@@ -18,7 +18,7 @@ public class COMMON {
     public static final int HTTPSERVER_WORK_THREAD = 8;
     // agent server
     public static final int AGENTSERVER_BOSS_THREAD = 1;
-    public static final int AGENTSERVER_WORK_THREAD = 8;
+    public static final int AGENTSERVER_WORK_THREAD = 4;
 
     // socket
     public static final int BACK_LOG = 1024;
