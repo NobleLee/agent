@@ -24,18 +24,17 @@ public class EndpointHelper {
     }
 
     // 设置门限值
-//    private static final double up_gate = 0.5;
+    private static final double up_gate = 0.5;
 //    private static final double medium_gate = 0.724;
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
     public static Endpoint getBalancePoint(List<Endpoint> endpoints) {
-        return endpoints.get(2 - random.nextInt(2));
-//        double random = Math.random();
-//        if (random < up_gate) {
-//            return endpoints.get(2);
-//        } else if (random < medium_gate)
-//            return endpoints.get(1);
-//        return endpoints.get(0);
+        //  return endpoints.get(random.nextInt(endpoints.size()));
+        //return endpoints.get(2 - random.nextInt(2));
+        if (Math.random() < up_gate) {
+            return endpoints.get(2);
+        }
+        return endpoints.get(1);
     }
 
 }
