@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -178,6 +177,8 @@ public class AgentClientConnectPool {
     public static boolean putServers(List<Endpoint> endpoints) {
         // TODO  应该加锁
         LOCK.AgentChannelLock = true;
+        if (instance == null) return false;
+
         if (connecManager == null) {
             synchronized (ConnecManager.class) {
                 if (connecManager == null)
@@ -213,6 +214,7 @@ public class AgentClientConnectPool {
     public static boolean deleteServers(List<Endpoint> endpoints) {
         // TODO 应该加锁
         LOCK.AgentChannelLock = true;
+        if (instance == null) return false;
         for (Endpoint endpoint : endpoints) {
             if (AgentClientConnectPool.channelMap.containsKey(endpoint)) {
                 synchronized (AgentClientConnectPool.class) {

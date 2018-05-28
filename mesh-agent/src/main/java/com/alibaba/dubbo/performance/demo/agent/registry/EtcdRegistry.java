@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.registry;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
+import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.tools.IpHelper;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import com.coreos.jetcd.Client;
@@ -100,13 +101,19 @@ public class EtcdRegistry implements IRegistry {
                         if (WatchEvent.EventType.DELETE.equals(event.getEventType())) {
                             String key = kv.getKey().toStringUtf8();
                             List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(key));
+                            // TCP
                             AgentClientConnectPool.deleteServers(endpoints);
+                            // UDP
+                            AgentUdpClient.deleteServers(endpoints);
                             logger.info("delete complete!");
                         } else if (WatchEvent.EventType.PUT.equals(event.getEventType())) {
                             // 如果是加入操作
                             String key = kv.getKey().toStringUtf8();
                             List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(key));
+                            // TCP
                             AgentClientConnectPool.putServers(endpoints);
+                            // UDP
+                            AgentUdpClient.putServers(endpoints);
                         }
                     }
                 } catch (InterruptedException e) {

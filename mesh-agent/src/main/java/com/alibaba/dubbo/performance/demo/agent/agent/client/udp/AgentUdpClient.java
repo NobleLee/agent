@@ -1,7 +1,13 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import com.alibaba.dubbo.performance.demo.agent.agent.ConnecManager;
+import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
+import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientInitializer;
+import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
+import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -37,19 +43,12 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 public class AgentUdpClient {
 
     private static Logger logger = LoggerFactory.getLogger(AgentUdpClient.class);
-    Random r = new Random(1);
 
     private Channel channel;
 
     private static AgentUdpClient instance;
 
-    private static List<HashMap<Long, Channel>> requestList = new ArrayList<>(COMMON.HTTPSERVER_WORK_THREAD);
-
-    static {
-        for (int i = 0; i < COMMON.HTTPSERVER_WORK_THREAD; i++) {
-            requestList.add(new HashMap<>());
-        }
-    }
+    private static List<Endpoint> endpointList = new ArrayList<>();
 
     public static AgentUdpClient getInstance() {
         if (instance == null) {
@@ -89,23 +88,19 @@ public class AgentUdpClient {
     /**
      * 给指定的server发送消息
      *
-     * @param endpoint
      * @param buf
      */
-    public void send(Endpoint endpoint, ByteBuf buf) {
+    public void send(ByteBuf buf, long id) {
         if (buf.readableBytes() < 136) {
             logger.error("message length less 136 ");
             return;
         }
-        byte index = (byte) (Thread.currentThread().getId() % COMMON.HTTPSERVER_WORK_THREAD);
-        long id = System.currentTimeMillis() << 35 | ((long) r.nextInt(Integer.MAX_VALUE)) << 3 | index;
         buf.skipBytes(128);
         buf.setLong(buf.readerIndex(), id);
         buf.writeShort(COMMON.MAGIC);
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
         // TODO 更改成数组 hashmap 避免锁竞争
-        // requestHolderMap.put(Long.valueOf(id), channel);
-        requestList.get(index).put(Long.valueOf(id), channel);
+        Endpoint endpoint = EndpointHelper.getBalancePoint(endpointList);
         // 根据负载均衡算法，选择一个节点发送数据
         buf.retain();
         channel.writeAndFlush(new DatagramPacket(buf, new InetSocketAddress(endpoint.getHost(), endpoint.getPort())));
@@ -125,11 +120,52 @@ public class AgentUdpClient {
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
         response.headers().set(CONTENT_LENGTH, content.readableBytes());
         response.content().writeBytes(content);
-        int index = (int) (requestId & 0x7);
-        Channel remove = requestList.get(index).remove(requestId);
-        if (remove != null && remove.isActive()) {
-            remove.writeAndFlush(response);
+
+        Channel rchannel = HttpServerHandler.channelList.get((int) requestId);
+        if (rchannel != null && rchannel.isActive()) {
+            rchannel.writeAndFlush(response);
         }
+    }
+
+
+    /**
+     * 对每一个endpoint节点都创建一个通道
+     *
+     * @param endpoints
+     * @return
+     * @throws Exception
+     */
+    public static boolean putServers(List<Endpoint> endpoints) {
+        // TODO  应该加锁
+        LOCK.AgentChannelLock = true;
+        for (Endpoint endpoint : endpoints) {
+            if (!endpointList.contains(endpoint)) {
+                endpointList.add(endpoint);
+            }
+            logger.info("add a server channel!; endpoint: " + endpoint.toString());
+        }
+        LOCK.AgentChannelLock = false;
+        return true;
+    }
+
+    /**
+     * 对每一个endpoint节点删除通道
+     *
+     * @param endpoints
+     * @return
+     * @throws Exception
+     */
+    public static boolean deleteServers(List<Endpoint> endpoints) {
+        // TODO 应该加锁
+        LOCK.AgentChannelLock = true;
+        for (Endpoint endpoint : endpoints) {
+            if (endpointList.contains(endpoint)) {
+                endpointList.remove(endpoint);
+                logger.info("close channel; endpoint: " + endpoint.toString());
+            }
+        }
+        LOCK.AgentChannelLock = false;
+        return true;
     }
 
 

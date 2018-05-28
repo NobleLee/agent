@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
+import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -30,7 +31,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private static Logger logger = LoggerFactory.getLogger(HttpServerHandler.class);
 
-    private static AgentClientConnectPool agentClientConnectPool = AgentClientConnectPool.getInstance();
+    //private static AgentClientConnectPool agentClientConnectPool = AgentClientConnectPool.getInstance();
+    private static AgentUdpClient agentUdpClient = AgentUdpClient.getInstance();
 
     private static AtomicInteger connectCount = new AtomicInteger(0);
     private static AtomicInteger classCount = new AtomicInteger(0);
@@ -61,7 +63,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         //agentClientConnectPool.responseTest(request.content(), ctx.channel());
         // agentClientConnectPool.sendToServer(request.content(), ctx.channel());
         // agentClientConnectPool.sendToServerDirectly(request.content(), ctx.channel());
-        agentClientConnectPool.sendToServerwithChannelId(request.content(), channelIndex);
+        // agentClientConnectPool.sendToServerwithChannelId(request.content(), channelIndex);
+        agentUdpClient.send(request.content(), channelIndex);
     }
 
     private static void sendError(ChannelHandlerContext ctx,
