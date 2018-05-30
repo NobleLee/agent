@@ -7,6 +7,7 @@ import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientInitiali
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -75,6 +76,7 @@ public class AgentUdpClient {
 
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+                       // ByteBufUtils.printStringln(msg.content(),8,"client udp response:  ");
                         response(msg);
                     }
                 });
@@ -97,7 +99,6 @@ public class AgentUdpClient {
         }
         buf.skipBytes(128);
         buf.setLong(buf.readerIndex(), id);
-        buf.writeShort(COMMON.MAGIC);
         // 因为是请求是HTTP连接，因此需要存储id的连接通道
         // TODO 更改成数组 hashmap 避免锁竞争
         Endpoint endpoint = EndpointHelper.getBalancePoint(endpointList);
@@ -142,7 +143,7 @@ public class AgentUdpClient {
             if (!endpointList.contains(endpoint)) {
                 endpointList.add(endpoint);
             }
-            logger.info("add a server channel!; endpoint: " + endpoint.toString());
+            logger.info("udp get endpoint: " + endpoint.toString());
         }
         LOCK.AgentChannelLock = false;
         return true;

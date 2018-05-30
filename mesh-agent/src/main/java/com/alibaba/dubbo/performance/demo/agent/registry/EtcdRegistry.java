@@ -160,6 +160,7 @@ public class EtcdRegistry implements IRegistry {
             }
             logger.info("获得注册路径：" + Arrays.toString(endpoints.toArray()));
             AgentClientConnectPool.putServers(endpoints);
+            AgentUdpClient.putServers(endpoints);
         } catch (Exception e) {
             e.printStackTrace();
         }
