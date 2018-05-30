@@ -1,10 +1,13 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.dubbo;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
+import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.socket.DatagramPacket;
+
+import java.net.InetSocketAddress;
 
 /**
  * 描述:
@@ -27,8 +30,9 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
         byteBuf.setLong(8, id);
         byteBuf.retain();
         byteBuf.writerIndex(byteBuf.writerIndex() - 3);
-        byteBuf.writeShort(COMMON.MAGIC);
-        AgentServerRpcHandler.channel.writeAndFlush(byteBuf);
+        //ByteBufUtils.printStringln(byteBuf, 8, "dubbo get massage back: ");
+        ServerUdpHandler.channel.writeAndFlush(new DatagramPacket(byteBuf, ServerUdpHandler.socketAddress));
+
     }
 
 
