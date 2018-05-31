@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 public class EtcdRegistry implements IRegistry {
-    private Logger logger = LoggerFactory.getLogger(EtcdRegistry.class);
+    private static Logger logger = LoggerFactory.getLogger(EtcdRegistry.class);
     // 该EtcdRegistry没有使用etcd的Watch机制来监听etcd的事件
     // 添加watch，在本地内存缓存地址列表，可减少网络调用的次数
     // 使用的是简单的随机负载均衡，如果provider性能不一致，随机策略会影响性能
@@ -46,15 +46,20 @@ public class EtcdRegistry implements IRegistry {
     public static EtcdRegistry etcdFactory(String registryAddress) {
         if (!etcdRegistryMap.containsKey(registryAddress)) {
             synchronized (EtcdRegistry.class) {
-                EtcdRegistry temp = new EtcdRegistry(registryAddress);
-                etcdRegistryMap.put(registryAddress, temp);
+                if (!etcdRegistryMap.containsKey(registryAddress)) {
+                    EtcdRegistry temp = new EtcdRegistry(registryAddress);
+                    etcdRegistryMap.put(registryAddress, temp);
+                }
             }
+        } else {
+            logger.info("exist registryAddress :" + registryAddress);
         }
         return etcdRegistryMap.get(registryAddress);
     }
 
     // 获取监听内容
     private EtcdRegistry(String registryAddress) {
+        logger.info("constructor EtcdRegistry " + registryAddress);
         this.client = Client.builder().endpoints(registryAddress).build();
         this.kv = client.getKVClient();
     }

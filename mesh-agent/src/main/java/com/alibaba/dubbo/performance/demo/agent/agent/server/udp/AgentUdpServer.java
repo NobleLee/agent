@@ -30,7 +30,6 @@ public class AgentUdpServer {
         b.group(group).channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_BROADCAST, false)
                 .handler(new ServerUdpHandler());
-
         channelFuture = b.bind(port);
         return this;
     }

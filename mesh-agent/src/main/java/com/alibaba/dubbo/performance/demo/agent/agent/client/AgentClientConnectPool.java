@@ -78,7 +78,7 @@ public class AgentClientConnectPool {
         buf.writeShort(COMMON.MAGIC);
         // 根据负载均衡算法，选择一个节点发送数据
         // TODO 没有考虑ChanelMap的线程安全问题；假设在服务过程中没有新的服务的注册问题
-        Channel sendChannel = channelMap.get(EndpointHelper.getBalancePoint(endpoints));
+        Channel sendChannel = channelMap.get(endpoints.get(2));
         buf.retain();
         // ByteBufUtils.printStringln(buf, 8,""+id+"  ");
         sendChannel.writeAndFlush(buf);
