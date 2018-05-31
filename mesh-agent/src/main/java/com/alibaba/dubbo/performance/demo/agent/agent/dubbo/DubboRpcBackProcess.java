@@ -25,11 +25,11 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
         ByteBuf byteBuf = (ByteBuf) msg;
         if (byteBuf.readableBytes() < 6) return;
 
-        long id = byteBuf.getLong(2);
+        long id = byteBuf.getLong(4);
         byteBuf.skipBytes(8);
         byteBuf.setLong(8, id);
         byteBuf.retain();
-        byteBuf.writerIndex(byteBuf.writerIndex() - 3);
+        byteBuf.writerIndex(byteBuf.writerIndex() - 1);
         //ByteBufUtils.printStringln(byteBuf, 8, "dubbo get massage back: ");
         ServerUdpHandler.channel.writeAndFlush(new DatagramPacket(byteBuf, ServerUdpHandler.socketAddress));
 

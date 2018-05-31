@@ -9,6 +9,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 /**
  * 描述:
@@ -27,7 +29,8 @@ public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel>
         if (COMMON.DUBBO_REQUEST_CONTROL_FLAG) {
             pipeline.addLast(new MyOutBoundHandler());
         }
-        pipeline.addLast(new DelimiterBasedFrameDecoder(2048,false, delimiter));
+       // pipeline.addLast(new DelimiterBasedFrameDecoder(2048,false, delimiter));
+        pipeline.addLast(new LengthFieldBasedFrameDecoder(2048,10,8,0,0));
         if (COMMON.DUBBO_REQUEST_CONTROL_FLAG)
             pipeline.addLast(new MyInBoundHandler());
         pipeline.addLast(new DubboRpcBackProcess());
