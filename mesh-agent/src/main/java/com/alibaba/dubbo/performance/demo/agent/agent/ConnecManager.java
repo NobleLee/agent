@@ -31,14 +31,14 @@ public class ConnecManager {
      * @return
      */
     public Channel bind(Endpoint endpoint) {
-        logger.info("connected number:" + COMMON.HTTPSERVER_WORK_THREAD + "new connect to " + endpoint.getHost() + ":" + endpoint.getPort());
+        logger.info("connected number:" + COMMON.HTTPSERVER_WORK_THREAD + " new connect to " + endpoint.getHost() + ":" + endpoint.getPort());
         Channel channel = null;
         try {
             channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
             logger.info("get channel!" + channel.toString());
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+           logger.error(e.toString());
         }
         return channel;
     }
