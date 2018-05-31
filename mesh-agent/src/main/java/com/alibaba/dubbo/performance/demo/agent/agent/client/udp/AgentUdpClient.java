@@ -76,7 +76,7 @@ public class AgentUdpClient {
 
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
-                       // ByteBufUtils.printStringln(msg.content(),8,"client udp response:  ");
+                        ByteBufUtils.printStringln(msg.content(),8,"client udp response:  ");
                         response(msg);
                     }
                 });
