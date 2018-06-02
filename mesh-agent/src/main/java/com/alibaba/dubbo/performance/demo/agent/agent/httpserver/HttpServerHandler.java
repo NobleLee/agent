@@ -39,6 +39,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     public static List<Channel> channelList = new ArrayList<>(700);
 
+    private static AtomicLong msgcount = new AtomicLong(0);
+
     private int channelIndex = 0;
 
     @Override
@@ -64,6 +66,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         // agentClientConnectPool.sendToServer(request.content(), ctx.channel());
         // agentClientConnectPool.sendToServerDirectly(request.content(), ctx.channel());
         // agentClientConnectPool.sendToServerwithChannelId(request.content(), channelIndex);
+        logger.info("http message req : " + msgcount.incrementAndGet());
         agentUdpClient.send(request.content(), channelIndex);
     }
 
@@ -83,6 +86,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     public HttpServerHandler() {
         super();
-        logger.info("new HttpServerHandler count: " + classCount.incrementAndGet());
+        logger.info("new HttpServerHandler count: " + classCount.getAndIncrement());
     }
 }

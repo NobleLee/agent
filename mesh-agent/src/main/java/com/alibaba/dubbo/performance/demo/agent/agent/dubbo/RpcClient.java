@@ -109,7 +109,7 @@ public class RpcClient {
             this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
-            ByteBufUtils.printStringln(buf, "agent server strg:");
+            ByteBufUtils.printStringln(buf, "agent server str:");
             e.printStackTrace();
         }
 

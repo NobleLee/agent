@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -50,6 +51,8 @@ public class AgentUdpClient {
     private static AgentUdpClient instance;
 
     private static List<Endpoint> endpointList = new ArrayList<>();
+
+    private static AtomicLong sendCount = new AtomicLong(0);
 
     public static AgentUdpClient getInstance() {
         if (instance == null) {
@@ -103,6 +106,7 @@ public class AgentUdpClient {
         Endpoint endpoint = EndpointHelper.getBalancePoint(endpointList);
         // 根据负载均衡算法，选择一个节点发送数据
         buf.retain();
+        logger.info("udp client sender count: " + sendCount.incrementAndGet());
         channel.writeAndFlush(new DatagramPacket(buf, new InetSocketAddress(endpoint.getHost(), endpoint.getPort())));
     }
 
