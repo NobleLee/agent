@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +52,6 @@ public class AgentUdpClient {
     private static AgentUdpClient instance;
 
     private static List<Endpoint> endpointList = new ArrayList<>();
-
-    private static AtomicLong sendCount = new AtomicLong(0);
 
     public static AgentUdpClient getInstance() {
         if (instance == null) {
@@ -106,7 +105,6 @@ public class AgentUdpClient {
         Endpoint endpoint = EndpointHelper.getBalancePoint(endpointList);
         // 根据负载均衡算法，选择一个节点发送数据
         buf.retain();
-        logger.info("udp client sender count: " + sendCount.incrementAndGet());
         channel.writeAndFlush(new DatagramPacket(buf, new InetSocketAddress(endpoint.getHost(), endpoint.getPort())));
     }
 

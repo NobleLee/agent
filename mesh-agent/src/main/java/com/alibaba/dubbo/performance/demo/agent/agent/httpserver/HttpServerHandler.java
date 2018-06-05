@@ -31,15 +31,13 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private static Logger logger = LoggerFactory.getLogger(HttpServerHandler.class);
 
-    //private static AgentClientConnectPool agentClientConnectPool = AgentClientConnectPool.getInstance();
     private static AgentUdpClient agentUdpClient = AgentUdpClient.getInstance();
 
     private static AtomicInteger connectCount = new AtomicInteger(0);
+
     private static AtomicInteger classCount = new AtomicInteger(0);
 
-    public static List<Channel> channelList = new ArrayList<>(700);
-
-    private static AtomicLong msgcount = new AtomicLong(0);
+    public static List<Channel> channelList = new ArrayList<>(1000);
 
     private int channelIndex = 0;
 
@@ -66,7 +64,6 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         // agentClientConnectPool.sendToServer(request.content(), ctx.channel());
         // agentClientConnectPool.sendToServerDirectly(request.content(), ctx.channel());
         // agentClientConnectPool.sendToServerwithChannelId(request.content(), channelIndex);
-        logger.info("http message req : " + msgcount.incrementAndGet());
         agentUdpClient.send(request.content(), channelIndex);
     }
 

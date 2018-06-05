@@ -33,7 +33,7 @@ public class ConnecManager {
     public Channel bind(Endpoint endpoint) {
         logger.info("connected number:" + COMMON.DubboClient_THREAD + " new connect to " + endpoint);
         Channel channel = null;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             try {
                 channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
                 logger.info("get channel!" + channel.toString());
@@ -45,7 +45,7 @@ public class ConnecManager {
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
-                logger.info("try "+i+"times to connect "+endpoint);
+                logger.info("try " + i + "times to connect " + endpoint);
             }
         }
         return channel;

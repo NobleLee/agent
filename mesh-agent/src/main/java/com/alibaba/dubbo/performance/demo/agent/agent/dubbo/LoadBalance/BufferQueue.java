@@ -26,7 +26,7 @@ public class BufferQueue {
         if (requestCount.get() >= requestMaxCount) {
             boolean flag = bufferqueue.offer(byteBuf);
             if (!flag) {
-               logger.info("offer the Queue is fail: the size is " + bufferqueue.size());
+               logger.error("offer the Queue is fail: the size is " + bufferqueue.size());
             }
             return flag;
         } else {

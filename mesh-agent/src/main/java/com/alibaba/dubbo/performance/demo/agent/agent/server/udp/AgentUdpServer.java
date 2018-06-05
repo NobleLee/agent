@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.server.udp;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,7 +18,7 @@ public class AgentUdpServer {
 
     private int port;
     private ChannelFuture channelFuture;
-    private EventLoopGroup group = new NioEventLoopGroup();
+    private EventLoopGroup group = new NioEventLoopGroup(COMMON.AGENTSERVER_WORK_THREAD);
 
     public AgentUdpServer bind(int port) {
         this.port = port;

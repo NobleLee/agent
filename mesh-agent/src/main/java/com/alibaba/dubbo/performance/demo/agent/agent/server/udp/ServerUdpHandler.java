@@ -28,8 +28,6 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private static AtomicLong objectCount = new AtomicLong(0);
 
-    private static AtomicLong msgCount = new AtomicLong(0);
-
     private static RpcClient rpcClient = RpcClient.getInstance();
 
     public static Channel channel;
@@ -38,7 +36,6 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
-//        ByteBufUtils.printStringln(msg.content(), 8, "udp get massage: ");
         if (socketAddress == null) {
             synchronized (this) {
                 if (socketAddress == null) {
@@ -46,7 +43,6 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
                 }
             }
         }
-        logger.info("udp server get msg count: " + msgCount.incrementAndGet());
         rpcClient.sendDubboDirect(msg.content());
     }
 
