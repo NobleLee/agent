@@ -26,6 +26,9 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
         ByteBuf byteBuf = (ByteBuf) msg;
         if (byteBuf.readableBytes() < 6) return;
 
+        /***
+         *  对消息进行封装
+         */
         long id = byteBuf.getLong(4);
         byteBuf.skipBytes(10);
         byteBuf.setLong(10, id);
