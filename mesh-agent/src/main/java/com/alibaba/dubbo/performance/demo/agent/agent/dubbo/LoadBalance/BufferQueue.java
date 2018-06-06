@@ -28,6 +28,7 @@ public class BufferQueue {
             if (!flag) {
                logger.error("offer the Queue is fail: the size is " + bufferqueue.size());
             }
+            logger.error("the request size up to 200. " + bufferqueue.size());
             return flag;
         } else {
             requestCount.incrementAndGet();

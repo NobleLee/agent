@@ -12,15 +12,11 @@ public class MyInBoundHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        /*ByteBuf result = ((ByteBuf) msg).copy();
-        byte[] result1 = new byte[result.readableBytes()];
-        result.readBytes(result1);
-        String resultStr = new String(result1);
-        System.out.println("qxc inbound:" + resultStr);*/
+
         ByteBuf byteBuf = BufferQueue.inBoundRequestFilter();
         if (byteBuf != null) {
             ctx.writeAndFlush(byteBuf);
-        }else{
+        } else {
             // logger.info("the requestCount:"+BufferQueue.requestCount);
         }
         ctx.fireChannelRead(msg);

@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.dubbo;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.LoadBalance.BufferQueue;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
@@ -31,6 +32,18 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
         byteBuf.retain();
         byteBuf.writerIndex(byteBuf.writerIndex() - 1);
         ServerUdpHandler.channel.writeAndFlush(new DatagramPacket(byteBuf, ServerUdpHandler.socketAddress));
+//        long id = byteBuf.getLong(4);
+//        byteBuf.skipBytes(6);
+//        byteBuf.setLong(6, id);
+//        /**
+//         * 报文中增加正在处理的消息数目
+//         */
+//        int count = BufferQueue.bufferqueue.isEmpty() ? BufferQueue.requestCount.get() : BufferQueue.requestMaxCount;
+//        byteBuf.setInt(14, count);
+//        byteBuf.retain();
+//        byteBuf.writerIndex(byteBuf.writerIndex() - 1);
+//        ServerUdpHandler.channel.writeAndFlush(new DatagramPacket(byteBuf, ServerUdpHandler.socketAddress));
+
 
     }
 

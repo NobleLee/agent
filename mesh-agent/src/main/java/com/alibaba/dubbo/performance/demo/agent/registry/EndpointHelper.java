@@ -27,25 +27,39 @@ public class EndpointHelper {
     private static final double up_gate = 0.38;
     private static final double medium_gate = 0.76;
 
+    private static final int limit = 195;
+
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
     public static Endpoint getBalancePoint(List<Endpoint> endpoints) {
         /**
          * 随机负载均衡
-         * */
-       // return endpoints.get(random.nextInt(endpoints.size()));
+         */
+        // return endpoints.get(random.nextInt(endpoints.size()));
 
-        /***
+        /**
          * 按照1：1：0的方式
          */
-        if (Math.random() < 0.5) {
-            return endpoints.get(2);
-        }
-        return endpoints.get(1);
+//        if (Math.random() < 0.5) {
+//            return endpoints.get(2);
+//        }
+//        return endpoints.get(1);
 
+        /**
+         * 尽可能的将请求打到最大的机器
+         */
+        if (endpoints.get(2).reqNum.get() < limit) {
+            endpoints.get(2).reqNum.incrementAndGet();
+            return endpoints.get(2);
+        } else if (endpoints.get(1).reqNum.get() < limit) {
+            endpoints.get(1).reqNum.incrementAndGet();
+            return endpoints.get(1);
+        }
+        endpoints.get(0).reqNum.incrementAndGet();
+        return endpoints.get(0);
 
         /**
          * 按照200：200：112的比例进行请求
-         * */
+         */
 //        double r = Math.random();
 //
 //        if (r < up_gate) {
@@ -57,7 +71,7 @@ public class EndpointHelper {
 
         /**
          * 统计请求数目分布
-         * */
+         */
 //        int min = endpoints.get(2).questNum;
 //        Endpoint res = endpoints.get(2);
 //        for (int i = 1; i >= 0; i--) {

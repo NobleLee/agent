@@ -20,17 +20,14 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
  * @create 2018-05-23 下午10:56
  */
 public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel> {
-    ByteBuf delimiter = Unpooled.copyShort(COMMON.MAGIC);
 
     @Override
-    protected void initChannel(NioSocketChannel ch) throws Exception {
+    protected void initChannel(NioSocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
 
         if (COMMON.DUBBO_REQUEST_CONTROL_FLAG) {
             pipeline.addLast(new MyOutBoundHandler());
         }
-
-       // pipeline.addLast(new DelimiterBasedFrameDecoder(2048,false, delimiter));
         pipeline.addLast(new LengthFieldBasedFrameDecoder(2048,12,4,0,0));
         if (COMMON.DUBBO_REQUEST_CONTROL_FLAG)
             pipeline.addLast(new MyInBoundHandler());

@@ -14,13 +14,8 @@ public class MyOutBoundHandler extends ChannelOutboundHandlerAdapter {
     @Override
     // 向client发送消息
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        /*ByteBuf result=((ByteBuf)msg).copy();
-        byte[] result1 = new byte[result.readableBytes()];
-        result.readBytes(result1);
-        String resultStr = new String(result1);
-        logger.info("qxc outbound:" + resultStr);*/
-        if(BufferQueue.outBoundRequestFilter((ByteBuf)msg)){
-        }else{
+
+        if (!BufferQueue.outBoundRequestFilter((ByteBuf) msg)) {
             // 执行下一个OutboundHandler
             super.write(ctx, msg, promise);
         }

@@ -1,17 +1,11 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
-import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.AgentUdpServer;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 
 public class AgentApp {

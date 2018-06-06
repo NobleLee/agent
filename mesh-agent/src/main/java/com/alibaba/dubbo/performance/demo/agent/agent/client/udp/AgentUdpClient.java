@@ -1,13 +1,9 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
-import com.alibaba.dubbo.performance.demo.agent.agent.ConnecManager;
-import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
-import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientInitializer;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -25,13 +21,9 @@ import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -77,7 +69,6 @@ public class AgentUdpClient {
                 .handler(new SimpleChannelInboundHandler<DatagramPacket>() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
-                        //ByteBufUtils.printStringln(msg.content(),8,"client udp response:  ");
                         response(msg);
                     }
                 });
@@ -100,10 +91,8 @@ public class AgentUdpClient {
         }
         buf.skipBytes(128);
         buf.setLong(buf.readerIndex(), id);
-        // 因为是请求是HTTP连接，因此需要存储id的连接通道
-        // TODO 更改成数组 hashmap 避免锁竞争
-        Endpoint endpoint = EndpointHelper.getBalancePoint(endpointList);
         // 根据负载均衡算法，选择一个节点发送数据
+        Endpoint endpoint = EndpointHelper.getBalancePoint(endpointList);
         buf.retain();
         channel.writeAndFlush(new DatagramPacket(buf, new InetSocketAddress(endpoint.getHost(), endpoint.getPort())));
     }
@@ -117,6 +106,16 @@ public class AgentUdpClient {
         ByteBuf content = msg.content();
         // 获取请求id
         long requestId = content.readLong();
+        /**
+         * 设置正在处理的数目
+         */
+        String hostAddress = msg.sender().getAddress().getHostAddress();
+        for (Endpoint endpoint : endpointList) {
+            if (endpoint.getHost().equals(hostAddress)) {
+                endpoint.reqNum.decrementAndGet();
+                break;
+            }
+        }
         // 封装返回response
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
