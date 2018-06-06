@@ -31,11 +31,11 @@ public class ConnecManager {
      * @return
      */
     public Channel bind(Endpoint endpoint) {
-        logger.info("connected number:" + COMMON.DubboClient_THREAD + " new connect to " + endpoint);
+        logger.info(" new connect to " + endpoint + "connected thread number:" + COMMON.DubboClient_THREAD);
         Channel channel = null;
         for (int i = 0; i < 100; i++) {
             try {
-                channel = bootstrap.connect().sync().channel();
+                channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
                 logger.info("get channel!" + channel.toString());
                 break;
             } catch (Exception e) {
