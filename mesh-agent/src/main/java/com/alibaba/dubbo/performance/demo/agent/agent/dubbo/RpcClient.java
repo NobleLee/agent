@@ -36,6 +36,8 @@ public class RpcClient {
 
     private ConnecManager connecManager;
 
+    private volatile int msgCount = 0;
+
     private RpcClient() {
         connecManager = new ConnecManager(COMMON.DubboClient_THREAD, DubboClientInitializer.class);
         Endpoint endpoint = new Endpoint("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
@@ -106,7 +108,13 @@ public class RpcClient {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
             // ByteBufUtils.println(byteBuf,"send dubbo:");
-            this.channel.writeAndFlush(byteBuf);
+            if (msgCount >= 8) {
+                this.channel.writeAndFlush(byteBuf);
+                msgCount = 0;
+            } else {
+                this.channel.write(byteBuf);
+                msgCount++;
+            }
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
             ByteBufUtils.printStringln(buf, "agent server str:");

@@ -36,7 +36,7 @@ public class ConnecManager {
         for (int i = 0; i < 100; i++) {
             try {
                 channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
-                logger.info("get channel!" + channel.toString());
+                logger.info("get channel: " + channel.toString());
                 break;
             } catch (Exception e) {
                 logger.error(e.toString());
@@ -45,7 +45,7 @@ public class ConnecManager {
                 } catch (InterruptedException e1) {
                     logger.error(e1.toString());
                 }
-                logger.info("try " + i + "times to connect " + endpoint);
+                logger.info("try " + i + " times to connect " + endpoint);
             }
         }
         return channel;
