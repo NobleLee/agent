@@ -24,7 +24,9 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf byteBuf = (ByteBuf) msg;
-        if (byteBuf.readableBytes() < 6) return;
+        ByteBufUtils.println(byteBuf, "get dubbo byte");
+        ByteBufUtils.printBinln(byteBuf, "get dubbo byte");
+        if (byteBuf.getByte(2) != 6) return;
 
         /***
          *  对消息进行封装
