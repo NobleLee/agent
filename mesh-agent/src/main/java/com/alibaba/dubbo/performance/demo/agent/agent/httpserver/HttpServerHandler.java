@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -33,31 +34,36 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private static AgentUdpClient agentUdpClient = AgentUdpClient.getInstance();
 
-    private static AtomicInteger connectCount = new AtomicInteger(0);
+    //private static AtomicInteger connectCount = new AtomicInteger(0);
 
     private static AtomicInteger classCount = new AtomicInteger(0);
 
-    public static List<Channel> channelList = new ArrayList<>(1000);
+    public static List<Channel> channelList = new ArrayList<>(900);
+
+    public static List<FullHttpResponse> reqList = new ArrayList<>(900);
 
     private int channelIndex = 0;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        logger.info(connectCount.getAndIncrement() + " get consumer http connected!!!");
+//        logger.info(connectCount.getAndIncrement() + " get consumer http connected!!!");
         synchronized (HttpServerHandler.class) {
             channelIndex = channelList.size();
             channelList.add(ctx.channel());
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+            response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+            reqList.add(response);
         }
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         //400
-        if (!request.decoderResult().isSuccess()) {
-            sendError(ctx, HttpResponseStatus.BAD_REQUEST);
-            return;
-        }
+//        if (!request.decoderResult().isSuccess()) {
+//            sendError(ctx, HttpResponseStatus.BAD_REQUEST);
+//            return;
+//        }
         // System.err.println(request.content().copy().toString(Charsets.UTF_8));
         //logger.info("the channel is "+ctx.channel().toString() +" the ctx name is "+ctx.name());
         //agentClientConnectPool.responseTest(request.content(), ctx.channel());

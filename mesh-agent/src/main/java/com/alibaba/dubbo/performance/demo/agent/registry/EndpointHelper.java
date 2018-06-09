@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Random;
 
@@ -29,8 +30,9 @@ public class EndpointHelper {
 
     private static final int limit = 195;
 
+
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
-    public static Endpoint getBalancePoint(List<Endpoint> endpoints) {
+    public static InetSocketAddress getBalancePoint(List<Endpoint> endpoints, List<InetSocketAddress> inters) {
         /**
          * 随机负载均衡
          */
@@ -46,16 +48,16 @@ public class EndpointHelper {
 
         /**
          * 尽可能的将请求打到最大的机器
-         //         */
+         */
         if (endpoints.get(2).reqNum.get() < limit) {
             endpoints.get(2).reqNum.incrementAndGet();
-            return endpoints.get(2);
+            return inters.get(2);
         } else if (endpoints.get(1).reqNum.get() < limit) {
             endpoints.get(1).reqNum.incrementAndGet();
-            return endpoints.get(1);
+            return inters.get(1);
         }
         endpoints.get(0).reqNum.incrementAndGet();
-        return endpoints.get(0);
+        return inters.get(0);
 
         /**
          * 按照200：200：112的比例进行请求

@@ -29,7 +29,7 @@ public class HttpChannelInitializer extends ChannelInitializer<NioSocketChannel>
          * HttpObjectAggregator解码器
          * 将多个消息转换为单一的FullHttpRequest或FullHttpResponse对象
          */
-        pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
+        pipeline.addLast("http-aggregator", new HttpObjectAggregator(1534));
 
 //        pipeline.addLast(new MessageToByteEncoder() {
 //

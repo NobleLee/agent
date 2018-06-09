@@ -24,7 +24,7 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf byteBuf = (ByteBuf) msg;
-        if (byteBuf.readableBytes() < 6) return;
+        if (byteBuf.getByte(2) != 6) return;
 
         /***
          *  对消息进行封装
@@ -48,7 +48,6 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
 //        byteBuf.retain();
 //        byteBuf.writerIndex(byteBuf.writerIndex() - 1);
 //        ServerUdpHandler.channel.writeAndFlush(new DatagramPacket(byteBuf, ServerUdpHandler.socketAddress));
-
 
     }
 

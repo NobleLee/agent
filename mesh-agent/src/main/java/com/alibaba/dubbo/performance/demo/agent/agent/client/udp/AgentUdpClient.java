@@ -45,6 +45,8 @@ public class AgentUdpClient {
 
     private static List<Endpoint> endpointList = new ArrayList<>();
 
+    private static List<InetSocketAddress> interList = new ArrayList<>();
+
     public static AgentUdpClient getInstance() {
         if (instance == null) {
             synchronized (AgentUdpClient.class) {
@@ -92,9 +94,10 @@ public class AgentUdpClient {
         buf.skipBytes(128);
         buf.setLong(buf.readerIndex(), id);
         // 根据负载均衡算法，选择一个节点发送数据
-        Endpoint endpoint = EndpointHelper.getBalancePoint(endpointList);
+        InetSocketAddress balancePoint = EndpointHelper.getBalancePoint(endpointList, interList);
         buf.retain();
-        channel.writeAndFlush(new DatagramPacket(buf, new InetSocketAddress(endpoint.getHost(), endpoint.getPort())));
+
+        channel.writeAndFlush(new DatagramPacket(buf, balancePoint));
     }
 
     /**
@@ -105,7 +108,7 @@ public class AgentUdpClient {
     public void response(DatagramPacket msg) {
         ByteBuf content = msg.content();
         // 获取请求id
-        long requestId = content.readLong();
+        int requestId = (int)content.readLong();
         /**
          * 设置正在处理的数目
          */
@@ -117,12 +120,11 @@ public class AgentUdpClient {
             }
         }
         // 封装返回response
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+        FullHttpResponse response = HttpServerHandler.reqList.get(requestId);
         response.headers().set(CONTENT_LENGTH, content.readableBytes());
         response.content().writeBytes(content);
 
-        Channel rchannel = HttpServerHandler.channelList.get((int) requestId);
+        Channel rchannel = HttpServerHandler.channelList.get(requestId);
         if (rchannel != null && rchannel.isActive()) {
             rchannel.writeAndFlush(response);
         }
@@ -142,8 +144,9 @@ public class AgentUdpClient {
         for (Endpoint endpoint : endpoints) {
             if (!endpointList.contains(endpoint)) {
                 endpointList.add(endpoint);
+                interList.add(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
+                logger.info("udp get endpoint: " + endpoint.toString());
             }
-            logger.info("udp get endpoint: " + endpoint.toString());
         }
         LOCK.AgentChannelLock = false;
         return true;
@@ -162,6 +165,7 @@ public class AgentUdpClient {
         for (Endpoint endpoint : endpoints) {
             if (endpointList.contains(endpoint)) {
                 endpointList.remove(endpoint);
+                interList.remove(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
                 logger.info("close channel; endpoint: " + endpoint.toString());
             }
         }

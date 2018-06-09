@@ -38,6 +38,8 @@ public class HTTPServer {
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, COMMON.BACK_LOG)
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(new HttpChannelInitializer());
 
             ChannelFuture future = bootstrap.bind("localhost", port).sync();
