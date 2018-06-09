@@ -98,7 +98,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
 
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
 
-        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len + HEADER_LENGTH);
+        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.heapBuffer(len + HEADER_LENGTH);
         /** 加入头 */
         byteBuf.writeBytes(header);
         /** 加入reqid */

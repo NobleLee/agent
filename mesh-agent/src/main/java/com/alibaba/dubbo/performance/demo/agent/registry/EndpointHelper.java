@@ -34,7 +34,7 @@ public class EndpointHelper {
         /**
          * 随机负载均衡
          */
-        // return endpoints.get(random.nextInt(endpoints.size()));
+        //return endpoints.get(random.nextInt(endpoints.size()));
 
         /**
          * 按照1：1：0的方式
@@ -46,7 +46,7 @@ public class EndpointHelper {
 
         /**
          * 尽可能的将请求打到最大的机器
-//         */
+         //         */
         if (endpoints.get(2).reqNum.get() < limit) {
             endpoints.get(2).reqNum.incrementAndGet();
             return endpoints.get(2);
@@ -72,16 +72,17 @@ public class EndpointHelper {
         /**
          * 统计请求数目分布
          */
-//        int min = endpoints.get(2).questNum;
-//        Endpoint res = endpoints.get(2);
-//        for (int i = 1; i >= 0; i--) {
-//            if (endpoints.get(i).questNum < min) {
-//                res = endpoints.get(i);
-//                min = res.questNum;
-//            }
+//        long min = endpoints.get(0).reqNum.get() + 10;
+//        Endpoint res = endpoints.get(0);
+//        if (endpoints.get(1).reqNum.get() <= min) {
+//            min = endpoints.get(1).reqNum.get();
+//            res = endpoints.get(1);
 //        }
+//        if (endpoints.get(2).reqNum.get() <= min) {
+//            res = endpoints.get(2);
+//        }
+//        res.reqNum.incrementAndGet();
 //        return res;
     }
-
 
 }

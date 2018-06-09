@@ -2,9 +2,9 @@ package com.alibaba.dubbo.performance.demo.agent.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.ConnecManager;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
@@ -35,8 +35,6 @@ public class RpcClient {
     private Channel channel;
 
     private ConnecManager connecManager;
-
-    private volatile int msgCount = 0;
 
     private RpcClient() {
         connecManager = new ConnecManager(COMMON.DubboClient_THREAD, DubboClientInitializer.class);
@@ -107,14 +105,7 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf) {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
-            // ByteBufUtils.println(byteBuf,"send dubbo:");
-            if (msgCount >= 8) {
-                this.channel.writeAndFlush(byteBuf);
-                msgCount = 0;
-            } else {
-                this.channel.write(byteBuf);
-                msgCount++;
-            }
+            this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
             ByteBufUtils.printStringln(buf, "agent server str:");

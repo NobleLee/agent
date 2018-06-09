@@ -73,6 +73,8 @@ public class ConnecManager {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, false)
+                .option(ChannelOption.SO_SNDBUF, 12800000)
                 .channel(NioSocketChannel.class)
                 .handler(initializer);
     }

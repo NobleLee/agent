@@ -15,7 +15,8 @@ if [[ "$1" == "consumer" ]]; then
        -Dserver.port=20000 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
-       -XX:+PrintGC \
+       -Xloggc:/root/logs/gc.log \
+       -XX:+PrintGCDetails \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
@@ -27,31 +28,34 @@ elif [[ "$1" == "provider-small" ]]; then
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
-       -XX:+PrintGC \
+       -Xloggc:/root/logs/gc.log \
+       -XX:+PrintGCDetails \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
   java -jar \
-       -Xms1536M \
-       -Xmx1536M \
+       -Xms1G \
+       -Xmx1G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
-       -XX:+PrintGC \
+       -XX:+PrintGCDetails \
        -Dlogs.dir=/root/logs \
+       -Xloggc:/root/logs/gc.log \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
   java -jar \
-       -Xms2560M \
-       -Xmx2560M \
+       -Xms3G \
+       -Xmx3G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
-       -XX:+PrintGC \
+       -XX:+PrintGCDetails \
        -Dlogs.dir=/root/logs \
+       -Xloggc:/root/logs/gc.log \
        /root/dists/mesh-agent.jar
 else
   echo "Unrecognized arguments, exit."
