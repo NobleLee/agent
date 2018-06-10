@@ -34,7 +34,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     private static AtomicInteger classCount = new AtomicInteger(0);
 
-    public static List<Channel> channelList = new ArrayList<>(900);
+    public static List<Channel> channelList = new ArrayList<>(600);
 
     public static List<FullHttpResponse> reqList = new ArrayList<>(512);
 
@@ -70,7 +70,6 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
         if (getBody(buf)) {
-          //  ByteBufUtils.printStringln(groubleBuf, "body:");
             agentUdpClient.send(groubleBuf, channelIndex);
         }
     }

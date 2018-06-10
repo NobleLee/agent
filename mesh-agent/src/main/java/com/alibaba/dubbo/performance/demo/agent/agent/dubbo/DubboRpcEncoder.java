@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DubboRpcEncoder extends MessageToByteEncoder {
     // header length.
@@ -86,6 +88,16 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
 //        return byteBuf;
 //    }
 
+    public static List<ByteBuf> reqList = new ArrayList<>(512);
+
+    static {
+        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + 1024 + HEADER_LENGTH;
+        for (int i = 0; i < 512; i++) {
+            ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len);
+            reqList.add(byteBuf);
+        }
+    }
+
     /**
      * 直接将数据封装成Dubbo Req
      *
@@ -98,7 +110,11 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
 
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
 
-        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.heapBuffer(len + HEADER_LENGTH);
+        ByteBuf byteBuf = reqList.get((int) id);
+        byteBuf.resetReaderIndex();
+        byteBuf.resetWriterIndex();
+        byteBuf.retain();
+
         /** 加入头 */
         byteBuf.writeBytes(header);
         /** 加入reqid */
