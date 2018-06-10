@@ -31,7 +31,7 @@ public class ConnecManager {
      * @return
      */
     public Channel bind(Endpoint endpoint) {
-        logger.info(" new connect to " + endpoint + "connected thread number:" + COMMON.DubboClient_THREAD);
+        logger.info(" new connect to " + endpoint + "connected thread number: " + nThread);
         Channel channel = null;
         for (int i = 0; i < 100; i++) {
             try {
