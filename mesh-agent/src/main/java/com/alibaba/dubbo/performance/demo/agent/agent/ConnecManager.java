@@ -31,7 +31,7 @@ public class ConnecManager {
      * @return
      */
     public Channel bind(Endpoint endpoint) {
-        logger.info(" new connect to " + endpoint + "connected thread number:" + COMMON.DubboClient_THREAD);
+        logger.info(" new connect to " + endpoint + "connected thread number:" + nThread);
         Channel channel = null;
         for (int i = 0; i < 100; i++) {
             try {
@@ -73,7 +73,7 @@ public class ConnecManager {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, false)
+                .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, true)
                 .option(ChannelOption.SO_SNDBUF, 25600000)
                 .channel(NioSocketChannel.class)
                 .handler(initializer);

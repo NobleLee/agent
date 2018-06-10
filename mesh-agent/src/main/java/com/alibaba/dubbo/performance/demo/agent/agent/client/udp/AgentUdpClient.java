@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpServerHandler;
+import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpSimpleHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
@@ -66,7 +67,7 @@ public class AgentUdpClient {
                 .channel(NioDatagramChannel.class)
                 .handler(new SimpleChannelInboundHandler<DatagramPacket>() {
                     @Override
-                    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+                    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
                         response(msg);
                     }
                 });
@@ -120,12 +121,12 @@ public class AgentUdpClient {
             }
         }
         // 封装返回response
-        FullHttpResponse response = HttpServerHandler.reqList.get(requestId);
+        FullHttpResponse response = HttpSimpleHandler.reqList.get(requestId);
         response.retain();
         response.headers().set(CONTENT_LENGTH, content.readableBytes());
         response.content().writeBytes(content);
 
-        Channel rchannel = HttpServerHandler.channelList.get(requestId);
+        Channel rchannel = HttpSimpleHandler.channelList.get(requestId);
         if (rchannel != null && rchannel.isActive()) {
             rchannel.writeAndFlush(response);
         }

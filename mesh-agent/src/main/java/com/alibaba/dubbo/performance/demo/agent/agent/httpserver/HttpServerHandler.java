@@ -38,70 +38,46 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private static AgentUdpClient agentUdpClient = AgentUdpClient.getInstance();
 
-    //private static AtomicInteger connectCount = new AtomicInteger(0);
-
     private static AtomicInteger classCount = new AtomicInteger(0);
 
     public static List<Channel> channelList = new ArrayList<>(900);
 
-    public static List<FullHttpResponse> reqList = new ArrayList<>(900);
+    public static List<FullHttpResponse> reqList = new ArrayList<>(512);
 
-   // public static List<List<DatagramPacket>> udpReqList = new ArrayList<>(900);
+    static {
+        for (int i = 0; i < 512; i++) {
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+            response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+            reqList.add(response);
+        }
+    }
 
     private int channelIndex = 0;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-//        logger.info(connectCount.getAndIncrement() + " get consumer http connected!!!");
         synchronized (HttpServerHandler.class) {
             channelIndex = channelList.size();
             channelList.add(ctx.channel());
-            // http response
-            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-            response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-            reqList.add(response);
-            // udp req
-//            for (int i = 0; i < udpReqList.size(); i++) {
-//                DatagramPacket datagramPacket = new DatagramPacket(UnpooledByteBufAllocator.DEFAULT.buffer(1), agentUdpClient.getInterList().get(i));
-//                udpReqList.get(i).add(datagramPacket);
-//            }
-
+            logger.info("add channel, channel size: " + channelList.size());
         }
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        //400
-//        if (!request.decoderResult().isSuccess()) {
-//            sendError(ctx, HttpResponseStatus.BAD_REQUEST);
-//            return;
-//        }
-        // System.err.println(request.content().copy().toString(Charsets.UTF_8));
-        //logger.info("the channel is "+ctx.channel().toString() +" the ctx name is "+ctx.name());
-        //agentClientConnectPool.responseTest(request.content(), ctx.channel());
-        // agentClientConnectPool.sendToServer(request.content(), ctx.channel());
-        // agentClientConnectPool.sendToServerDirectly(request.content(), ctx.channel());
-        // agentClientConnectPool.sendToServerwithChannelId(request.content(), channelIndex);
         agentUdpClient.send(request.content(), channelIndex);
-    }
-
-    private static void sendError(ChannelHandlerContext ctx,
-                                  HttpResponseStatus status) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1,
-                status, Unpooled.copiedBuffer("Failure: " + status.toString()
-                + "\r\n", CharsetUtil.UTF_8));
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
+        logger.info("remove channel, channel size: " + channelList.size());
+        channelList.remove(ctx.channel());
     }
 
     public HttpServerHandler() {
         super();
-        logger.info("new HttpServerHandler count: " + classCount.getAndIncrement());
+        logger.info("new HttpServerHandler count: " + classCount.incrementAndGet());
     }
 }
