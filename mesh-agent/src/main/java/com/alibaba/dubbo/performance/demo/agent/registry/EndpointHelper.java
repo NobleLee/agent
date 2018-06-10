@@ -32,11 +32,11 @@ public class EndpointHelper {
 
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
-    public static InetSocketAddress getBalancePoint(List<Endpoint> endpoints, List<InetSocketAddress> inters) {
+    public static int getBalancePoint(List<Endpoint> endpoints) {
         /**
          * 随机负载均衡
          */
-        //return endpoints.get(random.nextInt(endpoints.size()));
+       // return random.nextInt(endpoints.size());
 
         /**
          * 按照1：1：0的方式
@@ -51,13 +51,13 @@ public class EndpointHelper {
          */
         if (endpoints.get(2).reqNum.get() < limit) {
             endpoints.get(2).reqNum.incrementAndGet();
-            return inters.get(2);
+            return 2;
         } else if (endpoints.get(1).reqNum.get() < limit) {
             endpoints.get(1).reqNum.incrementAndGet();
-            return inters.get(1);
+            return 1;
         }
         endpoints.get(0).reqNum.incrementAndGet();
-        return inters.get(0);
+        return 0;
 
         /**
          * 按照200：200：112的比例进行请求

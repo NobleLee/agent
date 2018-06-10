@@ -25,7 +25,7 @@ public class COMMON {
 
 
     // 连接配置
-    public static final int DubboClient_THREAD = AGENTSERVER_WORK_THREAD;
+//    public static final int DubboClient_THREAD = AGENTSERVER_WORK_THREAD;
 
     public static final int AgentClient_THREAD = HTTPSERVER_WORK_THREAD;
 

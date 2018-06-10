@@ -3,11 +3,15 @@ package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
+import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
@@ -42,6 +46,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     public static List<FullHttpResponse> reqList = new ArrayList<>(900);
 
+   // public static List<List<DatagramPacket>> udpReqList = new ArrayList<>(900);
+
     private int channelIndex = 0;
 
     @Override
@@ -51,9 +57,16 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         synchronized (HttpServerHandler.class) {
             channelIndex = channelList.size();
             channelList.add(ctx.channel());
+            // http response
             FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
             response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
             reqList.add(response);
+            // udp req
+//            for (int i = 0; i < udpReqList.size(); i++) {
+//                DatagramPacket datagramPacket = new DatagramPacket(UnpooledByteBufAllocator.DEFAULT.buffer(1), agentUdpClient.getInterList().get(i));
+//                udpReqList.get(i).add(datagramPacket);
+//            }
+
         }
     }
 

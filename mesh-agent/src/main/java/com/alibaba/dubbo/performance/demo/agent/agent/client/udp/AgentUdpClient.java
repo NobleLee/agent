@@ -14,10 +14,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
  * 描述: UDP客户端
@@ -94,10 +90,14 @@ public class AgentUdpClient {
         buf.skipBytes(128);
         buf.setLong(buf.readerIndex(), id);
         // 根据负载均衡算法，选择一个节点发送数据
-        InetSocketAddress balancePoint = EndpointHelper.getBalancePoint(endpointList, interList);
+        int index = EndpointHelper.getBalancePoint(endpointList);
         buf.retain();
-
-        channel.writeAndFlush(new DatagramPacket(buf, balancePoint));
+//        DatagramPacket datagramPacket = HttpServerHandler.udpReqList.get(index).get((int) id);
+//        datagramPacket.retain();
+//        datagramPacket.content().resetWriterIndex();
+//        datagramPacket.content().resetReaderIndex();
+//        datagramPacket.content().writeBytes(buf);
+        channel.writeAndFlush(new DatagramPacket(buf,interList.get(index)));
     }
 
     /**
@@ -108,7 +108,7 @@ public class AgentUdpClient {
     public void response(DatagramPacket msg) {
         ByteBuf content = msg.content();
         // 获取请求id
-        int requestId = (int)content.readLong();
+        int requestId = (int) content.readLong();
         /**
          * 设置正在处理的数目
          */
@@ -121,6 +121,7 @@ public class AgentUdpClient {
         }
         // 封装返回response
         FullHttpResponse response = HttpServerHandler.reqList.get(requestId);
+        response.retain();
         response.headers().set(CONTENT_LENGTH, content.readableBytes());
         response.content().writeBytes(content);
 
@@ -145,6 +146,7 @@ public class AgentUdpClient {
             if (!endpointList.contains(endpoint)) {
                 endpointList.add(endpoint);
                 interList.add(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
+               // HttpServerHandler.udpReqList.add(new ArrayList<>());
                 logger.info("udp get endpoint: " + endpoint.toString());
             }
         }
@@ -173,5 +175,11 @@ public class AgentUdpClient {
         return true;
     }
 
+    public static List<Endpoint> getEndpointList() {
+        return endpointList;
+    }
 
+    public static List<InetSocketAddress> getInterList() {
+        return interList;
+    }
 }
