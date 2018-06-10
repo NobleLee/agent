@@ -42,7 +42,7 @@ public class RpcClient {
         Endpoint endpoint = new Endpoint("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
         channel = connecManager.bind(endpoint);
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(() -> channel.flush(), 5, 3, TimeUnit.MILLISECONDS);
+       // scheduledExecutorService.scheduleAtFixedRate(() -> channel.flush(), 5, 5, TimeUnit.MILLISECONDS);
     }
 
     private static RpcClient instance;
@@ -109,7 +109,7 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf) {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
-            this.channel.write(byteBuf);
+            this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
             ByteBufUtils.printStringln(buf, "agent server str:");
