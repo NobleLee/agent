@@ -22,7 +22,7 @@ public class AgentServerRpcHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(AgentServerRpcHandler.class);
 
-    private static RpcClient rpcClient = RpcClient.getInstance();
+   // private static RpcClient rpcClient = RpcClient.getInstance();
 
     public static Channel channel;
 
@@ -37,7 +37,7 @@ public class AgentServerRpcHandler extends ChannelInboundHandlerAdapter {
         //rpcClient.sendDubbo(msg);
         // logger.info("有效信息数目 : " + msgVCount.getAndIncrement());
         //ByteBufUtils.printStringln(msg, "get agent msg:");
-        rpcClient.sendDubboDirect(bufer);
+      //  rpcClient.sendDubboDirect(bufer);
         // rpcClient.sendBackTest(msg);
     }
 
