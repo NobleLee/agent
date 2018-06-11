@@ -1,8 +1,11 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +29,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     private boolean isover = true;
     private int length;
-    private ByteBuf groubleBuf = PooledByteBufAllocator.DEFAULT.directBuffer(1536);
+    private CompositeByteBuf groubleBuf;
 
     private static final int CONTENT_INDEX = 143;
 
@@ -34,12 +37,12 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     private static AtomicInteger classCount = new AtomicInteger(0);
 
-    public static List<Channel> channelList = new ArrayList<>(600);
+    public static List<Channel> channelList = new ArrayList<>(COMMON.IdCount);
 
-    public static List<FullHttpResponse> reqList = new ArrayList<>(512);
+    public static List<FullHttpResponse> reqList = new ArrayList<>(COMMON.IdCount);
 
     static {
-        for (int i = 0; i < 512; i++) {
+        for (int i = 0; i < COMMON.IdCount; i++) {
             FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
             response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
             reqList.add(response);
@@ -61,15 +64,17 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        logger.info("remove channel, channel size: " + channelList.size());
-        channelList.remove(ctx.channel());
-        groubleBuf.release();
+//        logger.info("remove channel, channel size: " + channelList.size());
+//        channelList.remove(ctx.channel());
+        //groubleBuf.release();
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
+        //    ByteBufUtils.printStringln(buf, "http:");
         if (getBody(buf)) {
+            //   ByteBufUtils.printStringln(groubleBuf, "send:");
             agentUdpClient.send(groubleBuf, channelIndex);
         }
     }
@@ -89,18 +94,16 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
                     break;
                 }
             }
-            groubleBuf.retain();
-            groubleBuf.resetWriterIndex();
-            groubleBuf.resetReaderIndex();
+            groubleBuf = PooledByteBufAllocator.DEFAULT.compositeBuffer();
             buf.readerIndex(begin);
-            buf.readBytes(groubleBuf, buf.readableBytes());
+            groubleBuf.addComponent(true, buf);
             if (groubleBuf.readableBytes() == length) {
                 return true;
             }
             isover = false;
             return false;
         } else {
-            groubleBuf.writeBytes(buf);
+            groubleBuf.addComponent(true, buf);
             if (groubleBuf.readableBytes() == length) {
                 isover = true;
                 return true;
@@ -125,7 +128,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
             len = len * 10 + temp - '0';
         }
 
-      //  logger.info("http get body length:" + len);
+        //  logger.info("http get body length:" + len);
         return len;
     }
 }

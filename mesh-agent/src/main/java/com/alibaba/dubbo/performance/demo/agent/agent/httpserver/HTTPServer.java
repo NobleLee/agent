@@ -28,10 +28,12 @@ import java.nio.channels.ServerSocketChannel;
 public class HTTPServer {
     private static Logger logger = LoggerFactory.getLogger(HTTPServer.class);
 
+    EventLoopGroup bossGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_BOSS_THREAD);
+    public static EventLoopGroup workGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_WORK_THREAD);
+
     // 开启服务
     public void start(final int port) {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_BOSS_THREAD);
-        EventLoopGroup workGroup = new NioEventLoopGroup(COMMON.HTTPSERVER_WORK_THREAD);
+
         ServerBootstrap bootstrap = new ServerBootstrap();
         try {
             bootstrap.group(bossGroup, workGroup)

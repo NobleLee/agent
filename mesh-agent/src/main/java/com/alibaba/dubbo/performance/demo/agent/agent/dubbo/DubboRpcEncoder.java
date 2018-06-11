@@ -88,11 +88,11 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
 //        return byteBuf;
 //    }
 
-    public static List<ByteBuf> reqList = new ArrayList<>(512);
+    public static List<ByteBuf> reqList = new ArrayList<>(COMMON.IdCount);
 
     static {
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + 1024 + HEADER_LENGTH;
-        for (int i = 0; i < 512; i++) {
+        for (int i = 0; i < COMMON.IdCount; i++) {
             ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len);
             reqList.add(byteBuf);
         }

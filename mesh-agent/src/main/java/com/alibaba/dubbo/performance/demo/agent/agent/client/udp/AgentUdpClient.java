@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpSimpleHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
@@ -92,13 +93,12 @@ public class AgentUdpClient {
         buf.setLong(buf.readerIndex(), id);
         // 根据负载均衡算法，选择一个节点发送数据
         int index = EndpointHelper.getBalancePoint(endpointList);
-        buf.retain();
 //        DatagramPacket datagramPacket = HttpServerHandler.udpReqList.get(index).get((int) id);
 //        datagramPacket.retain();
 //        datagramPacket.content().resetWriterIndex();
 //        datagramPacket.content().resetReaderIndex();
 //        datagramPacket.content().writeBytes(buf);
-        channel.writeAndFlush(new DatagramPacket(buf,interList.get(index)));
+        channel.writeAndFlush(new DatagramPacket(buf, interList.get(index)));
     }
 
     /**
@@ -147,7 +147,7 @@ public class AgentUdpClient {
             if (!endpointList.contains(endpoint)) {
                 endpointList.add(endpoint);
                 interList.add(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
-               // HttpServerHandler.udpReqList.add(new ArrayList<>());
+                // HttpServerHandler.udpReqList.add(new ArrayList<>());
                 logger.info("udp get endpoint: " + endpoint.toString());
             }
         }
