@@ -1,27 +1,59 @@
 package com.alibaba.dubbo.performance.demo.agent.agent;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
     private static Logger logger = LoggerFactory.getLogger(ConnecManager.class);
 
     private Bootstrap bootstrap;
-    private int nThread;
+    private EventLoop loop;
 
-    public ConnecManager(int nThred, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
-        this.nThread = nThred;
-        bootstrap = initBootstrap(initializer);
+
+    public ConnecManager(EventLoop loop, ServerUdpHandler udpHandler, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+        this.loop = loop;
+        ChannelInitializer<NioSocketChannel> channelInitializer = null;
+        Class<?>[] parTypes = new Class<?>[1];
+        parTypes[0] = ServerUdpHandler.class;
+        try {
+            Constructor<?> constructor = initializer.getConstructor(parTypes);
+            Object[] pars = new Object[1];
+            pars[0] = udpHandler;
+            channelInitializer = (ChannelInitializer<NioSocketChannel>) constructor.newInstance(pars);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        bootstrap = initBootstrap(channelInitializer);
+    }
+
+    public ConnecManager(EventLoop loop, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+        this.loop = loop;
+        ChannelInitializer<NioSocketChannel> channelInitializer = null;
+        try {
+            channelInitializer = initializer.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        bootstrap = initBootstrap(channelInitializer);
     }
 
     /**
@@ -31,7 +63,7 @@ public class ConnecManager {
      * @return
      */
     public Channel bind(Endpoint endpoint) {
-        logger.info(" new connect to " + endpoint + "connected thread number:" + nThread);
+        logger.info(" new connect to " + endpoint);
 
         Channel channel = null;
         for (int i = 0; i < 100; i++) {
@@ -56,21 +88,13 @@ public class ConnecManager {
     /**
      * 初始化bootstrap
      *
-     * @param initializerClass
+     * @param initializer
      * @return
      */
-    public Bootstrap initBootstrap(Class<? extends ChannelInitializer<NioSocketChannel>> initializerClass) {
-        ChannelInitializer<NioSocketChannel> initializer = null;
-        try {
-            initializer = initializerClass.newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        EventLoopGroup eventLoopGroup = new NioEventLoopGroup(nThread);
+    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
+
         return new Bootstrap()
-                .group(eventLoopGroup)
+                .group(loop)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)

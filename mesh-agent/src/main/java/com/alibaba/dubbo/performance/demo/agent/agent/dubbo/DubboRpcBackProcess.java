@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
  */
 public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
 
+    private ServerUdpHandler handler = null;
 
     // 接收dubbo消息，并将消息传送给client
     @Override
@@ -29,27 +30,19 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
         /***
          *  对消息进行封装
          */
-        long id = byteBuf.getLong(4);
-        byteBuf.skipBytes(10);
-        byteBuf.setLong(10, id);
+        int id = (int) byteBuf.getLong(4);
+        byteBuf.skipBytes(18);
         byteBuf.retain();
         byteBuf.writerIndex(byteBuf.writerIndex() - 1);
-        ServerUdpHandler.channel.writeAndFlush(new DatagramPacket(byteBuf, ServerUdpHandler.socketAddress));
+        ByteBufUtils.printStringln(byteBuf, "response:");
+        handler.channel.writeAndFlush(new DatagramPacket(byteBuf, handler.socketAddress.get(id)));
 
         byteBuf.release();
-//        long id = byteBuf.getLong(4);
-//        byteBuf.skipBytes(6);
-//        byteBuf.setLong(6, id);
-//        /**
-//         * 报文中增加正在处理的消息数目
-//         */
-//        int count = BufferQueue.bufferqueue.isEmpty() ? BufferQueue.requestCount.get() : BufferQueue.requestMaxCount;
-//        byteBuf.setInt(14, count);
-//        byteBuf.retain();
-//        byteBuf.writerIndex(byteBuf.writerIndex() - 1);
-//        ServerUdpHandler.channel.writeAndFlush(new DatagramPacket(byteBuf, ServerUdpHandler.socketAddress));
 
+    }
 
+    public DubboRpcBackProcess(ServerUdpHandler handler) {
+        this.handler = handler;
     }
 
 

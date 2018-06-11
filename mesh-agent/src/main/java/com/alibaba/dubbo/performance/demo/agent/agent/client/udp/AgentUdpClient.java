@@ -1,22 +1,20 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
-import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
-import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpSimpleHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 /**
  * 描述: UDP客户端
@@ -37,33 +36,20 @@ public class AgentUdpClient {
 
     private static Logger logger = LoggerFactory.getLogger(AgentUdpClient.class);
 
-    private Channel channel;
+    private Channel sendChannel;
 
-    private static AgentUdpClient instance;
+    private Channel responseChannel;
 
     private static List<Endpoint> endpointList = new ArrayList<>();
 
     private static List<InetSocketAddress> interList = new ArrayList<>();
 
-    public static AgentUdpClient getInstance() {
-        if (instance == null) {
-            synchronized (AgentUdpClient.class) {
-                if (instance == null)
-                    instance = new AgentUdpClient();
-            }
-        }
-        return instance;
-    }
-
-    private AgentUdpClient() {
-        bind();
-    }
+    private FullHttpResponse response;
 
 
-    private void bind() {
-        NioEventLoopGroup workers = new NioEventLoopGroup(COMMON.AgentClient_THREAD);
+    public AgentUdpClient(EventLoop loop, Channel responseChannel) {
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(workers)
+        bootstrap.group(loop)
                 .option(ChannelOption.SO_BROADCAST, false)
                 .channel(NioDatagramChannel.class)
                 .handler(new SimpleChannelInboundHandler<DatagramPacket>() {
@@ -72,33 +58,33 @@ public class AgentUdpClient {
                         response(msg);
                     }
                 });
-        try {
-            channel = bootstrap.bind(0).sync().channel();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+
+        ChannelFuture bind = bootstrap.bind(0);
+        sendChannel = bind.channel();
+
+        response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+
+        this.responseChannel = responseChannel;
     }
+
 
     /**
      * 给指定的server发送消息
      *
      * @param buf
      */
-    public void send(ByteBuf buf, long id) {
+    public void send(ByteBuf buf) {
         if (buf.readableBytes() < 136) {
             logger.error("message length less 136 ");
             return;
         }
-        buf.skipBytes(128);
-        buf.setLong(buf.readerIndex(), id);
+        buf.skipBytes(136);
         // 根据负载均衡算法，选择一个节点发送数据
         int index = EndpointHelper.getBalancePoint(endpointList);
-//        DatagramPacket datagramPacket = HttpServerHandler.udpReqList.get(index).get((int) id);
-//        datagramPacket.retain();
-//        datagramPacket.content().resetWriterIndex();
-//        datagramPacket.content().resetReaderIndex();
-//        datagramPacket.content().writeBytes(buf);
-        channel.writeAndFlush(new DatagramPacket(buf, interList.get(index)));
+        ByteBufUtils.printStringln(buf, "send:");
+        sendChannel.writeAndFlush(new DatagramPacket(buf, interList.get(index)));
     }
 
     /**
@@ -108,8 +94,6 @@ public class AgentUdpClient {
      */
     public void response(DatagramPacket msg) {
         ByteBuf content = msg.content();
-        // 获取请求id
-        int requestId = (int) content.readLong();
         /**
          * 设置正在处理的数目
          */
@@ -121,14 +105,12 @@ public class AgentUdpClient {
             }
         }
         // 封装返回response
-        FullHttpResponse response = HttpSimpleHandler.reqList.get(requestId);
         response.retain();
         response.headers().set(CONTENT_LENGTH, content.readableBytes());
         response.content().writeBytes(content);
 
-        Channel rchannel = HttpSimpleHandler.channelList.get(requestId);
-        if (rchannel != null && rchannel.isActive()) {
-            rchannel.writeAndFlush(response);
+        if (responseChannel != null && responseChannel.isActive()) {
+            responseChannel.writeAndFlush(response);
         }
     }
 
@@ -140,7 +122,7 @@ public class AgentUdpClient {
      * @return
      * @throws Exception
      */
-    public static boolean putServers(List<Endpoint> endpoints) {
+    public synchronized static boolean putServers(List<Endpoint> endpoints) {
         // TODO  应该加锁
         LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
@@ -162,9 +144,8 @@ public class AgentUdpClient {
      * @return
      * @throws Exception
      */
-    public static boolean deleteServers(List<Endpoint> endpoints) {
+    public synchronized static boolean deleteServers(List<Endpoint> endpoints) {
         // TODO 应该加锁
-        LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
             if (endpointList.contains(endpoint)) {
                 endpointList.remove(endpoint);
@@ -172,15 +153,7 @@ public class AgentUdpClient {
                 logger.info("close channel; endpoint: " + endpoint.toString());
             }
         }
-        LOCK.AgentChannelLock = false;
         return true;
     }
 
-    public static List<Endpoint> getEndpointList() {
-        return endpointList;
-    }
-
-    public static List<InetSocketAddress> getInterList() {
-        return interList;
-    }
 }

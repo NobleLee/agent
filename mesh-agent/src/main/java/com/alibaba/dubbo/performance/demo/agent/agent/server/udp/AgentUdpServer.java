@@ -7,6 +7,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 描述:
  * ${DESCRIPTION}
@@ -16,32 +21,45 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
  */
 public class AgentUdpServer {
 
-    private int port;
-    private ChannelFuture channelFuture;
-    private EventLoopGroup group = new NioEventLoopGroup(COMMON.AGENTSERVER_WORK_THREAD);
+    private int portNum;
 
-    public AgentUdpServer bind(int port) {
-        this.port = port;
+    List<Integer> portList = new ArrayList<>();
+
+    List<ChannelFuture> futureList = new ArrayList<>();
+
+    public AgentUdpServer bind(int portNum) {
+        this.portNum = portNum;
         return this;
     }
 
-
     public AgentUdpServer start() {
-        Bootstrap b = new Bootstrap();
-        b.group(group).channel(NioDatagramChannel.class)
-                .option(ChannelOption.SO_BROADCAST, false)
-                .handler(new ServerUdpHandler());
-        channelFuture = b.bind(port);
+        /**
+         * 启动多个channel
+         */
+        for (int i = 0; i < portNum; i++) {
+            EventLoopGroup group = new NioEventLoopGroup(1);
+            Bootstrap b = new Bootstrap();
+            b.group(group).channel(NioDatagramChannel.class)
+                    .option(ChannelOption.SO_BROADCAST, false)
+                    .handler(new ServerUdpHandler());
+            Channel channel = b.bind(0).channel();
+            while (true) {
+                if (channel.localAddress() != null) break;
+            }
+            InetSocketAddress socketAddress = (InetSocketAddress) channel.localAddress();
+            portList.add(socketAddress.getPort());
+            futureList.add(channel.closeFuture());
+        }
         return this;
     }
 
     public void sync() {
         try {
-            channelFuture.sync().channel().closeFuture().await();
+            for (ChannelFuture channelFuture : futureList) {
+                channelFuture.await();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            group.shutdownGracefully();
         }
     }
 

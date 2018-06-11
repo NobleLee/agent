@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.server.udp;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,6 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -28,28 +33,31 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private static AtomicLong objectCount = new AtomicLong(0);
 
-    private static RpcClient rpcClient = RpcClient.getInstance();
+    private RpcClient rpcClient;
 
-    public static Channel channel;
+    public Channel channel;
 
-    public static InetSocketAddress socketAddress;
+    public List<InetSocketAddress> socketAddress = new ArrayList<>();
+    public HashMap<InetSocketAddress, Integer> addressHashMap = new HashMap<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
-        if (socketAddress == null) {
+        if (!addressHashMap.containsKey(msg.sender())) {
             synchronized (this) {
-                if (socketAddress == null) {
-                    socketAddress = new InetSocketAddress(msg.sender().getAddress(), msg.sender().getPort());
+                if (!addressHashMap.containsKey(msg.sender())) {
+                    addressHashMap.put(msg.sender(), socketAddress.size());
+                    socketAddress.add(msg.sender());
                 }
             }
         }
-        rpcClient.sendDubboDirect(msg.content());
+        rpcClient.sendDubboDirect(msg.content(), socketAddress.size() - 1);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         channel = ctx.channel();
+        rpcClient = new RpcClient(channel.eventLoop(), this);
         logger.info("udp server channel active count: " + channelCount.getAndIncrement());
     }
 
@@ -57,5 +65,6 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
     public ServerUdpHandler() {
         logger.info("udp object count: " + objectCount.getAndIncrement());
     }
+
 }
 

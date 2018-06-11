@@ -4,14 +4,16 @@ import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.ConnecManager;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.RpcInvocation;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
+import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
+import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,9 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 描述: Dubbo 和 agent 的调用RPCß
@@ -37,25 +36,10 @@ public class RpcClient {
     private ConnecManager connecManager;
 
 
-    private RpcClient() {
-        connecManager = new ConnecManager(Integer.valueOf(System.getProperty("dubbo.client.thread")), DubboClientInitializer.class);
+    public RpcClient(EventLoop loop, ServerUdpHandler udpHandler) {
+        connecManager = new ConnecManager(loop,udpHandler, DubboClientInitializer.class);
         Endpoint endpoint = new Endpoint("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
         channel = connecManager.bind(endpoint);
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-       // scheduledExecutorService.scheduleAtFixedRate(() -> channel.flush(), 5, 5, TimeUnit.MILLISECONDS);
-    }
-
-    private static RpcClient instance;
-
-    public static RpcClient getInstance() {
-        if (instance == null) {
-            synchronized (RpcClient.class) {
-                if (instance == null) {
-                    instance = new RpcClient();
-                }
-            }
-        }
-        return instance;
     }
 
 
@@ -106,9 +90,9 @@ public class RpcClient {
      *
      * @param buf
      */
-    public void sendDubboDirect(ByteBuf buf) {
+    public void sendDubboDirect(ByteBuf buf, long id) {
         try {
-            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf);
+            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id);
             this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
@@ -117,35 +101,5 @@ public class RpcClient {
         }
 
     }
-
-
-//    /**
-//     * 测试直接将结果返回
-//     *
-//     * @param buf
-//     * @param channel
-//     */
-//    private ScheduledExecutorService executorService;
-//
-//    public void sendBackTest(ByteBuf buf) {
-//        if (executorService == null) {
-//            synchronized (this) {
-//                if (executorService == null)
-//                    executorService = Executors.newScheduledThreadPool(256);
-//            }
-//        }
-//
-//
-//        long reqid = buf.readLong();
-//        byte[] hashcode = String.valueOf(buf.toString(Charsets.UTF_8).hashCode()).getBytes();
-//        ByteBuf buffer = PooledByteBufAllocator.DEFAULT.directBuffer(hashcode.length + 8);
-//        buffer.writeLong(reqid);
-//        buffer.writeBytes(hashcode);
-//        executorService.schedule(() -> {
-//            int index = (int) (reqid & 0x7);
-//            buffer.writeShort(COMMON.MAGIC);
-//            AgentServerRpcHandler.channel.writeAndFlush(buffer);
-//        }, 50, TimeUnit.MILLISECONDS);
-//    }
 
 }

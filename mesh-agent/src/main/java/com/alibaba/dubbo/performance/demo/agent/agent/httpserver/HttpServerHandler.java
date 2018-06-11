@@ -36,7 +36,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     private static Logger logger = LoggerFactory.getLogger(HttpServerHandler.class);
 
-    private static AgentUdpClient agentUdpClient = AgentUdpClient.getInstance();
+//    private static AgentUdpClient agentUdpClient = AgentUdpClient.getInstance();
 
     private static AtomicInteger classCount = new AtomicInteger(0);
 
@@ -66,7 +66,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        agentUdpClient.send(request.content(), channelIndex);
+    //    agentUdpClient.send(request.content(), channelIndex);
     }
 
     @Override

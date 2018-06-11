@@ -50,14 +50,6 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         buffer.writerIndex(savedWriteIndex);
         buffer.writeBytes(header); // write header.
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
-
-//        ByteBuf copy = buffer.copy();
-//        byte[] body = new byte[copy.readableBytes()];
-//        copy.readBytes(body);
-//        System.err.println(len);
-//        System.err.println(Arrays.toString(Arrays.copyOfRange(body,0,16)));
-//        String s = new String(Arrays.copyOfRange(body, 16, body.length));
-//        System.err.println(s);
     }
 
 
@@ -76,27 +68,8 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         JsonUtils.writeObject(inv.getAttachments(), writer);
     }
 
-//    public static ByteBuf directSend(ByteBuf buf) {
-//        Bytes.long2bytes(buf.readLong(), header, 4);
-//        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
-//        Bytes.int2bytes(len, header, 12);
-//        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len + HEADER_LENGTH);
-//        byteBuf.writeBytes(header);
-//        byteBuf.writeBytes(COMMON.Request.dubbo_msg_first);
-//        byteBuf.writeBytes(buf);
-//        byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
-//        return byteBuf;
-//    }
 
-    public static List<ByteBuf> reqList = new ArrayList<>(COMMON.IdCount);
 
-    static {
-        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + 1024 + HEADER_LENGTH;
-        for (int i = 0; i < COMMON.IdCount; i++) {
-            ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len);
-            reqList.add(byteBuf);
-        }
-    }
 
     /**
      * 直接将数据封装成Dubbo Req
@@ -104,16 +77,11 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
      * @param buf
      * @return
      */
-    public static ByteBuf directSend(ByteBuf buf) {
+    public static ByteBuf directSend(ByteBuf buf, long id) {
 
-        long id = buf.readLong();
+        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes() + 8;
 
-        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
-
-        ByteBuf byteBuf = reqList.get((int) id);
-        byteBuf.resetReaderIndex();
-        byteBuf.resetWriterIndex();
-        byteBuf.retain();
+        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len);
 
         /** 加入头 */
         byteBuf.writeBytes(header);

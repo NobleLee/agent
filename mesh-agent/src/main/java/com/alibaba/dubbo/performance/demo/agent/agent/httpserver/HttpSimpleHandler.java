@@ -1,27 +1,16 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
@@ -33,50 +22,24 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     private static final int CONTENT_INDEX = 143;
 
-    private static AgentUdpClient agentUdpClient = AgentUdpClient.getInstance();
+    private AgentUdpClient agentUdpClient;
 
     private static AtomicInteger classCount = new AtomicInteger(0);
 
-    public static List<Channel> channelList = new ArrayList<>(COMMON.IdCount);
-
-    public static List<FullHttpResponse> reqList = new ArrayList<>(COMMON.IdCount);
-
-    static {
-        for (int i = 0; i < COMMON.IdCount; i++) {
-            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-            response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-            reqList.add(response);
-        }
-    }
-
-    private int channelIndex = 0;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        synchronized (HttpServerHandler.class) {
-            channelIndex = channelList.size();
-            channelList.add(ctx.channel());
-            logger.info("add channel, channel size: " + channelList.size());
-        }
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-//        logger.info("remove channel, channel size: " + channelList.size());
-//        channelList.remove(ctx.channel());
-        //groubleBuf.release();
+        agentUdpClient = new AgentUdpClient(ctx.channel().eventLoop(), ctx.channel());
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
-        //    ByteBufUtils.printStringln(buf, "http:");
         if (getBody(buf)) {
-            //   ByteBufUtils.printStringln(groubleBuf, "send:");
-            agentUdpClient.send(groubleBuf, channelIndex);
+            agentUdpClient.send(groubleBuf);
         }
+
     }
 
 
