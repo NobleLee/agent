@@ -67,20 +67,20 @@ public class ConnecManager {
         logger.info(" new connect to " + host + ":" + port);
 
         Channel channel = null;
-        for (int i = 0; i < 100; i++) {
-            try {
-                channel = bootstrap.connect(host, port).sync().channel();
+        int i = 0;
+        while (true) {
+            channel = bootstrap.connect(host, port).channel();
+            if (channel != null) {
                 logger.info("get channel: " + channel.toString());
                 break;
-            } catch (Exception e) {
-                logger.error(e.toString());
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e1) {
-                    logger.error(e1.toString());
-                }
-                logger.info("try " + i + " times to connect " + host + ":" + port);
             }
+            try {
+                Thread.sleep(30);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            i++;
+            logger.info("try " + i + " times to connect " + host + ":" + port);
         }
         return channel;
     }
