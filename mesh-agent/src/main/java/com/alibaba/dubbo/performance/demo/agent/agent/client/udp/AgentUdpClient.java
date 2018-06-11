@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -42,7 +43,7 @@ public class AgentUdpClient {
 
     private static List<Endpoint> endpointList = new ArrayList<>();
 
-    private static List<InetSocketAddress> interList = new ArrayList<>();
+    private static List<List<InetSocketAddress>> interList = new ArrayList<>();
 
     private FullHttpResponse response;
 
@@ -82,9 +83,9 @@ public class AgentUdpClient {
         }
         buf.skipBytes(136);
         // 根据负载均衡算法，选择一个节点发送数据
-        int index = EndpointHelper.getBalancePoint(endpointList);
+        InetSocketAddress host = EndpointHelper.getBalancePoint(interList);
         ByteBufUtils.printStringln(buf, "send:");
-        sendChannel.writeAndFlush(new DatagramPacket(buf, interList.get(index)));
+        sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
     /**
@@ -128,7 +129,11 @@ public class AgentUdpClient {
         for (Endpoint endpoint : endpoints) {
             if (!endpointList.contains(endpoint)) {
                 endpointList.add(endpoint);
-                interList.add(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
+                List<InetSocketAddress> singleHost = new ArrayList<>();
+                for (Integer integer : endpoint.getPort()) {
+                    singleHost.add(new InetSocketAddress(endpoint.getHost(), integer));
+                }
+                interList.add(singleHost);
                 // HttpServerHandler.udpReqList.add(new ArrayList<>());
                 logger.info("udp get endpoint: " + endpoint.toString());
             }
@@ -148,8 +153,9 @@ public class AgentUdpClient {
         // TODO 应该加锁
         for (Endpoint endpoint : endpoints) {
             if (endpointList.contains(endpoint)) {
+                int index = endpointList.indexOf(endpoint);
                 endpointList.remove(endpoint);
-                interList.remove(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()));
+                interList.remove(index);
                 logger.info("close channel; endpoint: " + endpoint.toString());
             }
         }

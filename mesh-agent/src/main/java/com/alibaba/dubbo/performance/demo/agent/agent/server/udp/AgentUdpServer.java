@@ -23,9 +23,9 @@ public class AgentUdpServer {
 
     private int portNum;
 
-    List<Integer> portList = new ArrayList<>();
+    public static List<Integer> portList = new ArrayList<>();
 
-    List<ChannelFuture> futureList = new ArrayList<>();
+    public static List<ChannelFuture> futureList = new ArrayList<>();
 
     public AgentUdpServer bind(int portNum) {
         this.portNum = portNum;

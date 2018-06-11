@@ -59,16 +59,17 @@ public class ConnecManager {
     /**
      * 绑定一个Endpoint，并指定通道数目
      *
-     * @param endpoint
+     * @param host
+     * @param port
      * @return
      */
-    public Channel bind(Endpoint endpoint) {
-        logger.info(" new connect to " + endpoint);
+    public Channel bind(String host, int port) {
+        logger.info(" new connect to " + host + ":" + port);
 
         Channel channel = null;
         for (int i = 0; i < 100; i++) {
             try {
-                channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
+                channel = bootstrap.connect(host, port).sync().channel();
                 logger.info("get channel: " + channel.toString());
                 break;
             } catch (Exception e) {
@@ -78,7 +79,7 @@ public class ConnecManager {
                 } catch (InterruptedException e1) {
                     logger.error(e1.toString());
                 }
-                logger.info("try " + i + " times to connect " + endpoint);
+                logger.info("try " + i + " times to connect " + host + ":" + port);
             }
         }
         return channel;

@@ -176,31 +176,31 @@ public class AgentClientConnectPool {
      */
     public static boolean putServers(List<Endpoint> endpoints) {
         // TODO  应该加锁
-        LOCK.AgentChannelLock = true;
-        if (instance == null) return false;
-
-        if (connecManager == null) {
-            synchronized (ConnecManager.class) {
-                // if (connecManager == null)
-                // connecManager = new ConnecManager(COMMON.AgentClient_THREAD, AgentClientInitializer.class);
-            }
-        }
-
-        for (Endpoint endpoint : endpoints) {
-            if (!channelMap.containsKey(endpoint)) {
-                // logger.info("prepare connect server：" + endpoint.toString());
-                Channel channel = connecManager.bind(endpoint);// 创建单个服务器的连接通道
-                AgentClientConnectPool.endpoints.add(endpoint);
-                synchronized (AgentClientConnectPool.class) {
-                    channelMap.put(endpoint, channel);
-                }
-                logger.info("add a server channel!; endpoint: " + endpoint.toString());
-            } else {
-                logger.info("the channel exist!; endpoint: " + endpoint.toString());
-            }
-        }
-
-        LOCK.AgentChannelLock = false;
+//        LOCK.AgentChannelLock = true;
+//        if (instance == null) return false;
+//
+//        if (connecManager == null) {
+//            synchronized (ConnecManager.class) {
+//                // if (connecManager == null)
+//                // connecManager = new ConnecManager(COMMON.AgentClient_THREAD, AgentClientInitializer.class);
+//            }
+//        }
+//
+//        for (Endpoint endpoint : endpoints) {
+//            if (!channelMap.containsKey(endpoint)) {
+//                // logger.info("prepare connect server：" + endpoint.toString());
+//                Channel channel = connecManager.bind(endpoint.getHost(), endpoint.getPort());// 创建单个服务器的连接通道
+//                AgentClientConnectPool.endpoints.add(endpoint);
+//                synchronized (AgentClientConnectPool.class) {
+//                    channelMap.put(endpoint, channel);
+//                }
+//                logger.info("add a server channel!; endpoint: " + endpoint.toString());
+//            } else {
+//                logger.info("the channel exist!; endpoint: " + endpoint.toString());
+//            }
+//        }
+//
+//        LOCK.AgentChannelLock = false;
         return true;
     }
 
@@ -213,21 +213,21 @@ public class AgentClientConnectPool {
      */
     public static boolean deleteServers(List<Endpoint> endpoints) {
         // TODO 应该加锁
-        LOCK.AgentChannelLock = true;
-        if (instance == null) return false;
-        for (Endpoint endpoint : endpoints) {
-            if (AgentClientConnectPool.channelMap.containsKey(endpoint)) {
-                synchronized (AgentClientConnectPool.class) {
-                    Channel removeChannel = channelMap.remove(endpoint);
-                    removeChannel.close();
-                }
-                AgentClientConnectPool.endpoints.remove(endpoint);
-                logger.info("close channel; endpoint: " + endpoint.toString());
-            } else {
-                logger.info("the delete chanel don't exist!; endpoint: " + endpoint.toString());
-            }
-        }
-        LOCK.AgentChannelLock = false;
+//        LOCK.AgentChannelLock = true;
+//        if (instance == null) return false;
+//        for (Endpoint endpoint : endpoints) {
+//            if (AgentClientConnectPool.channelMap.containsKey(endpoint)) {
+//                synchronized (AgentClientConnectPool.class) {
+//                    Channel removeChannel = channelMap.remove(endpoint);
+//                    removeChannel.close();
+//                }
+//                AgentClientConnectPool.endpoints.remove(endpoint);
+//                logger.info("close channel; endpoint: " + endpoint.toString());
+//            } else {
+//                logger.info("the delete chanel don't exist!; endpoint: " + endpoint.toString());
+//            }
+//        }
+//        LOCK.AgentChannelLock = false;
         return true;
     }
 }

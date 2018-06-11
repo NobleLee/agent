@@ -3,6 +3,8 @@ package com.alibaba.dubbo.performance.demo.agent.registry;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
+import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.AgentUdpServer;
+import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
 import com.alibaba.dubbo.performance.demo.agent.tools.IpHelper;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import com.coreos.jetcd.Client;
@@ -78,10 +80,16 @@ public class EtcdRegistry implements IRegistry {
 
 
     // 向ETCD中注册服务
-    public void register(String serviceName, int port) throws Exception {
+    public void register(String serviceName, List<Integer> ports) throws Exception {
         // 服务注册的key为:    /dubbomesh/com.some.package.IHelloService/192.168.100.100:2000
         logger.info("try to register a new endpoint.....");
-        String strKey = MessageFormat.format("/{0}/{1}/{2}:{3}", rootPath, serviceName, IpHelper.getHostIp(), String.valueOf(port));
+        String portstr = "";
+        for (Integer port : ports) {
+            portstr += ":" + port;
+        }
+        portstr = portstr.substring(1);
+
+        String strKey = MessageFormat.format("/{0}/{1}/{2}:{3}", rootPath, serviceName, IpHelper.getHostIp(), portstr);
         ByteSequence key = ByteSequence.fromString(strKey);
         ByteSequence val = ByteSequence.fromString("");     // 目前只需要创建这个key,对应的value暂不使用,先留空
         kv.put(key, val, PutOption.newBuilder().withLeaseId(leaseId).build()).get();
@@ -135,8 +143,8 @@ public class EtcdRegistry implements IRegistry {
         try {
             this.leaseId = lease.grant(30).get().getID();
             // 如果是provider，去etcd注册服务
-            int port = Integer.valueOf(System.getProperty("server.port"));
-            register(COMMON.ServiceName, port);
+//            int port = Integer.valueOf(System.getProperty("server.port"));
+            register(COMMON.ServiceName, AgentUdpServer.portList);
         } catch (Exception e) {
             logger.error(e.getStackTrace().toString());
         }
@@ -152,6 +160,7 @@ public class EtcdRegistry implements IRegistry {
                 }
         );
     }
+
 
     // 发现查找服务
     public void find(String serviceName) {
@@ -182,8 +191,13 @@ public class EtcdRegistry implements IRegistry {
         int index = key.lastIndexOf("/");
         String endpointStr = key.substring(index + 1, key.length());
 
-        String host = endpointStr.split(":")[0];
+        String[] eps = endpointStr.split(":");
+        String host = eps[0];
+        List<Integer> ports = new ArrayList<>();
+        for (int i = 1; i < eps.length; i++) {
+            ports.add(Integer.parseInt(eps[i]));
+        }
         int port = Integer.valueOf(endpointStr.split(":")[1]);
-        return new Endpoint(host, port);
+        return new Endpoint(host, ports);
     }
 }

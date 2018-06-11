@@ -1,28 +1,29 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Endpoint {
     private final String host;
-    private final int port;
+    private final List<Integer> ports;
 
     public AtomicLong reqNum = new AtomicLong(0);
 
-    public Endpoint(String host, int port) {
+    public Endpoint(String host, List<Integer> ports) {
         this.host = host;
-        this.port = port;
+        this.ports = ports;
     }
 
     public String getHost() {
         return host;
     }
 
-    public int getPort() {
-        return port;
+    public List<Integer> getPort() {
+        return ports;
     }
 
     public String toString() {
-        return host + ":" + port;
+        return host + ":" + ports.toString();
     }
 
     public boolean equals(Object o) {
@@ -30,11 +31,11 @@ public class Endpoint {
             return false;
         }
         Endpoint other = (Endpoint) o;
-        return other.host.equals(this.host) && other.port == this.port;
+        return other.host.equals(this.host);
     }
 
     public int hashCode() {
-        return host.hashCode() + port;
+        return host.hashCode();
     }
 
 

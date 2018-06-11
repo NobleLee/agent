@@ -5,15 +5,12 @@ import com.alibaba.dubbo.performance.demo.agent.agent.ConnecManager;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
-import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoop;
-import io.netty.channel.socket.DatagramPacket;
-import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +34,8 @@ public class RpcClient {
 
 
     public RpcClient(EventLoop loop, ServerUdpHandler udpHandler) {
-        connecManager = new ConnecManager(loop,udpHandler, DubboClientInitializer.class);
-        Endpoint endpoint = new Endpoint("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
-        channel = connecManager.bind(endpoint);
+        connecManager = new ConnecManager(loop, udpHandler, DubboClientInitializer.class);
+        channel = connecManager.bind("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
     }
 
 
