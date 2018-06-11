@@ -141,7 +141,7 @@ public class EtcdRegistry implements IRegistry {
     public void keepAlive() {
         this.lease = client.getLeaseClient();
         try {
-            this.leaseId = lease.grant(30).get().getID();
+            this.leaseId = lease.grant(10).get().getID();
             // 如果是provider，去etcd注册服务
 //            int port = Integer.valueOf(System.getProperty("server.port"));
             register(COMMON.ServiceName, AgentUdpServer.portList);

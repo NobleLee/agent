@@ -34,7 +34,6 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
         byteBuf.skipBytes(18);
         byteBuf.retain();
         byteBuf.writerIndex(byteBuf.writerIndex() - 1);
-        ByteBufUtils.printStringln(byteBuf, "response:");
         handler.channel.writeAndFlush(new DatagramPacket(byteBuf, handler.socketAddress.get(id)));
 
         byteBuf.release();

@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.dubbo;
 import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.DubboRequest;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import io.netty.buffer.ByteBuf;
@@ -69,8 +70,6 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
     }
 
 
-
-
     /**
      * 直接将数据封装成Dubbo Req
      *
@@ -79,7 +78,9 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
      */
     public static ByteBuf directSend(ByteBuf buf, long id) {
 
-        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes() + 8;
+       // ByteBufUtils.printStringln(buf, "get dubbo: ");
+
+        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
 
         ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len);
 
@@ -95,7 +96,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         byteBuf.writeBytes(buf);
         /** 加入消息尾 */
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
-
+       // ByteBufUtils.printStringln(byteBuf, "send dubbo: ");
         return byteBuf;
     }
 
