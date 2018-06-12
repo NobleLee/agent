@@ -36,8 +36,8 @@ public class EndpointHelper {
         /**
          * 随机负载均衡
          */
-        int hostIndex = random.nextInt(interList.size());
-        return interList.get(hostIndex).get(index);
+//        int hostIndex = random.nextInt(interList.size());
+//        return interList.get(hostIndex).get(index);
 
         /**
          * 按照1：1：0的方式
@@ -50,15 +50,15 @@ public class EndpointHelper {
         /**
          * 尽可能的将请求打到最大的机器
          */
-//        if (endpoints.get(2).reqNum.get() < limit) {
-//            endpoints.get(2).reqNum.incrementAndGet();
-//            return interList.get(2).get(index);
-//        } else if (endpoints.get(1).reqNum.get() < limit) {
-//            endpoints.get(1).reqNum.incrementAndGet();
-//            return interList.get(1).get(index);
-//        }
-//        endpoints.get(0).reqNum.incrementAndGet();
-//        return interList.get(0).get(index);
+        if (endpoints.get(2).reqNum.get() < limit) {
+            endpoints.get(2).reqNum.incrementAndGet();
+            return interList.get(2).get(index);
+        } else if (endpoints.get(1).reqNum.get() < limit) {
+            endpoints.get(1).reqNum.incrementAndGet();
+            return interList.get(1).get(index);
+        }
+        endpoints.get(0).reqNum.incrementAndGet();
+        return interList.get(0).get(index);
 
         /**
          * 按照200：200：112的比例进行请求

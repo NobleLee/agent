@@ -6,6 +6,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -20,6 +22,8 @@ import java.util.List;
  * @create 2018-05-26 下午11:42
  */
 public class AgentUdpServer {
+
+    private static Logger logger = LoggerFactory.getLogger(AgentUdpServer.class);
 
     private int portNum;
 
@@ -48,6 +52,7 @@ public class AgentUdpServer {
                 if (channel.localAddress() != null) break;
             }
             InetSocketAddress socketAddress = (InetSocketAddress) channel.localAddress();
+            logger.info("listen ....-> " + socketAddress);
             portList.add(socketAddress.getPort());
             futureList.add(channel.closeFuture());
         }
