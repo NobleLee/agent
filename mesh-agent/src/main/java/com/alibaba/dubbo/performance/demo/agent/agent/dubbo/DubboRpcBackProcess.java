@@ -17,13 +17,19 @@ import io.netty.channel.socket.DatagramPacket;
 public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
 
     private ServerUdpHandler handler = null;
+    public static int i = 0;
 
     // 接收dubbo消息，并将消息传送给client
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf byteBuf = (ByteBuf) msg;
-        if (byteBuf.getByte(3) != 20) return;
-        //ByteBufUtils.printDubboMsg(byteBuf);
+        if (byteBuf.getByte(3) != 20) {
+            ByteBufUtils.printDubboMsg(byteBuf);
+            return;
+        }
+        if (i++ <= 10) {
+            ByteBufUtils.printDubboMsg(byteBuf);
+        }
         /***
          *  对消息进行封装
          */
