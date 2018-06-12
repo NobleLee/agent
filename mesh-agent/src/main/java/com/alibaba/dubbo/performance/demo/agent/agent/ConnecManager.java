@@ -74,12 +74,21 @@ public class ConnecManager {
         Channel channel = null;
         while (true) {
             logger.info("try " + i + " times to connect " + host + ":" + port);
-            ChannelFuture connect = bootstrap.connect(host, port);
-            if (connect.isSuccess()) {
-                logger.info("get channel: " + channel.remoteAddress());
-                channel = connect.channel();
+//            ChannelFuture connect = bootstrap.connect(host, port);
+            ChannelFuture channelFuture = bootstrap.connect(host, port).addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    logger.info("get channel: " + future.channel().remoteAddress());
+                }
+            });
+//            if (connect.isSuccess()) {
+//                logger.info("get channel: " + channel.remoteAddress());
+//                channel = connect.channel();
+//                break;
+//            }
+            channel = channelFuture.channel();
+            if(channel.remoteAddress()!=null)
                 break;
-            }
             try {
                 Thread.sleep(300);
             } catch (InterruptedException e) {
