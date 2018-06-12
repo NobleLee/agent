@@ -34,10 +34,13 @@ public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel>
         pipeline.addLast(new LengthFieldBasedFrameDecoder(2048, 12, 4, 0, 0));
         if (COMMON.DUBBO_REQUEST_CONTROL_FLAG)
             pipeline.addLast(new MyInBoundHandler());
-        pipeline.addLast(new DubboRpcBackProcess(handler));
+        pipeline.addLast(new DubboRpcBackProcess());
     }
 
     public DubboClientInitializer(ServerUdpHandler handler) {
         this.handler = handler;
+    }
+
+    public DubboClientInitializer() {
     }
 }
