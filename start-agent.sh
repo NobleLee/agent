@@ -29,8 +29,7 @@ elif [[ "$1" == "provider-small" ]]; then
        -Xmx512M \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
-       -Dserver.port=30000 \
-       -Ddubbo.client.thread=1 \
+       -Dserver.num=2 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
        -Xloggc:/root/logs/gc.log \
@@ -38,7 +37,7 @@ elif [[ "$1" == "provider-small" ]]; then
        -XX:+PrintGCDetails \
        -XX:+PrintTenuringDistribution \
        -XX:NewRatio=1 \
-       -XX:SurvivorRatio=10 \
+       -XX:SurvivorRatio=8 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
@@ -47,8 +46,7 @@ elif [[ "$1" == "provider-medium" ]]; then
        -Xmx1G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
-       -Dserver.port=30000 \
-       -Ddubbo.client.thread=2 \
+       -Dserver.num=4  \
        -Detcd.url=$ETCD_URL \
        -XX:+PrintGCDetails \
        -Dlogs.dir=/root/logs \
@@ -56,7 +54,7 @@ elif [[ "$1" == "provider-medium" ]]; then
        -Xloggc:/root/logs/gc.log \
        -XX:+PrintTenuringDistribution \
        -XX:NewRatio=1 \
-       -XX:SurvivorRatio=10 \
+       -XX:SurvivorRatio=8 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
@@ -65,8 +63,7 @@ elif [[ "$1" == "provider-large" ]]; then
        -Xmx2G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
-       -Dserver.port=30000 \
-       -Ddubbo.client.thread=8 \
+       -Dserver.num=8 \
        -Detcd.url=$ETCD_URL \
        -XX:+PrintGCDetails \
        -Dlogs.dir=/root/logs \
