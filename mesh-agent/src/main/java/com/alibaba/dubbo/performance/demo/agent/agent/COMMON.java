@@ -9,7 +9,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent;
  */
 public class COMMON {
 
-    public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloService_GGL";
+    public static final String ServiceName = "com.alibaba.dubbo.performance.demo.provider.IHelloServiceGGL";
     // 消息分割符号
     public static final short MAGIC = (short) 0xdabb;
 
