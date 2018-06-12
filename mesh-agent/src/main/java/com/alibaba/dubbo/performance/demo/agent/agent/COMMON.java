@@ -15,7 +15,7 @@ public class COMMON {
 
     // 作为HTTP server的线程配置
     public static final int HTTPSERVER_BOSS_THREAD = 1;
-    public static final int HTTPSERVER_WORK_THREAD = 4;
+    public static final int HTTPSERVER_WORK_THREAD = 16;
     // agent server
     public static final int AGENTSERVER_BOSS_THREAD = 1;
     public static final int AGENTSERVER_WORK_THREAD = 4;
