@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
-    private static Logger logger = LoggerFactory.getLogger(HTTPServer.class);
+    private static Logger logger = LoggerFactory.getLogger(ServerUdpHandler.class);
 
     private static AtomicLong channelCount = new AtomicLong(0);
 
@@ -51,6 +51,9 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
                 }
             }
         }
+
+        logger.info(ByteBufUtils.getString(msg.content(), "udp get:"));
+
         rpcClient.sendDubboDirect(msg.content(), addressHashMap.get(msg.sender()));
     }
 
