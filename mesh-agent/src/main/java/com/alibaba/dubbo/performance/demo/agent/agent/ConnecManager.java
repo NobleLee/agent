@@ -75,7 +75,7 @@ public class ConnecManager {
                     channel = bootstrap.connect(host, port).sync().channel();
                     i++;
                     if (channel.isActive()) {
-                        logger.info("get channel: " + channel.remoteAddress());
+                        logger.info("get channel: " + channel.localAddress() + "->" + channel.remoteAddress());
                         break;
                     }
                 } catch (Exception e) {
