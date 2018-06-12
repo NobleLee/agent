@@ -23,10 +23,9 @@ public class COMMON {
     // socket
     public static final int BACK_LOG = 1024;
 
-    public static final int IdCount = 300;
 
     // 连接配置
-//    public static final int DubboClient_THREAD = AGENTSERVER_WORK_THREAD;
+    public static final int DubboClient_THREAD = HTTPSERVER_WORK_THREAD;
 
 
     /**

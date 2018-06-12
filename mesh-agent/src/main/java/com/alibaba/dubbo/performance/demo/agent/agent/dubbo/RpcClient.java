@@ -47,7 +47,6 @@ public class RpcClient {
         long id = buf.readLong();
         String bodyString = buf.toString(Charsets.UTF_8);
 //        // 获取哈希参数
-//        String parameter = bodyString.substring(bodyString.indexOf("&parameter=") + 11);
         // 封装请求对象
         DubboRequest dubboRequest = getDubboRequest(bodyString, id);
         // 发送数据
