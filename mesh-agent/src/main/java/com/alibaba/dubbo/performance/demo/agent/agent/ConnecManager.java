@@ -75,11 +75,11 @@ public class ConnecManager {
                     channel = bootstrap.connect(host, port).sync().channel();
                     i++;
                     if (channel.isActive()) {
-                        logger.info("get channel: " + channel.remoteAddress());
+                        logger.info("get channel: " + channel.localAddress() + "->" + channel.remoteAddress());
                         break;
                     }
                 } catch (Exception e) {
-                    logger.info("try " + i + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
+                    logger.info("try " + (i++) + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
                     try {
                         Thread.sleep(1000);
                     } catch (Exception e1) {
