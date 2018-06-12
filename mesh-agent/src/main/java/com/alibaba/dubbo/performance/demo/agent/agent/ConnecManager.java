@@ -40,7 +40,7 @@ public class ConnecManager {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        bootstrap = initBootstrap(channelInitializer,loop);
+        bootstrap = initBootstrap(channelInitializer, loop);
     }
 
     public ConnecManager(EventLoopGroup loop, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
@@ -52,7 +52,7 @@ public class ConnecManager {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        bootstrap = initBootstrap(channelInitializer,loop);
+        bootstrap = initBootstrap(channelInitializer, loop);
     }
 
     /**
@@ -101,7 +101,7 @@ public class ConnecManager {
      * @param initializer
      * @return
      */
-    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer,EventLoop loop) {
+    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer, EventLoop loop) {
 
         return new Bootstrap()
                 .group(loop)
@@ -113,7 +113,8 @@ public class ConnecManager {
                 .channel(NioSocketChannel.class)
                 .handler(initializer);
     }
-    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer,EventLoopGroup loopGroup) {
+
+    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer, EventLoopGroup loopGroup) {
 
         return new Bootstrap()
                 .group(loopGroup)

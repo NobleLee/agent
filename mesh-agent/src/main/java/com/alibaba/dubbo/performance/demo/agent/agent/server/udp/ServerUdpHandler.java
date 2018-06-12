@@ -25,17 +25,13 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private static Logger logger = LoggerFactory.getLogger(ServerUdpHandler.class);
 
-    private static int channelCount = 0;
+    private static AtomicLong channelCount = new AtomicLong(0);
 
-    private static RpcClient rpcClient = RpcClient.getInstance();
+    private RpcClient rpcClient;
 
     public Channel channel;
 
     public InetSocketAddress address;
-
-    public static List<ServerUdpHandler> serverUdpList = new ArrayList<>();
-
-    public int id;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
@@ -47,18 +43,15 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
             }
         }
 
-        rpcClient.sendDubboDirect(msg.content(), id);
+        rpcClient.sendDubboDirect(msg.content());
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         channel = ctx.channel();
-        synchronized (ServerUdpHandler.class) {
-            id = channelCount++;
-            serverUdpList.add(this);
-        }
-        logger.info("udp server channel active count: " + channelCount);
+        rpcClient = new RpcClient(channel.eventLoop(), this);
+        logger.info("udp server channel active count: " + channelCount.incrementAndGet());
     }
 
 
