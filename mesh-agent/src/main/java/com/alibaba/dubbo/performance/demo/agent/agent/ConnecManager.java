@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
@@ -66,23 +70,24 @@ public class ConnecManager {
     public Channel bind(String host, int port) {
         logger.info(" new connect to " + host + ":" + port);
 
+        int i = 1;
         Channel channel = null;
-        int i = 0;
         while (true) {
+            logger.info("try " + i + " times to connect " + host + ":" + port);
             channel = bootstrap.connect(host, port).channel();
             if (channel != null) {
-                logger.info("get channel: " + channel.toString());
+                logger.info("get channel: " + channel.remoteAddress());
                 break;
             }
             try {
-                Thread.sleep(30);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             i++;
-            logger.info("try " + i + " times to connect " + host + ":" + port);
         }
         return channel;
+
     }
 
 
