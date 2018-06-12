@@ -72,7 +72,7 @@ public class AgentUdpClient {
     }
 
 
-  //  private AtomicLong msgCount = new AtomicLong(0);
+    //  private AtomicLong msgCount = new AtomicLong(0);
 
     /**
      * 给指定的server发送消息
@@ -84,10 +84,10 @@ public class AgentUdpClient {
             logger.error("message length less 136 ");
             return;
         }
-       // logger.info(this.hashCode() + " get msg " + msgCount.incrementAndGet());
+        // logger.info(this.hashCode() + " get msg " + msgCount.incrementAndGet());
         buf.skipBytes(136);
         // 根据负载均衡算法，选择一个节点发送数据
-        InetSocketAddress host = EndpointHelper.getBalancePoint(interList);
+        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList);
         // ByteBufUtils.printStringln(buf, "send:");
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
@@ -98,18 +98,18 @@ public class AgentUdpClient {
      * @param msg
      */
     public void response(DatagramPacket msg) {
-       // logger.info(this.hashCode() + " back msg " + msgCount.decrementAndGet());
+        // logger.info(this.hashCode() + " back msg " + msgCount.decrementAndGet());
         ByteBuf content = msg.content();
         /**
          * 设置正在处理的数目
          */
-        String hostAddress = msg.sender().getAddress().getHostAddress();
-        for (Endpoint endpoint : endpointList) {
-            if (endpoint.getHost().equals(hostAddress)) {
-                endpoint.reqNum.decrementAndGet();
-                break;
-            }
-        }
+//        String hostAddress = msg.sender().getAddress().getHostAddress();
+//        for (Endpoint endpoint : endpointList) {
+//            if (endpoint.getHost().equals(hostAddress)) {
+//                endpoint.reqNum.decrementAndGet();
+//                break;
+//            }
+//        }
         // 封装返回response
         response.retain();
         response.headers().set(CONTENT_LENGTH, content.readableBytes());
