@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
+import com.alibaba.fastjson.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -73,24 +74,15 @@ public class ConnecManager {
         int i = 1;
         Channel channel = null;
         while (true) {
-            logger.info("try " + i + " times to connect " + host + ":" + port);
-//            ChannelFuture connect = bootstrap.connect(host, port);
-            ChannelFuture channelFuture = bootstrap.connect(host, port).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    logger.info("get channel: " + future.channel().remoteAddress());
-                }
-            });
-//            if (connect.isSuccess()) {
-//                logger.info("get channel: " + channel.remoteAddress());
-//                channel = connect.channel();
-//                break;
-//            }
-            channel = channelFuture.channel();
-            if(channel.remoteAddress()!=null)
+            channel = bootstrap.connect(host, port).channel();
+            logger.info("try " + i + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
+
+            if (channel.isActive()) {
+                logger.info("get channel: " + channel.remoteAddress());
                 break;
+            }
             try {
-                Thread.sleep(300);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
