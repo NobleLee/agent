@@ -37,7 +37,7 @@ public class ByteBufUtils {
                 for (byte b : array) {
                     System.err.print(b);
                 }
-            }else{
+            } else {
                 System.err.print(", ");
                 for (byte b : array) {
                     System.err.print(b);
@@ -53,6 +53,13 @@ public class ByteBufUtils {
         byte[] bytes = new byte[copy.readableBytes()];
         copy.readBytes(bytes);
         System.err.println(str + new String(bytes));
+    }
+
+    public static void printDubboMsg(ByteBuf buf) {
+        long aLong = buf.getLong(4);
+        int anInt = buf.getInt(12);
+        ByteBufUtils.printStringln(buf, 16, "----------------------------------------------------------------------------------------------------------------------\n" + aLong + "  " + anInt + "\n");
+
     }
 
 
