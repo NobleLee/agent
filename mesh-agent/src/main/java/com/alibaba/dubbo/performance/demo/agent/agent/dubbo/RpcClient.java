@@ -36,6 +36,12 @@ public class RpcClient {
     public RpcClient(EventLoop loop, ServerUdpHandler udpHandler) {
         connecManager = new ConnecManager(loop, udpHandler, DubboClientInitializer.class);
         channel = connecManager.bind("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -90,6 +96,7 @@ public class RpcClient {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id);
             while (channel.remoteAddress() == null) ;
+            logger.info(ByteBufUtils.getString(byteBuf, "send dubbo:"));
             this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
