@@ -36,9 +36,9 @@ public class EndpointHelper {
         /**
          * 随机负载均衡
          */
-        int hostIndex = random.nextInt(interList.size());
-        int portIndex = random.nextInt(interList.get(hostIndex).size());
-        return interList.get(hostIndex).get(portIndex);
+//        int hostIndex = random.nextInt(interList.size());
+//        int portIndex = random.nextInt(interList.get(hostIndex).size());
+//        return interList.get(hostIndex).get(portIndex);
 
         /**
          * 按照1：1：0的方式
@@ -64,14 +64,14 @@ public class EndpointHelper {
         /**
          * 按照200：200：112的比例进行请求
          */
-//        double r = Math.random();
-//
-//        if (r < up_gate) {
-//            return interList.get(2).get(random.nextInt(interList.get(2).size()));
-//        } else if (r < medium_gate) {
-//            return interList.get(1).get(random.nextInt(interList.get(1).size()));
-//        }
-//        return interList.get(0).get(random.nextInt(interList.get(0).size()));
+        double r = Math.random();
+
+        if (r < up_gate) {
+            return interList.get(2).get(random.nextInt(interList.get(2).size()));
+        } else if (r < medium_gate) {
+            return interList.get(1).get(random.nextInt(interList.get(1).size()));
+        }
+        return interList.get(0).get(random.nextInt(interList.get(0).size()));
 
         /**
          * 统计请求数目分布

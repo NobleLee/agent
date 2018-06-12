@@ -74,9 +74,10 @@ public class ConnecManager {
         Channel channel = null;
         while (true) {
             logger.info("try " + i + " times to connect " + host + ":" + port);
-            channel = bootstrap.connect(host, port).channel();
-            if (channel != null) {
+            ChannelFuture connect = bootstrap.connect(host, port);
+            if (connect.isSuccess()) {
                 logger.info("get channel: " + channel.remoteAddress());
+                channel = connect.channel();
                 break;
             }
             try {
