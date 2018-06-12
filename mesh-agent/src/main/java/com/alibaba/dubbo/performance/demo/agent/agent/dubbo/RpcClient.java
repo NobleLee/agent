@@ -11,6 +11,8 @@ import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoop;
+import io.netty.channel.nio.NioEventLoop;
+import io.netty.channel.nio.NioEventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +36,16 @@ public class RpcClient {
     private ConnecManager connecManager;
     FutureTask<Channel> bind;
 
-    public RpcClient(EventLoop loop, ServerUdpHandler udpHandler) {
-        connecManager = new ConnecManager(loop, udpHandler, DubboClientInitializer.class);
+    private static RpcClient rpcClientInstance = new RpcClient();
+
+    private RpcClient() {
+        NioEventLoopGroup loop = new NioEventLoopGroup(1);
+        connecManager = new ConnecManager(loop, DubboClientInitializer.class);
         bind = connecManager.bind("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
+    }
+
+    public static RpcClient getInstance() {
+        return rpcClientInstance;
     }
 
 
@@ -69,10 +78,10 @@ public class RpcClient {
      *
      * @param buf
      */
-    public void sendDubboDirect(ByteBuf buf) {
+    public void sendDubboDirect(ByteBuf buf, int index) {
         try {
-            long id = (long) buf.readInt();
-            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id);
+            int id = buf.readInt();
+            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id,index);
             while (channel == null && bind.get() != null) {
                 channel = bind.get();
             }

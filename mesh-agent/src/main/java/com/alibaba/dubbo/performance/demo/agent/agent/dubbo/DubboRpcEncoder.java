@@ -76,7 +76,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
      * @param buf
      * @return
      */
-    public static ByteBuf directSend(ByteBuf buf, long id) {
+    public static ByteBuf directSend(ByteBuf buf, int id, int index) {
 
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
 
@@ -85,7 +85,8 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         /** 加入头 */
         byteBuf.writeBytes(header);
         /** 加入reqid */
-        byteBuf.writeLong(id);
+        byteBuf.writeInt(index);
+        byteBuf.writeInt(id);
         /** 信息长度 */
         byteBuf.writeInt(len);
         /** 加入消息头 */
