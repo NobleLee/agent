@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 // 一个ConnecManager对应于一个连接
 public class ConnecManager {
@@ -68,28 +65,36 @@ public class ConnecManager {
      * @param port
      * @return
      */
-    public Channel bind(String host, int port) {
+    public FutureTask<Channel> bind(String host, int port) {
         logger.info(" new connect to " + host + ":" + port);
-
-        int i = 1;
-        Channel channel = null;
-        while (true) {
-            channel = bootstrap.connect(host, port).channel();
-            logger.info("try " + i + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
-
-            if (channel.isActive()) {
-                logger.info("get channel: " + channel.remoteAddress());
-                break;
+        Callable<Channel> callable = () -> {
+            int i = 1;
+            Channel channel = null;
+            while (true) {
+                try {
+                    channel = bootstrap.connect(host, port).sync().channel();
+                    i++;
+                    if (channel.isActive()) {
+                        logger.info("get channel: " + channel.remoteAddress());
+                        break;
+                    }
+                } catch (Exception e) {
+                    logger.info("try " + i + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            i++;
-        }
-        return channel;
+            return channel;
+        };
 
+        FutureTask<Channel> callableFutureTask = new FutureTask<>(callable);
+        Thread thread = new Thread(callableFutureTask);
+        thread.start();
+
+        return callableFutureTask;
     }
 
 

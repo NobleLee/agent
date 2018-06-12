@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.concurrent.FutureTask;
 
 /**
  * 描述: Dubbo 和 agent 的调用RPCß
@@ -31,17 +32,12 @@ public class RpcClient {
     private Channel channel;
 
     private ConnecManager connecManager;
+    FutureTask<Channel> bind;
 
 
     public RpcClient(EventLoop loop, ServerUdpHandler udpHandler) {
         connecManager = new ConnecManager(loop, udpHandler, DubboClientInitializer.class);
-        channel = connecManager.bind("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        bind = connecManager.bind("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
     }
 
 
@@ -95,7 +91,9 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf, long id) {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id);
-            while (channel.remoteAddress() == null) ;
+            while (channel == null && bind.get() != null) {
+                channel = bind.get();
+            }
             logger.info(ByteBufUtils.getString(byteBuf, "send dubbo:"));
             this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
