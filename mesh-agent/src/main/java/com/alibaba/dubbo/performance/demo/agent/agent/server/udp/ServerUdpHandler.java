@@ -52,7 +52,7 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
             }
         }
 
-        logger.info(ByteBufUtils.getString(msg.content(), "udp get:"));
+       // logger.info(ByteBufUtils.getString(msg.content(), "udp get:"));
 
         rpcClient.sendDubboDirect(msg.content(), addressHashMap.get(msg.sender()));
     }

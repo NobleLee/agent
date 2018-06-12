@@ -94,7 +94,6 @@ public class RpcClient {
             while (channel == null && bind.get() != null) {
                 channel = bind.get();
             }
-            logger.info(ByteBufUtils.getString(byteBuf, "send dubbo:"));
             this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
