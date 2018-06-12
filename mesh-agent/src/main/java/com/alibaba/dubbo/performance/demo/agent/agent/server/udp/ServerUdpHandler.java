@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -31,13 +32,12 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     private static AtomicLong channelCount = new AtomicLong(0);
 
-    private static AtomicLong objectCount = new AtomicLong(0);
-
     private RpcClient rpcClient;
 
     public Channel channel;
 
     public List<InetSocketAddress> socketAddress = new ArrayList<>();
+
     public HashMap<InetSocketAddress, Integer> addressHashMap = new HashMap<>();
 
     @Override
@@ -47,10 +47,11 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
                 if (!addressHashMap.containsKey(msg.sender())) {
                     addressHashMap.put(msg.sender(), socketAddress.size());
                     socketAddress.add(msg.sender());
+                    logger.info("port count " + socketAddress.size() + " " + addressHashMap.size() + " " + msg.sender());
                 }
             }
         }
-        rpcClient.sendDubboDirect(msg.content(), socketAddress.size() - 1);
+        rpcClient.sendDubboDirect(msg.content(), addressHashMap.get(msg.sender()));
     }
 
     @Override
@@ -58,13 +59,9 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
         super.channelActive(ctx);
         channel = ctx.channel();
         rpcClient = new RpcClient(channel.eventLoop(), this);
-        logger.info("udp server channel active count: " + channelCount.getAndIncrement());
+        logger.info("udp server channel active count: " + channelCount.incrementAndGet());
     }
 
-
-    public ServerUdpHandler() {
-        logger.info("udp object count: " + objectCount.getAndIncrement());
-    }
 
 }
 

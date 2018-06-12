@@ -89,6 +89,7 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf, long id) {
         try {
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id);
+            while (channel.remoteAddress() == null) ;
             this.channel.writeAndFlush(byteBuf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
