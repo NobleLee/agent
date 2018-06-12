@@ -9,6 +9,7 @@ import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoop;
 import org.slf4j.Logger;
@@ -27,7 +28,9 @@ import java.util.concurrent.FutureTask;
 
 public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(RpcClient.class);
+    protected static final int HEADER_LENGTH = 16;
 
+    protected final ByteBuf header = PooledByteBufAllocator.DEFAULT.directBuffer(HEADER_LENGTH);
 
     private Channel channel;
 
@@ -37,6 +40,13 @@ public class RpcClient {
     public RpcClient(EventLoop loop, ServerUdpHandler udpHandler) {
         connecManager = new ConnecManager(loop, udpHandler, DubboClientInitializer.class);
         bind = connecManager.bind("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
+
+        header.writeByte(-38);
+        header.writeByte(-69);
+        header.writeByte(-58);
+        header.writeByte(0);
+        header.writeLong(0);
+        header.writeInt(0);
     }
 
 
@@ -72,7 +82,7 @@ public class RpcClient {
     public void sendDubboDirect(ByteBuf buf) {
         try {
             long id = (long) buf.readInt();
-            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id);
+            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id, header);
             while (channel == null && bind.get() != null) {
                 channel = bind.get();
             }
