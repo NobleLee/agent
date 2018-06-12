@@ -25,8 +25,8 @@ if [[ "$1" == "consumer" ]]; then
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
   java -jar \
-       -Xms512M \
-       -Xmx512M \
+       -Xms1G \
+       -Xmx1G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Detcd.url=$ETCD_URL \
@@ -41,8 +41,8 @@ elif [[ "$1" == "provider-small" ]]; then
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
   java -jar \
-       -Xms1536M \
-       -Xmx1536M \
+       -Xms2G \
+       -Xmx2G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Detcd.url=$ETCD_URL \
@@ -57,8 +57,8 @@ elif [[ "$1" == "provider-medium" ]]; then
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
   java -jar \
-       -Xms2560M \
-       -Xmx2560M \
+       -Xms3G \
+       -Xmx3G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Detcd.url=$ETCD_URL \

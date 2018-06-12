@@ -1,14 +1,11 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpSimpleHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -20,11 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -191,14 +185,14 @@ public class AgentUdpClient {
      */
     public synchronized static boolean deleteServers(List<Endpoint> endpoints) {
         // TODO 应该加锁
-        for (Endpoint endpoint : endpoints) {
-            if (endpointList.contains(endpoint)) {
-                int index = endpointList.indexOf(endpoint);
-                endpointList.remove(endpoint);
-                interList.remove(index);
-                logger.info("close channel; endpoint: " + endpoint.toString());
-            }
-        }
+//        for (Endpoint endpoint : endpoints) {
+//            if (endpointList.contains(endpoint)) {
+//                int index = endpointList.indexOf(endpoint);
+//                endpointList.remove(endpoint);
+//                interList.remove(index);
+//                logger.info("close channel; endpoint: " + endpoint.toString());
+//            }
+//        }
         return true;
     }
 

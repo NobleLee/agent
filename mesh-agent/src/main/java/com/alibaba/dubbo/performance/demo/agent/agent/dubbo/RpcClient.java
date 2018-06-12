@@ -74,6 +74,8 @@ public class RpcClient {
         return request;
     }
 
+    int count = 0;
+
     /**
      *  直接将请求发送Dubbo
      *
@@ -81,12 +83,17 @@ public class RpcClient {
      */
     public void sendDubboDirect(ByteBuf buf) {
         try {
-            long id = (long) buf.readInt();
-            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id, header);
+            ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, header);
             while (channel == null && bind.get() != null) {
                 channel = bind.get();
             }
-            this.channel.writeAndFlush(byteBuf);
+            if (count > 10) {
+                this.channel.writeAndFlush(byteBuf);
+                count = 0;
+            } else {
+                this.channel.write(byteBuf);
+                count++;
+            }
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");
             ByteBufUtils.printStringln(buf, "agent server str:");

@@ -68,17 +68,17 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
      * @param buf
      * @return
      */
-    public static ByteBuf directSend(ByteBuf buf, long id, ByteBuf header) {
+    public static ByteBuf directSend(ByteBuf buf, ByteBuf header) {
 
-        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
+        long id = (long) buf.readInt();
+
 
         CompositeByteBuf compositeByteBuf = PooledByteBufAllocator.DEFAULT.compositeBuffer();
 
         /** 加入reqid */
         header.setLong(4, id);
         /** 信息长度 */
-        header.setInt(12, len);
-//        header.writerIndex(HEADER_LENGTH);
+        header.setInt(12, COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes());
         /** 加入头 */
         compositeByteBuf.addComponent(true, header);
         header.retain();
