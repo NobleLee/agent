@@ -130,13 +130,13 @@ public class AgentUdpClient {
         /**
          * 设置正在处理的数目
          */
-        String hostAddress = msg.sender().getAddress().getHostAddress();
-        for (Endpoint endpoint : endpointList) {
-            if (endpoint.getHost().equals(hostAddress)) {
-                endpoint.reqNum.decrementAndGet();
-                break;
-            }
-        }
+//        String hostAddress = msg.sender().getAddress().getHostAddress();
+//        for (Endpoint endpoint : endpointList) {
+//            if (endpoint.getHost().equals(hostAddress)) {
+//                endpoint.reqNum.decrementAndGet();
+//                break;
+//            }
+//        }
         int id = content.readInt();
         Channel responseChannel = responseChannelList.get(id);
         // 封装返回response

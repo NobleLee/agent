@@ -23,6 +23,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     private static final int CONTENT_INDEX = 143;
 
     private static AtomicInteger classCount = new AtomicInteger(0);
+    private static AtomicInteger msgCount = new AtomicInteger(0);
 
     public static ThreadLocal<AgentUdpClient> udpClientContext = new ThreadLocal<>();
 
@@ -46,6 +47,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
         if (getBody(buf)) {
+            //logger.info("msgCount " + msgCount.incrementAndGet());
             udpClientContext.get().send(groubleBuf, index);
         }
 
