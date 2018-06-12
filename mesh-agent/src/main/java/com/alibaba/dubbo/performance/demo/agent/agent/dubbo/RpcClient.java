@@ -88,8 +88,9 @@ public class RpcClient {
      *
      * @param buf
      */
-    public void sendDubboDirect(ByteBuf buf, long id) {
+    public void sendDubboDirect(ByteBuf buf) {
         try {
+            long id = (long) buf.readInt();
             ByteBuf byteBuf = DubboRpcEncoder.directSend(buf, id);
             while (channel == null && bind.get() != null) {
                 channel = bind.get();

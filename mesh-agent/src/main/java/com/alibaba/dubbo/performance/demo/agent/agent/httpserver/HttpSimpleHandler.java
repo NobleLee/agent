@@ -22,23 +22,31 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     private static final int CONTENT_INDEX = 143;
 
-    private AgentUdpClient agentUdpClient;
-
     private static AtomicInteger classCount = new AtomicInteger(0);
+
+    public static ThreadLocal<AgentUdpClient> udpClientContext = new ThreadLocal<>();
+
+    public int index = 0;
 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        agentUdpClient = new AgentUdpClient(ctx.channel().eventLoop(), ctx.channel());
+        if (udpClientContext.get() == null) {
+            AgentUdpClient agentUdpClient = new AgentUdpClient(ctx.channel().eventLoop());
+            index = agentUdpClient.putChannel(ctx.channel());
+            udpClientContext.set(agentUdpClient);
+        } else {
+            AgentUdpClient agentUdpClient = udpClientContext.get();
+            index = agentUdpClient.putChannel(ctx.channel());
+        }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
         if (getBody(buf)) {
-
-            agentUdpClient.send(groubleBuf);
+            udpClientContext.get().send(groubleBuf, index);
         }
 
     }

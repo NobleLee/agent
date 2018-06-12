@@ -1,9 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.server.udp;
 
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.RpcClient;
-import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -14,9 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -36,25 +31,21 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
 
     public Channel channel;
 
-    public List<InetSocketAddress> socketAddress = new ArrayList<>();
-
-    public HashMap<InetSocketAddress, Integer> addressHashMap = new HashMap<>();
+    public InetSocketAddress address;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
-        if (!addressHashMap.containsKey(msg.sender())) {
+        if (address == null) {
             synchronized (this) {
-                if (!addressHashMap.containsKey(msg.sender())) {
-                    addressHashMap.put(msg.sender(), socketAddress.size());
-                    socketAddress.add(msg.sender());
-                    logger.info("port count " + socketAddress.size() + " " + addressHashMap.size() + " " + msg.sender());
+                if (address == null) {
+                    address = msg.sender();
                 }
             }
         }
 
-       // logger.info(ByteBufUtils.getString(msg.content(), "udp get:"));
+        // logger.info(ByteBufUtils.getString(msg.content(), "udp get:"));
 
-        rpcClient.sendDubboDirect(msg.content(), addressHashMap.get(msg.sender()));
+        rpcClient.sendDubboDirect(msg.content());
     }
 
     @Override

@@ -20,8 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
@@ -38,18 +40,47 @@ public class AgentUdpClient {
 
     private static Logger logger = LoggerFactory.getLogger(AgentUdpClient.class);
 
+    /**
+     * 发送通道
+     */
     private Channel sendChannel;
 
-    private Channel responseChannel;
+    /**
+     * 存放本Client绑定的 http Channel
+     */
+    private List<Channel> responseChannelList = new ArrayList<>();
 
+    /**
+     * Http channel 在本Client中的编号
+     */
+    private int responseChannelCount = 0;
+
+    /**
+     * 存放所有的节点数目
+     */
     private static List<Endpoint> endpointList = new ArrayList<>();
-
+    /**
+     * 需要发送的address地址
+     */
     private static List<List<InetSocketAddress>> interList = new ArrayList<>();
 
+    /**
+     * 为防止每次都new，在初始化预先分配一个对象
+     */
     private FullHttpResponse response;
 
+    /**
+     * 用于给Client进行编号
+     */
+    private static AtomicInteger agentUdpClientCount = new AtomicInteger(0);
 
-    public AgentUdpClient(EventLoop loop, Channel responseChannel) {
+    /**
+     * 本Client的编号值
+     */
+    private int clientIndex;
+
+
+    public AgentUdpClient(EventLoop loop) {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(loop)
                 .option(ChannelOption.SO_BROADCAST, false)
@@ -61,33 +92,34 @@ public class AgentUdpClient {
                     }
                 });
 
-
         ChannelFuture bind = bootstrap.bind(0);
         sendChannel = bind.channel();
 
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-
-        this.responseChannel = responseChannel;
+        clientIndex = agentUdpClientCount.getAndIncrement();
     }
 
-
-    //  private AtomicLong msgCount = new AtomicLong(0);
+    public int putChannel(Channel channel) {
+        responseChannelList.add(channel);
+        return responseChannelCount++;
+    }
 
     /**
      * 给指定的server发送消息
      *
      * @param buf
      */
-    public void send(ByteBuf buf) {
+    public void send(ByteBuf buf, int index) {
         if (buf.readableBytes() < 136) {
             logger.error("message length less 136 ");
             return;
         }
         // logger.info(this.hashCode() + " get msg " + msgCount.incrementAndGet());
-        buf.skipBytes(136);
+        buf.skipBytes(132);
+        buf.setInt(132, index);
         // 根据负载均衡算法，选择一个节点发送数据
-        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList);
+        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex);
         // ByteBufUtils.printStringln(buf, "send:");
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
@@ -110,6 +142,8 @@ public class AgentUdpClient {
 //                break;
 //            }
 //        }
+        int id = content.readInt();
+        Channel responseChannel = responseChannelList.get(id);
         // 封装返回response
         response.retain();
         response.headers().set(CONTENT_LENGTH, content.readableBytes());

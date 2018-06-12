@@ -78,8 +78,6 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
      */
     public static ByteBuf directSend(ByteBuf buf, long id) {
 
-       // ByteBufUtils.printStringln(buf, "get dubbo: ");
-
         int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
 
         ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len);
@@ -96,7 +94,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         byteBuf.writeBytes(buf);
         /** 加入消息尾 */
         byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
-       // ByteBufUtils.printStringln(byteBuf, "send dubbo: ");
+
         return byteBuf;
     }
 

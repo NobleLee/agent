@@ -42,6 +42,7 @@ public class AgentUdpServer {
             b.group(group).channel(NioDatagramChannel.class)
                     .option(ChannelOption.SO_BROADCAST, false)
                     .handler(new ServerUdpHandler());
+
             Channel channel = b.bind(0).channel();
             while (true) {
                 if (channel.localAddress() != null) break;

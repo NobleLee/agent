@@ -9,8 +9,8 @@ echo ETCD_URL = $ETCD_URL
 if [[ "$1" == "consumer" ]]; then
   echo "Starting consumer agent..."
   java -jar \
-       -Xms2560M \
-       -Xmx2560M \
+       -Xms1G \
+       -Xmx1G \
        -Dtype=consumer \
        -Dserver.port=20000 \
        -Detcd.url=$ETCD_URL \
@@ -25,8 +25,8 @@ if [[ "$1" == "consumer" ]]; then
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
   java -jar \
-       -Xms512M \
-       -Xmx512M \
+       -Xms1G \
+       -Xmx1G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Dserver.num=2 \
@@ -42,8 +42,8 @@ elif [[ "$1" == "provider-small" ]]; then
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
   java -jar \
-       -Xms1G \
-       -Xmx1G \
+       -Xms2G \
+       -Xmx2G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Dserver.num=4  \
@@ -59,8 +59,8 @@ elif [[ "$1" == "provider-medium" ]]; then
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
   java -jar \
-       -Xms2G \
-       -Xmx2G \
+       -Xms3G \
+       -Xmx3G \
        -Dtype=provider \
        -Ddubbo.protocol.port=20880 \
        -Dserver.num=8 \
@@ -70,7 +70,7 @@ elif [[ "$1" == "provider-large" ]]; then
        -XX:+PrintGCDateStamps \
        -XX:+PrintTenuringDistribution \
        -XX:NewRatio=1 \
-       -XX:SurvivorRatio=10 \
+       -XX:SurvivorRatio=8 \
        -Xloggc:/root/logs/gc.log \
        /root/dists/mesh-agent.jar
 else
