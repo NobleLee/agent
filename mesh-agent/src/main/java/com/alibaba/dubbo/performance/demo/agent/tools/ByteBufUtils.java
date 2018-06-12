@@ -47,6 +47,38 @@ public class ByteBufUtils {
         System.err.println("]");
     }
 
+    /**
+     * 输出字节数组的二进制
+     *
+     * @param bytes
+     * @return
+     */
+    public static String getBinStr(byte[] bytes) {
+        int i = 0;
+        String req = "" + bytes.length;
+        byte[] array = new byte[8];
+        for (byte aByte : bytes) {
+            for (int i1 = 7; i1 >= 0; i1--) {
+                array[i1] = (byte) (aByte & 1);
+                aByte = (byte) (aByte >> 1);
+            }
+            if (i++ == 0) {
+                req += "[";
+                for (byte b : array) {
+                    req += b;
+                }
+            } else {
+                req += ", ";
+                for (byte b : array) {
+                    req += b;
+                }
+            }
+        }
+        req += "]";
+        return req;
+    }
+
+
     public static void printStringln(ByteBuf buf, int skip, String str) {
         ByteBuf copy = buf.copy();
         copy.skipBytes(skip);
@@ -58,13 +90,21 @@ public class ByteBufUtils {
     public static void printDubboMsg(ByteBuf buf) {
         long aLong = buf.getLong(4);
         int anInt = buf.getInt(12);
-        ByteBufUtils.printStringln(buf, 16, "----------------------------------------------------------------------------------------------------------------------\n" + aLong + "  " + anInt + "\n");
-
+        byte[] status = new byte[2];
+        status[0] = buf.getByte(2);
+        status[1] = buf.getByte(3);
+        String bin = getBinStr(status);
+        String header = "status:" + bin + " id: " + aLong + " length: " + anInt+"  ";
+        String body = getString(buf, 16);
+        String res = "----------------------------------------------------------------------------------------------------------------------\n";
+        res += header + body;
+        System.err.println(res);
     }
 
 
-    public static String getString(ByteBuf buf, String str) {
+    public static String getString(ByteBuf buf, int skip) {
         ByteBuf copy = buf.copy();
+        copy.skipBytes(skip);
         byte[] bytes = new byte[copy.readableBytes()];
         copy.readBytes(bytes);
         return new String(bytes);
