@@ -37,6 +37,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
         if (getBody(buf)) {
+
             agentUdpClient.send(groubleBuf);
         }
 

@@ -22,6 +22,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -71,6 +72,8 @@ public class AgentUdpClient {
     }
 
 
+  //  private AtomicLong msgCount = new AtomicLong(0);
+
     /**
      * 给指定的server发送消息
      *
@@ -81,10 +84,11 @@ public class AgentUdpClient {
             logger.error("message length less 136 ");
             return;
         }
+       // logger.info(this.hashCode() + " get msg " + msgCount.incrementAndGet());
         buf.skipBytes(136);
         // 根据负载均衡算法，选择一个节点发送数据
         InetSocketAddress host = EndpointHelper.getBalancePoint(interList);
-        ByteBufUtils.printStringln(buf, "send:");
+        // ByteBufUtils.printStringln(buf, "send:");
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
@@ -94,6 +98,7 @@ public class AgentUdpClient {
      * @param msg
      */
     public void response(DatagramPacket msg) {
+       // logger.info(this.hashCode() + " back msg " + msgCount.decrementAndGet());
         ByteBuf content = msg.content();
         /**
          * 设置正在处理的数目
