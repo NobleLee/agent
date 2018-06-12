@@ -34,29 +34,11 @@ public class RpcClient {
     private ConnecManager connecManager;
     FutureTask<Channel> bind;
 
-
     public RpcClient(EventLoop loop, ServerUdpHandler udpHandler) {
         connecManager = new ConnecManager(loop, udpHandler, DubboClientInitializer.class);
         bind = connecManager.bind("127.0.0.1", Integer.valueOf(System.getProperty("dubbo.protocol.port")));
     }
 
-
-    // 将数据封装之后发送给dubbo
-    public void sendDubbo(ByteBuf buf) {
-        // 前8个字节是请求id
-        long id = buf.readLong();
-        String bodyString = buf.toString(Charsets.UTF_8);
-//        // 获取哈希参数
-        // 封装请求对象
-        DubboRequest dubboRequest = getDubboRequest(bodyString, id);
-        // 发送数据
-        send(dubboRequest);
-    }
-
-
-    public void send(DubboRequest request) {
-        this.channel.writeAndFlush(request);
-    }
 
     // 获取Dubbo请求数据
     private DubboRequest getDubboRequest(String parameter, long id) {
