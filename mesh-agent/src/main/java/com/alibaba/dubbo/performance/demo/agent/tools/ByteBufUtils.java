@@ -90,11 +90,11 @@ public class ByteBufUtils {
     public static void printDubboMsg(ByteBuf buf) {
         long aLong = buf.getLong(4);
         int anInt = buf.getInt(12);
-        byte[] status = new byte[2];
-        status[0] = buf.getByte(2);
-        status[1] = buf.getByte(3);
-        String bin = getBinStr(status);
-        String header = "status:" + bin + " id: " + aLong + " length: " + anInt+"  ";
+        byte status = buf.getByte(3);
+        byte[] bins = new byte[1];
+        bins[0] = buf.getByte(2);
+        String bin = getBinStr(bins);
+        String header = "bins:" + bin + " status :" + status + " id: " + aLong + " length: " + anInt + "  ";
         String body = getString(buf, 16);
         String res = "----------------------------------------------------------------------------------------------------------------------\n";
         res += header + body;
