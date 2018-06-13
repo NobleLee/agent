@@ -1,6 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.httpserver;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
+import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
@@ -27,19 +29,45 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     public static ThreadLocal<AgentUdpClient> udpClientContext = new ThreadLocal<>();
 
-    public int index = 0;
+    public static ThreadLocal<ByteBuf> headerThreadLocal = new ThreadLocal<>();
+
+    public long index = 0;
+
+    public AgentUdpClient agentUdpClient;
+
+    public ByteBuf header;
 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
+        /**
+         * 每一个线程绑定一个udp
+         */
         if (udpClientContext.get() == null) {
             AgentUdpClient agentUdpClient = new AgentUdpClient(ctx.channel().eventLoop());
+            this.agentUdpClient = agentUdpClient;
             index = agentUdpClient.putChannel(ctx.channel());
             udpClientContext.set(agentUdpClient);
         } else {
-            AgentUdpClient agentUdpClient = udpClientContext.get();
+            this.agentUdpClient = udpClientContext.get();
             index = agentUdpClient.putChannel(ctx.channel());
+        }
+        /**
+         * 每一个线程绑定一个headf
+         */
+        if (headerThreadLocal.get() == null) {
+            ByteBuf header = PooledByteBufAllocator.DEFAULT.directBuffer(16);
+            header.writeByte(-38);
+            header.writeByte(-69);
+            header.writeByte(-58);
+            header.writeByte(0);
+            header.writeLong(0);
+            header.writeInt(0);
+            this.header = header;
+            headerThreadLocal.set(header);
+        } else {
+            header = headerThreadLocal.get();
         }
     }
 
@@ -48,7 +76,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
         ByteBuf buf = (ByteBuf) msg;
         if (getBody(buf)) {
             //logger.info("msgCount " + msgCount.incrementAndGet());
-            udpClientContext.get().send(groubleBuf, index);
+            agentUdpClient.send(groubleBuf);
         }
 
     }
@@ -61,6 +89,9 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     public boolean getBody(ByteBuf buf) {
         if (isover) {
+            /**
+             * 获取包体长度
+             */
             length = getBodyLength(buf);
             int begin = CONTENT_INDEX;
             for (; begin < buf.readableBytes(); begin++) {
@@ -68,17 +99,43 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
                     break;
                 }
             }
+            /**
+             * 初始化一个消息
+             */
             groubleBuf = PooledByteBufAllocator.DEFAULT.compositeBuffer();
-            buf.readerIndex(begin);
+            /**
+             * 拼接dubbo请求体
+             */
+            /** 加入请求头 */
+            header.setLong(4, index);
+            header.setInt(12, COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + length - 136);
+            groubleBuf.addComponent(true, header);
+            header.retain();
+            /** 加入参数头 */
+            groubleBuf.addComponent(true, COMMON.Request.dubbo_msg_first_buffer);
+            COMMON.Request.dubbo_msg_first_buffer.retain();
+            /** 加入buffer头 */
+            buf.readerIndex(begin + 136);
             groubleBuf.addComponent(true, buf);
+            buf.retain();
+            /**
+             * 是否结束判断
+             */
             if (groubleBuf.readableBytes() == length) {
+                /** 加入消息尾 */
+                groubleBuf.addComponent(true, COMMON.Request.dubbo_msg_last_buffer);
+                COMMON.Request.dubbo_msg_last_buffer.retain();
                 return true;
             }
             isover = false;
             return false;
         } else {
             groubleBuf.addComponent(true, buf);
+            buf.retain();
             if (groubleBuf.readableBytes() == length) {
+                /** 加入消息尾 */
+                groubleBuf.addComponent(true, COMMON.Request.dubbo_msg_last_buffer);
+                COMMON.Request.dubbo_msg_last_buffer.retain();
                 isover = true;
                 return true;
             }

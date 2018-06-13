@@ -93,7 +93,7 @@ public class EtcdRegistry implements IRegistry {
         ByteSequence key = ByteSequence.fromString(strKey);
         ByteSequence val = ByteSequence.fromString(portstr);     // 目前只需要创建这个key,对应的value暂不使用,先留空
         kv.put(key, val, PutOption.newBuilder().withLeaseId(leaseId).build()).get();
-        logger.info("Register a new service at:" + strKey);
+        logger.info("Register a new service at:" + strKey + " [ " + portstr + " ]");
     }
 
     // 监控key的变化

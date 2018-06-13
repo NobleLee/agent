@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -105,15 +106,9 @@ public class AgentUdpClient {
      *
      * @param buf
      */
-    public void send(ByteBuf buf, int index) {
-        if (buf.readableBytes() < 136) {
-            logger.error("message length less 136 ");
-            return;
-        }
-        // logger.info(this.hashCode() + " get msg " + msgCount.incrementAndGet());
-        buf.skipBytes(132);
-        buf.setInt(132, index);
+    public void send(ByteBuf buf) {
         // 根据负载均衡算法，选择一个节点发送数据
+        ByteBufUtils.printDubboMsg(buf);
         InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex);
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
