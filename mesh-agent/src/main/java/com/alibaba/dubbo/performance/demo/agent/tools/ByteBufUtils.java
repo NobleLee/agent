@@ -88,6 +88,10 @@ public class ByteBufUtils {
     }
 
     public static void printDubboMsg(ByteBuf buf) {
+        System.err.println(getDubboMsg(buf));
+    }
+
+    public static String getDubboMsg(ByteBuf buf) {
         long aLong = buf.getLong(4);
         int anInt = buf.getInt(12);
         byte status = buf.getByte(3);
@@ -98,7 +102,7 @@ public class ByteBufUtils {
         String body = getString(buf, 16);
         String res = "----------------------------------------------------------------------------------------------------------------------\n";
         res += header + body;
-        System.err.println(res);
+        return res;
     }
 
 

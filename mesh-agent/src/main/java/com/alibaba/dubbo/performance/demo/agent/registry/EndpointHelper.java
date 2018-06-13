@@ -42,10 +42,10 @@ public class EndpointHelper {
         /**
          * 按照1：1：0的方式
          */
-//        if (Math.random() < 0.5) {
-//            return endpoints.get(2);
+//        if (Math.random() <= 0.5) {
+//            return interList.get(2).get(index);
 //        }
-//        return endpoints.get(1);
+//        return interList.get(1).get(index);
 
         /**
          * 尽可能的将请求打到最大的机器
@@ -77,6 +77,7 @@ public class EndpointHelper {
 
         /**
          * 按照200：200：112的比例进行请求
+         * 不靠谱
          */
 //        double r = Math.random();
 //

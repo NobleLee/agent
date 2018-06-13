@@ -58,7 +58,7 @@ public class COMMON {
     // 是否开启在provider-agent端的请求控制
     public static final boolean DUBBO_REQUEST_CONTROL_FLAG = false;
     // Dubbo客户端缓冲队列的大小
-    public static final int DUBBO_CLIENT_BUFFER_SIZE = 1000;
+    public static final int DUBBO_CLIENT_BUFFER_SIZE = 512;
     // Dubbo服务器端请求的上限
     public static final int DUBBO_SERVER_HANDLE_THRESHOLD = 200;
 

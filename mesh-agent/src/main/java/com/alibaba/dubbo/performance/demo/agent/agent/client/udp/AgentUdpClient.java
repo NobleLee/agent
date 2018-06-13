@@ -115,7 +115,6 @@ public class AgentUdpClient {
         buf.setInt(132, index);
         // 根据负载均衡算法，选择一个节点发送数据
         InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex);
-        // ByteBufUtils.printStringln(buf, "send:");
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
@@ -130,13 +129,13 @@ public class AgentUdpClient {
         /**
          * 设置正在处理的数目
          */
-//        String hostAddress = msg.sender().getAddress().getHostAddress();
-//        for (Endpoint endpoint : endpointList) {
-//            if (endpoint.getHost().equals(hostAddress)) {
-//                endpoint.reqNum.decrementAndGet();
-//                break;
-//            }
-//        }
+        String hostAddress = msg.sender().getAddress().getHostAddress();
+        for (Endpoint endpoint : endpointList) {
+            if (endpoint.getHost().equals(hostAddress)) {
+                endpoint.reqNum.decrementAndGet();
+                break;
+            }
+        }
         int id = content.readInt();
         Channel responseChannel = responseChannelList.get(id);
         // 封装返回response
