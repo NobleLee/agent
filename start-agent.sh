@@ -19,7 +19,7 @@ if [[ "$1" == "consumer" ]]; then
        -XX:+PrintGCDateStamps \
        -XX:+PrintGCDetails \
        -XX:+PrintTenuringDistribution \
-       -XX:NewRatio=1 \
+       -XX:NewRatio=2 \
        -XX:SurvivorRatio=10 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-small" ]]; then
@@ -35,7 +35,7 @@ elif [[ "$1" == "provider-small" ]]; then
        -XX:+PrintGCDateStamps \
        -XX:+PrintGCDetails \
        -XX:+PrintTenuringDistribution \
-       -XX:NewRatio=1 \
+       -XX:NewRatio=2 \
        -XX:SurvivorRatio=8 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-medium" ]]; then
@@ -51,7 +51,7 @@ elif [[ "$1" == "provider-medium" ]]; then
        -XX:+PrintGCDateStamps \
        -Xloggc:/root/logs/gc.log \
        -XX:+PrintTenuringDistribution \
-       -XX:NewRatio=1 \
+       -XX:NewRatio=2 \
        -XX:SurvivorRatio=8 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-large" ]]; then
@@ -66,7 +66,7 @@ elif [[ "$1" == "provider-large" ]]; then
        -Dlogs.dir=/root/logs \
        -XX:+PrintGCDateStamps \
        -XX:+PrintTenuringDistribution \
-       -XX:NewRatio=1 \
+       -XX:NewRatio=2 \
        -XX:SurvivorRatio=8 \
        -Xloggc:/root/logs/gc.log \
        /root/dists/mesh-agent.jar
