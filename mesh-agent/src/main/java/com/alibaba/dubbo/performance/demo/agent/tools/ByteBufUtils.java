@@ -98,7 +98,7 @@ public class ByteBufUtils {
         byte[] bins = new byte[1];
         bins[0] = buf.getByte(2);
         String bin = getBinStr(bins);
-        String header = "bins:" + bin + " status :" + status + " id: " + aLong + " length: " + anInt + "  ";
+        String header = "bins:" + bin + " status :" + status + " id: " + aLong + " length: " + anInt + "  \n";
         String body = getString(buf, 16);
         String res = "----------------------------------------------------------------------------------------------------------------------\n";
         res += header + body;

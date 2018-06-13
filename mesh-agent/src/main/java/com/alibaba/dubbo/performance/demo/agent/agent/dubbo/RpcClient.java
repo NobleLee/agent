@@ -86,6 +86,7 @@ public class RpcClient {
             while (channel == null && bind.get() != null) {
                 channel = bind.get();
             }
+            buf.retain();
             this.channel.writeAndFlush(buf);
         } catch (Exception e) {
             ByteBufUtils.println(buf, "agent server byte:");

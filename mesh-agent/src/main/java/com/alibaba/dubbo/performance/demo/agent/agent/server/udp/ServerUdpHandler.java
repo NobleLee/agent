@@ -43,7 +43,6 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
                 }
             }
         }
-       // logger.info("msg count " + msgCount.incrementAndGet());
         rpcClient.sendDubboDirect(msg.content());
     }
 
