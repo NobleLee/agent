@@ -89,9 +89,9 @@ public class EtcdRegistry implements IRegistry {
         }
         portstr = portstr.substring(1);
 
-        String strKey = MessageFormat.format("/{0}/{1}/{2}:{3}", rootPath, serviceName, IpHelper.getHostIp(), portstr);
+        String strKey = MessageFormat.format("/{0}/{1}/{2}", rootPath, serviceName, IpHelper.getHostIp());
         ByteSequence key = ByteSequence.fromString(strKey);
-        ByteSequence val = ByteSequence.fromString("");     // 目前只需要创建这个key,对应的value暂不使用,先留空
+        ByteSequence val = ByteSequence.fromString(portstr);     // 目前只需要创建这个key,对应的value暂不使用,先留空
         kv.put(key, val, PutOption.newBuilder().withLeaseId(leaseId).build()).get();
         logger.info("Register a new service at:" + strKey);
     }
@@ -112,8 +112,7 @@ public class EtcdRegistry implements IRegistry {
                         logger.info("get etcd change message, action:" + event.getEventType() + " key: " + kv.getKey().toStringUtf8() + " value" + kv.getValue().toStringUtf8());
                         // 如果是删除操作
                         if (WatchEvent.EventType.DELETE.equals(event.getEventType())) {
-                            String key = kv.getKey().toStringUtf8();
-                            List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(key));
+                            List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(kv));
                             // TCP
                             AgentClientConnectPool.deleteServers(endpoints);
                             // UDP
@@ -121,8 +120,7 @@ public class EtcdRegistry implements IRegistry {
                             logger.info("delete complete!");
                         } else if (WatchEvent.EventType.PUT.equals(event.getEventType())) {
                             // 如果是加入操作
-                            String key = kv.getKey().toStringUtf8();
-                            List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(key));
+                            List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(kv));
                             // TCP
                             AgentClientConnectPool.putServers(endpoints);
                             // UDP
@@ -170,7 +168,7 @@ public class EtcdRegistry implements IRegistry {
             GetResponse response = kv.get(key, GetOption.newBuilder().withPrefix(key).build()).get();
             List<Endpoint> endpoints = new ArrayList<>();
             for (com.coreos.jetcd.data.KeyValue kv : response.getKvs()) {
-                endpoints.add(getEndpointFromStr(kv.getKey().toStringUtf8()));
+                endpoints.add(getEndpointFromStr(kv));
             }
             logger.info("获得注册路径：" + Arrays.toString(endpoints.toArray()));
             AgentClientConnectPool.putServers(endpoints);
@@ -184,20 +182,20 @@ public class EtcdRegistry implements IRegistry {
     /**
      *   从字符串构造Endpoint
      *
-     * @param key
+     * @param keyValue
      * @return
      */
-    private Endpoint getEndpointFromStr(String key) {
-        int index = key.lastIndexOf("/");
-        String endpointStr = key.substring(index + 1, key.length());
+    private Endpoint getEndpointFromStr(com.coreos.jetcd.data.KeyValue keyValue) {
+        String key = keyValue.getKey().toStringUtf8();
+        String value = keyValue.getValue().toStringUtf8();
 
-        String[] eps = endpointStr.split(":");
-        String host = eps[0];
+        int index = key.lastIndexOf("/");
+        String host = key.substring(index + 1, key.length());
+        String[] eps = value.split(":");
         List<Integer> ports = new ArrayList<>();
-        for (int i = 1; i < eps.length; i++) {
+        for (int i = 0; i < eps.length; i++) {
             ports.add(Integer.parseInt(eps[i]));
         }
-        int port = Integer.valueOf(endpointStr.split(":")[1]);
         return new Endpoint(host, ports);
     }
 }
