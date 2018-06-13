@@ -18,7 +18,7 @@ public class COMMON {
 
     // 作为HTTP server的线程配置
     public static final int HTTPSERVER_BOSS_THREAD = 1;
-    public static final int HTTPSERVER_WORK_THREAD = 32;
+    public static final int HTTPSERVER_WORK_THREAD = 16;
     // agent server
     public static final int AGENTSERVER_BOSS_THREAD = 1;
     public static final int AGENTSERVER_WORK_THREAD = 4;
@@ -41,14 +41,14 @@ public class COMMON {
         // 定死消息体
         public static final byte[] dubbo_msg_first = "\"2.0.1\"\n\"com.alibaba.dubbo.performance.demo.provider.IHelloService\"\nnull\n\"hash\"\n\"Ljava/lang/String;\"\n\"".getBytes();
         public static final byte[] dubbo_msg_last = "\"\n{\"path\":\"com.alibaba.dubbo.performance.demo.provider.IHelloService\"}".getBytes();
-        public static ByteBuf dubbo_msg_first_buffer = PooledByteBufAllocator.DEFAULT.directBuffer(dubbo_msg_first.length);
-        public static ByteBuf dubbo_msg_last_buffer = PooledByteBufAllocator.DEFAULT.directBuffer(dubbo_msg_last.length);
+        public static final ByteBuf dubbo_msg_first_buffer = PooledByteBufAllocator.DEFAULT.directBuffer(dubbo_msg_first.length);
+        public static final ByteBuf dubbo_msg_last_buffer = PooledByteBufAllocator.DEFAULT.directBuffer(dubbo_msg_last.length);
 
         static {
             dubbo_msg_first_buffer.writeBytes(dubbo_msg_first);
             dubbo_msg_last_buffer.writeBytes(dubbo_msg_last);
             dubbo_msg_first_buffer.retain();
-            dubbo_msg_first_buffer.retain();
+            dubbo_msg_last_buffer.retain();
         }
     }
 

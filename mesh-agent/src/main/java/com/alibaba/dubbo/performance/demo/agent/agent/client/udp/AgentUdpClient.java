@@ -108,9 +108,8 @@ public class AgentUdpClient {
      */
     public void send(ByteBuf buf) {
         // 根据负载均衡算法，选择一个节点发送数据
-        ByteBufUtils.printDubboMsg(buf);
-//        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex);
-//        sendChannel.writeAndFlush(new DatagramPacket(buf, host));
+        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex);
+        sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
     /**
