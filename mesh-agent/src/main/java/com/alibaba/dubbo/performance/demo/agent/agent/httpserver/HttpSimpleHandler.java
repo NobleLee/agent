@@ -4,15 +4,22 @@ import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.AgentServerRpcHandler;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 
 public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
@@ -23,6 +30,8 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     private CompositeByteBuf groubleBuf;
 
     private static final int CONTENT_INDEX = 143;
+
+    private static final int left = -136 + 16 + COMMON.Request.dubbo_msg_first.length;
 
     private static AtomicInteger classCount = new AtomicInteger(0);
     private static AtomicInteger msgCount = new AtomicInteger(0);
@@ -74,9 +83,13 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
+        ByteBufUtils.printStringln(buf, "----------------------\n");
         if (getBody(buf)) {
             //logger.info("msgCount " + msgCount.incrementAndGet());
             agentUdpClient.send(groubleBuf);
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+            response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+            ctx.writeAndFlush(response);
         }
 
     }
@@ -121,7 +134,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
             /**
              * 是否结束判断
              */
-            if (groubleBuf.readableBytes() == length) {
+            if (groubleBuf.readableBytes() == length + left) {
                 /** 加入消息尾 */
                 groubleBuf.addComponent(true, COMMON.Request.dubbo_msg_last_buffer);
                 COMMON.Request.dubbo_msg_last_buffer.retain();
@@ -132,7 +145,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
         } else {
             groubleBuf.addComponent(true, buf);
             buf.retain();
-            if (groubleBuf.readableBytes() == length) {
+            if (groubleBuf.readableBytes() == length + left) {
                 /** 加入消息尾 */
                 groubleBuf.addComponent(true, COMMON.Request.dubbo_msg_last_buffer);
                 COMMON.Request.dubbo_msg_last_buffer.retain();
