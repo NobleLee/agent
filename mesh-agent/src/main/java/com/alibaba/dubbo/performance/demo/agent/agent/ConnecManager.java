@@ -109,8 +109,8 @@ public class ConnecManager {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, true)
-                .option(ChannelOption.SO_SNDBUF, 32 * 1024)
-                .option(ChannelOption.SO_RCVBUF, 32 * 1024)
+                .option(ChannelOption.SO_SNDBUF, 256 * 1024)
+                .option(ChannelOption.SO_RCVBUF, 256 * 1024)
                 .channel(NioSocketChannel.class)
                 .handler(initializer);
     }
@@ -123,8 +123,8 @@ public class ConnecManager {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, true)
-                .option(ChannelOption.SO_SNDBUF, 32 * 1024)
-                .option(ChannelOption.SO_RCVBUF, 32 * 1024)
+                .option(ChannelOption.SO_SNDBUF, 256 * 1024)
+                .option(ChannelOption.SO_RCVBUF, 256 * 1024)
                 .channel(NioSocketChannel.class)
                 .handler(initializer);
     }
