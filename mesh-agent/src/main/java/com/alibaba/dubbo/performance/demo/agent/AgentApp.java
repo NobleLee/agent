@@ -52,7 +52,7 @@ public class AgentApp {
         } else {
             // 开启provider agent服务
             logger.info("start provider .....");
-            AgentUdpServer agentServer = new AgentUdpServer().bind(COMMON.DubboClient_THREAD).start();
+            AgentUdpServer agentServer = new AgentUdpServer().bind(COMMON.DubboClient_Num).start();
             EtcdRegistry.etcdFactory(System.getProperty("etcd.url")).leaseOrWatch(COMMON.ServiceName);
             // 监听事件关闭
             logger.info("start provider sync.");

@@ -74,6 +74,11 @@ public class AgentUdpClient {
      */
     private int clientIndex;
 
+    /**
+     * 负载均衡相关
+     */
+    private int round = 0;
+
 
     public AgentUdpClient(EventLoop loop) {
         Bootstrap bootstrap = new Bootstrap();
@@ -108,7 +113,10 @@ public class AgentUdpClient {
      */
     public void send(ByteBuf buf) {
         // 根据负载均衡算法，选择一个节点发送数据
-        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex);
+        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex, round);
+        if (round >= 7)
+            round = 0;
+        else round++;
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
@@ -118,7 +126,6 @@ public class AgentUdpClient {
      * @param msg
      */
     public void response(DatagramPacket msg) {
-        // logger.info(this.hashCode() + " back msg " + msgCount.decrementAndGet());
         ByteBuf content = msg.content();
         /**
          * 设置正在处理的数目
