@@ -28,11 +28,11 @@ public class EndpointHelper {
     private static final double up_gate = 0.38;
     private static final double medium_gate = 0.76;
 
-    private static final int limit = 192;
+    private static final int limit = 195;
 
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
-    public static InetSocketAddress getBalancePoint(List<List<InetSocketAddress>> interList, List<Endpoint> endpoints, int index, int round) {
+    public static InetSocketAddress getBalancePoint(List<List<InetSocketAddress>> interList, List<Endpoint> endpoints, int index) {
         /**
          * 随机负载均衡
          */
@@ -42,22 +42,22 @@ public class EndpointHelper {
         /**
          * 按照1：1：0的方式
          */
-//        if (Math.random() <= 0.5) {
-//            return interList.get(2).get(index);
+//        if (Math.random() < 0.5) {
+//            return endpoints.get(2);
 //        }
-//        return interList.get(1).get(index);
+//        return endpoints.get(1);
 
         /**
          * 尽可能的将请求打到最大的机器
          */
         if (endpoints.get(2).reqNum.get() < limit) {
-            endpoints.get(2).reqNum.getAndIncrement();
+            endpoints.get(2).reqNum.incrementAndGet();
             return interList.get(2).get(index);
         } else if (endpoints.get(1).reqNum.get() < limit) {
-            endpoints.get(1).reqNum.getAndIncrement();
+            endpoints.get(1).reqNum.incrementAndGet();
             return interList.get(1).get(index);
         }
-        endpoints.get(0).reqNum.getAndIncrement();
+        endpoints.get(0).reqNum.incrementAndGet();
         return interList.get(0).get(index);
 
 
@@ -98,7 +98,6 @@ public class EndpointHelper {
 
         /**
          * 按照200：200：112的比例进行请求
-         * 不靠谱
          */
 //        double r = Math.random();
 //

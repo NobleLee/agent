@@ -40,7 +40,4 @@ public class DubboClientInitializer extends ChannelInitializer<NioSocketChannel>
     public DubboClientInitializer(ServerUdpHandler handler) {
         this.handler = handler;
     }
-
-    public DubboClientInitializer() {
-    }
 }

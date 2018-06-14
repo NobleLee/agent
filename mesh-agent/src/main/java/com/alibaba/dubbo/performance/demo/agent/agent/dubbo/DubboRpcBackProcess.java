@@ -1,14 +1,10 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.dubbo;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
 import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.DatagramPacket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 描述:
@@ -19,18 +15,13 @@ import org.slf4j.LoggerFactory;
  */
 public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
 
-    private static Logger logger = LoggerFactory.getLogger(DubboRpcBackProcess.class);
-
     private ServerUdpHandler handler = null;
 
     // 接收dubbo消息，并将消息传送给client
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf byteBuf = (ByteBuf) msg;
-        if (byteBuf.getByte(3) != 20) {
-            logger.error(ByteBufUtils.getDubboMsg(byteBuf));
-            return;
-        }
+        if (byteBuf.getByte(2) != 6) return;
 
         /***
          *  对消息进行封装
@@ -50,6 +41,5 @@ public class DubboRpcBackProcess extends ChannelInboundHandlerAdapter {
         this.handler = handler;
     }
 
-    public DubboRpcBackProcess() {
-    }
+
 }

@@ -7,7 +7,6 @@ import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.tools.JsonUtils;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -21,28 +20,37 @@ import java.util.List;
 
 public class DubboRpcEncoder extends MessageToByteEncoder {
     // header length.
+    protected static final int HEADER_LENGTH = 4;
 
+    protected static final byte[] header = new byte[HEADER_LENGTH];
+
+    static {
+        header[0] = -38;
+        header[1] = -69;
+        header[2] = -58;
+        header[3] = 0;
+    }
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf buffer) throws Exception {
-//        DubboRequest req = (DubboRequest) msg;
-//
-//        // set request id.
-//        Bytes.long2bytes(req.getId(), header, 4);
-//
-//        // encode request data.
-//        int savedWriteIndex = buffer.writerIndex();
-//        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
-//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        encodeRequestData(bos, req.getData());
-//
-//        int len = bos.size();
-//        buffer.writeBytes(bos.toByteArray());
-//        Bytes.int2bytes(len, header, 12);
-//        // write
-//        buffer.writerIndex(savedWriteIndex);
-//        buffer.writeBytes(header); // write header.
-//        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
+        DubboRequest req = (DubboRequest) msg;
+
+        // set request id.
+        Bytes.long2bytes(req.getId(), header, 4);
+
+        // encode request data.
+        int savedWriteIndex = buffer.writerIndex();
+        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        encodeRequestData(bos, req.getData());
+
+        int len = bos.size();
+        buffer.writeBytes(bos.toByteArray());
+        Bytes.int2bytes(len, header, 12);
+        // write
+        buffer.writerIndex(savedWriteIndex);
+        buffer.writeBytes(header); // write header.
+        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
     }
 
 
@@ -68,31 +76,26 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
      * @param buf
      * @return
      */
-    public static ByteBuf directSend(ByteBuf buf, ByteBuf header) {
+    public static ByteBuf directSend(ByteBuf buf, long id) {
 
-        long id = (long) buf.readInt();
+        int len = COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes();
 
+        ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(len);
 
-        CompositeByteBuf compositeByteBuf = PooledByteBufAllocator.DEFAULT.compositeBuffer();
-
-        /** 加入reqid */
-        header.setLong(4, id);
-        /** 信息长度 */
-        header.setInt(12, COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + buf.readableBytes());
         /** 加入头 */
-        compositeByteBuf.addComponent(true, header);
-        header.retain();
+        byteBuf.writeBytes(header);
+        /** 加入reqid */
+        byteBuf.writeLong(id);
+        /** 信息长度 */
+        byteBuf.writeInt(len);
         /** 加入消息头 */
-        compositeByteBuf.addComponent(true, COMMON.Request.dubbo_msg_first_buffer);
-        COMMON.Request.dubbo_msg_first_buffer.retain();
+        byteBuf.writeBytes(COMMON.Request.dubbo_msg_first);
         /** 加入消息参数 */
-        compositeByteBuf.addComponent(true, buf);
-        buf.retain();
+        byteBuf.writeBytes(buf);
         /** 加入消息尾 */
-        compositeByteBuf.addComponent(true, COMMON.Request.dubbo_msg_last_buffer);
-        COMMON.Request.dubbo_msg_last_buffer.retain();
+        byteBuf.writeBytes(COMMON.Request.dubbo_msg_last);
 
-        return compositeByteBuf;
+        return byteBuf;
     }
 
 }

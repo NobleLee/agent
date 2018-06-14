@@ -20,9 +20,11 @@ public class ConnecManager {
     private static Logger logger = LoggerFactory.getLogger(ConnecManager.class);
 
     private Bootstrap bootstrap;
+    private EventLoop loop;
 
 
     public ConnecManager(EventLoop loop, ServerUdpHandler udpHandler, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+        this.loop = loop;
         ChannelInitializer<NioSocketChannel> channelInitializer = null;
         Class<?>[] parTypes = new Class<?>[1];
         parTypes[0] = ServerUdpHandler.class;
@@ -40,10 +42,11 @@ public class ConnecManager {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        bootstrap = initBootstrap(channelInitializer, loop);
+        bootstrap = initBootstrap(channelInitializer);
     }
 
-    public ConnecManager(EventLoopGroup loop, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+    public ConnecManager(EventLoop loop, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+        this.loop = loop;
         ChannelInitializer<NioSocketChannel> channelInitializer = null;
         try {
             channelInitializer = initializer.newInstance();
@@ -52,7 +55,7 @@ public class ConnecManager {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        bootstrap = initBootstrap(channelInitializer, loop);
+        bootstrap = initBootstrap(channelInitializer);
     }
 
     /**
@@ -101,7 +104,7 @@ public class ConnecManager {
      * @param initializer
      * @return
      */
-    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer, EventLoop loop) {
+    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer) {
 
         return new Bootstrap()
                 .group(loop)
@@ -109,22 +112,7 @@ public class ConnecManager {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, true)
-                .option(ChannelOption.SO_SNDBUF, 256 * 1024)
-                .option(ChannelOption.SO_RCVBUF, 256 * 1024)
-                .channel(NioSocketChannel.class)
-                .handler(initializer);
-    }
-
-    public Bootstrap initBootstrap(ChannelInitializer<NioSocketChannel> initializer, EventLoopGroup loopGroup) {
-
-        return new Bootstrap()
-                .group(loopGroup)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, true)
-                .option(ChannelOption.SO_SNDBUF, 256 * 1024)
-                .option(ChannelOption.SO_RCVBUF, 256 * 1024)
+                .option(ChannelOption.SO_SNDBUF, 25600000)
                 .channel(NioSocketChannel.class)
                 .handler(initializer);
     }

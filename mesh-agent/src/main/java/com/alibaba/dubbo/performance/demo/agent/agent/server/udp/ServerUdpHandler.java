@@ -26,7 +26,6 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
     private static Logger logger = LoggerFactory.getLogger(ServerUdpHandler.class);
 
     private static AtomicLong channelCount = new AtomicLong(0);
-    private static AtomicLong msgCount = new AtomicLong(0);
 
     private RpcClient rpcClient;
 
@@ -43,6 +42,7 @@ public class ServerUdpHandler extends SimpleChannelInboundHandler<DatagramPacket
                 }
             }
         }
+
         rpcClient.sendDubboDirect(msg.content());
     }
 

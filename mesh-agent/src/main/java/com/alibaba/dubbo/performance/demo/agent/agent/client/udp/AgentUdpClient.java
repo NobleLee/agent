@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
+import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HttpSimpleHandler;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
@@ -7,6 +8,7 @@ import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -18,8 +20,11 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -74,11 +79,6 @@ public class AgentUdpClient {
      */
     private int clientIndex;
 
-    /**
-     * 负载均衡相关
-     */
-    private int round = 0;
-
 
     public AgentUdpClient(EventLoop loop) {
         Bootstrap bootstrap = new Bootstrap();
@@ -111,12 +111,17 @@ public class AgentUdpClient {
      *
      * @param buf
      */
-    public void send(ByteBuf buf) {
+    public void send(ByteBuf buf, int index) {
+        if (buf.readableBytes() < 136) {
+            logger.error("message length less 136 ");
+            return;
+        }
+        // logger.info(this.hashCode() + " get msg " + msgCount.incrementAndGet());
+        buf.skipBytes(132);
+        buf.setInt(132, index);
         // 根据负载均衡算法，选择一个节点发送数据
-        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex, round);
-        if (round >= 7)
-            round = 0;
-        else round++;
+        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex);
+        // ByteBufUtils.printStringln(buf, "send:");
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
@@ -126,6 +131,7 @@ public class AgentUdpClient {
      * @param msg
      */
     public void response(DatagramPacket msg) {
+        // logger.info(this.hashCode() + " back msg " + msgCount.decrementAndGet());
         ByteBuf content = msg.content();
         /**
          * 设置正在处理的数目
@@ -185,14 +191,14 @@ public class AgentUdpClient {
      */
     public synchronized static boolean deleteServers(List<Endpoint> endpoints) {
         // TODO 应该加锁
-//        for (Endpoint endpoint : endpoints) {
-//            if (endpointList.contains(endpoint)) {
-//                int index = endpointList.indexOf(endpoint);
-//                endpointList.remove(endpoint);
-//                interList.remove(index);
-//                logger.info("close channel; endpoint: " + endpoint.toString());
-//            }
-//        }
+        for (Endpoint endpoint : endpoints) {
+            if (endpointList.contains(endpoint)) {
+                int index = endpointList.indexOf(endpoint);
+                endpointList.remove(endpoint);
+                interList.remove(index);
+                logger.info("close channel; endpoint: " + endpoint.toString());
+            }
+        }
         return true;
     }
 
