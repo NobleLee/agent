@@ -28,7 +28,7 @@ public class COMMON {
 
 
     // 连接配置
-    public static final int DubboClient_Num = HTTPSERVER_WORK_THREAD;
+    public static final int DubboClient_Num = 8;
 
 
     /**

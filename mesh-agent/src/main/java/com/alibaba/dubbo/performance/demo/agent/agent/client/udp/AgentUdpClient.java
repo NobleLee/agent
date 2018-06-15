@@ -40,11 +40,6 @@ public class AgentUdpClient {
     private Channel sendChannel;
 
     /**
-     * localhost port
-     */
-    private int localPort;
-
-    /**
      * 存放本Client绑定的 http Channel
      */
     private List<Channel> responseChannelList = new ArrayList<>();
@@ -98,7 +93,6 @@ public class AgentUdpClient {
 
         ChannelFuture bind = bootstrap.bind(0);
         sendChannel = bind.channel();
-        localPort = ((InetSocketAddress) sendChannel.localAddress()).getPort();
 
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
@@ -119,10 +113,10 @@ public class AgentUdpClient {
     public void send(ByteBuf buf) {
         // 根据负载均衡算法，选择一个节点发送数据
         InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex, round);
-        if (round >= 7)
-            round = 0;
-        else round++;
-        buf.setInt(8, localPort);
+//        if (round >= 7)
+//            round = 0;
+//        else round++;
+        buf.setInt(8, ((InetSocketAddress) sendChannel.localAddress()).getPort());
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
