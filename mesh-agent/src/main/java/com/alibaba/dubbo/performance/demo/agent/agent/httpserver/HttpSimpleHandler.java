@@ -32,7 +32,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     public static ThreadLocal<ByteBuf> headerThreadLocal = new ThreadLocal<>();
 
-    public long index = 0;
+    public int index = 0;
 
     public AgentUdpClient agentUdpClient;
 
@@ -114,7 +114,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
              * 拼接dubbo请求体
              */
             /** 加入请求头 */
-            header.setLong(4, index);
+            header.setInt(4, index);
             header.setInt(12, COMMON.Request.dubbo_msg_first.length + COMMON.Request.dubbo_msg_last.length + length - 136);
             globalBuf.addComponent(true, header);
 

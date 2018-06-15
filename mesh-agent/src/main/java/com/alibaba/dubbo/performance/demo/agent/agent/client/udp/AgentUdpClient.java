@@ -2,7 +2,6 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
-import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -39,6 +38,11 @@ public class AgentUdpClient {
      * 发送通道
      */
     private Channel sendChannel;
+
+    /**
+     * localhost port
+     */
+    private int localPort;
 
     /**
      * 存放本Client绑定的 http Channel
@@ -94,10 +98,11 @@ public class AgentUdpClient {
 
         ChannelFuture bind = bootstrap.bind(0);
         sendChannel = bind.channel();
+        localPort = ((InetSocketAddress) sendChannel.localAddress()).getPort();
 
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-        clientIndex = agentUdpClientCount.getAndIncrement();
+        clientIndex = agentUdpClientCount.getAndIncrement() % interList.get(0).size();
         logger.info("client udp channel: " + sendChannel.localAddress() + "->");
     }
 
@@ -117,6 +122,7 @@ public class AgentUdpClient {
         if (round >= 7)
             round = 0;
         else round++;
+        buf.setInt(8, localPort);
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
