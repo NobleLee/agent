@@ -28,7 +28,7 @@ public class EndpointHelper {
     private static final double up_gate = 0.38;
     private static final double medium_gate = 0.76;
 
-    private static final int limit = 192;
+    private static final int limit = 190;
 
 
     // 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限

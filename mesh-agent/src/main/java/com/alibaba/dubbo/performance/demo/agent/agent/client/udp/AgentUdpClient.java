@@ -96,7 +96,7 @@ public class AgentUdpClient {
 
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
-        clientIndex = agentUdpClientCount.getAndIncrement() % interList.get(0).size();
+        clientIndex = agentUdpClientCount.getAndIncrement();
         logger.info("client udp channel: " + sendChannel.localAddress() + "->");
     }
 
