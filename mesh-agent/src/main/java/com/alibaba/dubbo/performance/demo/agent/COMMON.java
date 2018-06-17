@@ -25,7 +25,7 @@ public class COMMON {
     public static final int AGENTSERVER_BOSS_THREAD = 1;
     public static final int AGENTSERVER_WORK_THREAD = HTTPSERVER_WORK_THREAD;
 
-    public static final boolean isUdp = false;
+    public static final boolean isUdp = true;
 
     // socket
     public static final int BACK_LOG = 1024;

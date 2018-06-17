@@ -28,7 +28,6 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     private static final int left = -136 + 16 + COMMON.Request.dubbo_msg_first.length;
 
     private static AtomicInteger classCount = new AtomicInteger(0);
-    private static AtomicInteger msgCount = new AtomicInteger(0);
 
     public static ThreadLocal<AgentUdpClient> udpClientContext = new ThreadLocal<>();
 
@@ -101,9 +100,6 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
         ByteBuf buf = (ByteBuf) msg;
         // ByteBufUtils.printStringln(buf, "--------------------------------------\n");
         if (getBody(buf)) {
-            // logger.info("msgCount " + msgCount.incrementAndGet());
-            // ByteBufUtils.printDubboMsg(globalBuf);
-            //ByteBufUtils.println(globalBuf, " send ");
             if (COMMON.isUdp)
                 agentUdpClient.send(globalBuf);
             else {

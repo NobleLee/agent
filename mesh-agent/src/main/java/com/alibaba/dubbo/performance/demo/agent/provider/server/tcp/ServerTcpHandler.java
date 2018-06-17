@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.provider.server.tcp;
 
 import com.alibaba.dubbo.performance.demo.agent.provider.dubbo.DubboClient;
 import com.alibaba.dubbo.performance.demo.agent.provider.server.udp.ServerUdpHandler;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,6 +33,7 @@ public class ServerTcpHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        ByteBufUtils.printDubboMsg((ByteBuf) msg);
         dubboClient.sendDubboDirect((ByteBuf) msg);
     }
 

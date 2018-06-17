@@ -22,6 +22,7 @@ public class ConnecManager {
 
     /**
      * udp
+     *
      * @param loop
      * @param udpHandler
      * @param initializer
@@ -49,6 +50,7 @@ public class ConnecManager {
 
     /**
      * tcp
+     *
      * @param loop
      * @param tcpHandler
      * @param initializer
@@ -56,7 +58,7 @@ public class ConnecManager {
     public ConnecManager(EventLoop loop, ServerTcpHandler tcpHandler, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
         ChannelInitializer<NioSocketChannel> channelInitializer = null;
         Class<?>[] parTypes = new Class<?>[1];
-        parTypes[0] = ServerUdpHandler.class;
+        parTypes[0] = ServerTcpHandler.class;
         try {
             Constructor<?> constructor = initializer.getConstructor(parTypes);
             Object[] pars = new Object[1];
@@ -123,6 +125,21 @@ public class ConnecManager {
         thread.start();
 
         return callableFutureTask;
+    }
+
+    /**
+     * 绑定一个Endpoint，并指定通道数目
+     *
+     * @param host
+     * @param port
+     * @return
+     */
+    public ChannelFuture connect(String host, int port) {
+        logger.info(" new connect to " + host + ":" + port);
+
+        ChannelFuture connect = bootstrap.connect(host, port);
+
+        return connect;
     }
 
 

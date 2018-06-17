@@ -28,7 +28,7 @@ public class DubboClientHandler extends ChannelInboundHandlerAdapter {
 
     private ServerTcpHandler tcpHandler = null;
 
-    private static final short CLIENT_INDEX = CLIENT_ORDER_MAP.get(System.getProperty("type"));
+    private static final short CLIENT_INDEX = CLIENT_ORDER_MAP.get(System.getProperty("label"));
 
     // 接收dubbo消息，并将消息传送给client
     @Override

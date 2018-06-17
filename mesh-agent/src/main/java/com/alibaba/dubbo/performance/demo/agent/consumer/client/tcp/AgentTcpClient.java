@@ -69,15 +69,15 @@ public class AgentTcpClient {
      */
     private Channel[] channels = new Channel[3];
 
-    private FutureTask<Channel>[] futureTasks = new FutureTask[3];
+    private ChannelFuture[] channelFutures = new ChannelFuture[3];
 
     public AgentTcpClient(EventLoop loop) {
         ConnecManager connecManager = new ConnecManager(loop, AgentTcpInitializer.class);
 
         int count = 0;
         for (Endpoint endpoint : balanceHelper.getEndpoints()) {
-            FutureTask<Channel> futureTask = connecManager.bind(endpoint.getHost(), endpoint.getPort().get(0));
-            futureTasks[count++] = futureTask;
+            ChannelFuture channelFuture = connecManager.connect(endpoint.getHost(), endpoint.getPort().get(0));
+            channelFutures[count++] = channelFuture;
         }
 
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
@@ -98,12 +98,13 @@ public class AgentTcpClient {
      *
      * @param buf
      */
-    public void send(ByteBuf buf) throws ExecutionException, InterruptedException {
+    public void send(ByteBuf buf) throws InterruptedException {
         // 根据负载均衡算法，选择一个节点发送数据
         int index = balanceHelper.getBalanceIndex(clientIndex);
 
-        while (channels[index] == null && futureTasks[index].get() != null) {
-            channels[index] = futureTasks[index].get();
+        while (channels[index] == null && channelFutures[index].isDone()) {
+            logger.info("get " + clientIndex + " channel.");
+            channels[index] = channelFutures[index].sync().channel();
         }
 
         channels[index].writeAndFlush(buf);

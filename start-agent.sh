@@ -28,6 +28,7 @@ elif [[ "$1" == "provider-small" ]]; then
        -Xms512M \
        -Xmx512M \
        -Dtype=provider \
+       -Dlabel=provider-small \
        -Ddubbo.protocol.port=20880 \
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
@@ -45,6 +46,7 @@ elif [[ "$1" == "provider-medium" ]]; then
        -Xms1536M \
        -Xmx1536M \
        -Dtype=provider \
+       -Dlabel=provider-medium \
        -Ddubbo.protocol.port=20880 \
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
@@ -62,6 +64,7 @@ elif [[ "$1" == "provider-large" ]]; then
        -Xms2536M \
        -Xmx2536M \
        -Dtype=provider \
+       -Dlabel=provider-large \
        -Ddubbo.protocol.port=20880 \
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \

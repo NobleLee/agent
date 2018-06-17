@@ -35,12 +35,12 @@ public class AgentTcpServer {
     public AgentTcpServer init() {
         serverBootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_BACKLOG, COMMON.BACK_LOG)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.SINGLE_EVENTEXECUTOR_PER_GROUP, true)
-                .option(ChannelOption.SO_SNDBUF, 256 * 1024)
+                .childOption(ChannelOption.SO_SNDBUF, 256 * 1024)
                 .option(ChannelOption.SO_RCVBUF, 256 * 1024)
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
 
