@@ -16,6 +16,7 @@ import com.coreos.jetcd.options.GetOption;
 import com.coreos.jetcd.options.PutOption;
 import com.coreos.jetcd.options.WatchOption;
 import com.coreos.jetcd.watch.WatchEvent;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +67,6 @@ public class EtcdRegistry implements IRegistry {
 
     public void leaseOrWatch(String service) {
         String type = System.getProperty("type");   // 获取type参数
-        logger.info("start type: " + type);
         if ("provider".equals(type)) {
             keepAlive();  // 对于consumer的agent，并不需要进行租期续约
         } else {
@@ -138,10 +138,14 @@ public class EtcdRegistry implements IRegistry {
         try {
             this.leaseId = lease.grant(600).get().getID();
             // 如果是provider，去etcd注册服务
-//            int port = Integer.valueOf(System.getProperty("server.port"));
-            register(COMMON.ServiceName, AgentUdpServer.portList);
+            int port = Integer.valueOf(System.getProperty("server.port"));
+            if (COMMON.isUdp)
+                register(COMMON.ServiceName, AgentUdpServer.portList);
+            else
+                register(COMMON.ServiceName, ImmutableList.of(port));
+
         } catch (Exception e) {
-            logger.error(e.getStackTrace().toString());
+            logger.error(e.toString());
         }
         Executors.newSingleThreadExecutor().submit(
                 () -> {
