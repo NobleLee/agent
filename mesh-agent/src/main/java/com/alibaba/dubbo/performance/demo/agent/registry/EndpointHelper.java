@@ -51,7 +51,7 @@ public class EndpointHelper {
     /**
      * 每台机器限制请求数量
      */
-    private static final int limit = 197;
+    private static final int limit = 190;
 
     /**
      * 存放所有的节点数目

@@ -9,8 +9,8 @@ echo ETCD_URL = $ETCD_URL
 if [[ "$1" == "consumer" ]]; then
   echo "Starting consumer agent..."
   java -jar \
-       -Xms1536M \
-       -Xmx1536M \
+       -Xms1G \
+       -Xmx1G \
        -Dtype=consumer \
        -Dserver.port=20000 \
        -Detcd.url=$ETCD_URL \
