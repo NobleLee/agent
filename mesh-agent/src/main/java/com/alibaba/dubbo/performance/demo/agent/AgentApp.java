@@ -1,8 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
-import com.alibaba.dubbo.performance.demo.agent.agent.httpserver.HTTPServer;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.AgentUdpServer;
+import com.alibaba.dubbo.performance.demo.agent.consumer.httpserver.HTTPServer;
+import com.alibaba.dubbo.performance.demo.agent.provider.server.tcp.AgentTcpServer;
+import com.alibaba.dubbo.performance.demo.agent.provider.server.udp.AgentUdpServer;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,13 +36,6 @@ public class AgentApp {
     public static void main(String[] args) {
 
         logger.info("start type: " + System.getProperty("type") + " " + System.getProperty("etcd.url"));
-//        Properties properties = System.getProperties();
-//        String ps = "";
-//        Set<Map.Entry<Object, Object>> entries = properties.entrySet();
-//        for (Map.Entry<Object, Object> entry : entries) {
-//            ps += entry.getKey() + "=" + entry.getValue() + "\n";
-//        }
-//        logger.info(ps);
         // 开启监听etcd服务
 
         if (System.getProperty("type").equals("consumer")) {
@@ -51,12 +44,18 @@ public class AgentApp {
             new HTTPServer().start(Integer.parseInt(System.getProperty("server.port")));
         } else {
             // 开启provider agent服务
-            logger.info("start provider .....");
-            AgentUdpServer agentServer = new AgentUdpServer().bind(COMMON.DubboClient_Num).start();
-            EtcdRegistry.etcdFactory(System.getProperty("etcd.url")).leaseOrWatch(COMMON.ServiceName);
+            logger.info("start provider." + " [is udp]: " + COMMON.isUdp);
+            if (COMMON.isUdp) {
+                AgentUdpServer agentServer = new AgentUdpServer().bind(COMMON.DubboClient_Num).start();
+                EtcdRegistry.etcdFactory(System.getProperty("etcd.url")).leaseOrWatch(COMMON.ServiceName);
+                agentServer.sync();
+            } else {
+                AgentTcpServer agentServer = new AgentTcpServer(Integer.parseInt(System.getProperty("server.port"))).init();
+                EtcdRegistry.etcdFactory(System.getProperty("etcd.url")).leaseOrWatch(COMMON.ServiceName);
+                agentServer.sync();
+            }
             // 监听事件关闭
             logger.info("start provider sync.");
-            agentServer.sync();
         }
     }
 }

@@ -60,7 +60,7 @@ function agent_deploy(){
     ETCD_URL=http://$ETCD_HOST:$ETCD_PORT
 
     if [[ "$1" == "consumer" ]]; then
-      echo "Starting consumer agent..."
+      echo "Starting consumer consumer..."
       nohup java -jar \
            -Xms1536M \
            -Xmx1536M \
@@ -72,7 +72,7 @@ function agent_deploy(){
            /root/dists/mesh-agent.jar \
            > /root/logs/service/a_consumer.log 2>&1 &
     elif [[ "$1" == "provider-small" ]]; then
-      echo "Starting small provider agent..."
+      echo "Starting small provider consumer..."
       nohup java -jar \
            -Xms512M \
            -Xmx512M \
@@ -85,7 +85,7 @@ function agent_deploy(){
            /root/dists/mesh-agent.jar \
            > /root/logs/service/a_provider-small.log 2>&1 &
     elif [[ "$1" == "provider-medium" ]]; then
-      echo "Starting medium provider agent..."
+      echo "Starting medium provider consumer..."
       nohup java -jar \
            -Xms1024M \
            -Xmx1024M \
@@ -98,7 +98,7 @@ function agent_deploy(){
            /root/dists/mesh-agent.jar \
            > /root/logs/service/a_provider-medium.log 2>&1 &
     elif [[ "$1" == "provider-large" ]]; then
-      echo "Starting large provider agent..."
+      echo "Starting large provider consumer..."
       nohup java -jar \
            -Xms1024M \
            -Xmx1024M \
@@ -118,7 +118,7 @@ function agent_deploy(){
 
 kill -9 `ps -a|grep java|grep Xms|awk '{print $1}'`
 
-# agent
+# consumer
 mvn -DskipTests=true package -f pom.xml
 rm -rf /root/dists/mesh-agent.jar
 cp ./mesh-agent/target/mesh-agent-1.0-SNAPSHOT.jar /root/dists/mesh-agent.jar

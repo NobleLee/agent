@@ -1,12 +1,10 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
-import com.alibaba.dubbo.performance.demo.agent.agent.client.AgentClientConnectPool;
-import com.alibaba.dubbo.performance.demo.agent.agent.client.udp.AgentUdpClient;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.AgentUdpServer;
-import com.alibaba.dubbo.performance.demo.agent.agent.server.udp.ServerUdpHandler;
+import com.alibaba.dubbo.performance.demo.agent.COMMON;
+import com.alibaba.dubbo.performance.demo.agent.consumer.client.tcp.AgentTcpClient;
+import com.alibaba.dubbo.performance.demo.agent.consumer.client.udp.AgentUdpClient;
+import com.alibaba.dubbo.performance.demo.agent.provider.server.udp.AgentUdpServer;
 import com.alibaba.dubbo.performance.demo.agent.tools.IpHelper;
-import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import com.coreos.jetcd.Client;
 import com.coreos.jetcd.KV;
 import com.coreos.jetcd.Lease;
@@ -19,7 +17,6 @@ import com.coreos.jetcd.options.PutOption;
 import com.coreos.jetcd.options.WatchOption;
 import com.coreos.jetcd.watch.WatchEvent;
 import com.google.common.collect.Lists;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,7 +111,7 @@ public class EtcdRegistry implements IRegistry {
                         if (WatchEvent.EventType.DELETE.equals(event.getEventType())) {
                             List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(kv));
                             // TCP
-                            AgentClientConnectPool.deleteServers(endpoints);
+                            AgentTcpClient.deleteServers(endpoints);
                             // UDP
                             AgentUdpClient.deleteServers(endpoints);
                             logger.info("delete complete!");
@@ -122,7 +119,7 @@ public class EtcdRegistry implements IRegistry {
                             // 如果是加入操作
                             List<Endpoint> endpoints = Lists.newArrayList(getEndpointFromStr(kv));
                             // TCP
-                            AgentClientConnectPool.putServers(endpoints);
+                            AgentTcpClient.putServers(endpoints);
                             // UDP
                             AgentUdpClient.putServers(endpoints);
                         }
@@ -171,7 +168,7 @@ public class EtcdRegistry implements IRegistry {
                 endpoints.add(getEndpointFromStr(kv));
             }
             logger.info("获得注册路径：" + Arrays.toString(endpoints.toArray()));
-            AgentClientConnectPool.putServers(endpoints);
+            AgentTcpClient.putServers(endpoints);
             AgentUdpClient.putServers(endpoints);
         } catch (Exception e) {
             e.printStackTrace();

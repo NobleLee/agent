@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
-import com.alibaba.dubbo.performance.demo.agent.agent.COMMON;
+import com.alibaba.dubbo.performance.demo.agent.COMMON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class EndpointHelper {
     /**
      * 每台机器限制请求数量
      */
-    private static final int limit = 197;
+    private static final int limit = 190;
 
     /**
      * 存放所有的节点数目
@@ -114,14 +114,21 @@ public class EndpointHelper {
         }
     }
 
+    public void decrease(int clientIndex, short endpointIndex) {
+        if (sync) {
+            endpoints.get(endpointIndex).reqNum.decrementAndGet();
+        } else {
+            totalReqList[clientIndex][endpointIndex]--;
+        }
+    }
 
     /**
-     * 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
+     * 选择endpoint的对应索引
      *
      * @param index
      * @return
      */
-    public InetSocketAddress getBalancePoint(final int index) {
+    public int getBalanceIndex(int index) {
         /**
          * 随机负载均衡
          */
@@ -135,23 +142,23 @@ public class EndpointHelper {
         if (sync) {
             if (endpoints.get(2).reqNum.get() < limit) {
                 endpoints.get(2).reqNum.getAndIncrement();
-                return interList.get(2).get(index);
+                return 2;
             } else if (endpoints.get(1).reqNum.get() < limit) {
                 endpoints.get(1).reqNum.getAndIncrement();
-                return interList.get(1).get(index);
+                return 1;
             }
             endpoints.get(0).reqNum.getAndIncrement();
-            return interList.get(0).get(index);
+            return 0;
         } else {
             if (getEndpointReq(2) < limit) {
                 totalReqList[index][2]++;
-                return interList.get(2).get(index);
+                return 2;
             } else if (getEndpointReq(1) < limit) {
                 totalReqList[index][1]++;
-                return interList.get(1).get(index);
+                return 1;
             }
             totalReqList[index][0]++;
-            return interList.get(0).get(index);
+            return 0;
         }
 
         /**
@@ -205,7 +212,18 @@ public class EndpointHelper {
 //            return interList.get(1).get(index);
 //        }
 //        return interList.get(0).get(index);
+    }
 
+
+    /**
+     * 负载均衡算法，最好选择轮转算法，如果采用概率选择算法性能应该会受限
+     *
+     * @param index
+     * @return
+     */
+    public InetSocketAddress getBalancePoint(final int index) {
+        int resIndex = getBalanceIndex(index);
+        return interList.get(resIndex).get(index);
     }
 
 
@@ -230,4 +248,7 @@ public class EndpointHelper {
             rounds[index] = 0;
     }
 
+    public List<Endpoint> getEndpoints() {
+        return endpoints;
+    }
 }
