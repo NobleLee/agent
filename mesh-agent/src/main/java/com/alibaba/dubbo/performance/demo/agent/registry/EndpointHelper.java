@@ -68,8 +68,11 @@ public class EndpointHelper {
      */
     private volatile int[][] totalReqList = new int[COUNT][];
 
-    public void addEndpointReq(int index) {
+    int size = 0;
+
+    public synchronized void addEndpointReq(int index) {
         totalReqList[index] = new int[3];
+        size++;
     }
 
     public int[] rounds = new int[COUNT];
@@ -107,8 +110,9 @@ public class EndpointHelper {
             }
         } else {
             for (int i = 0; i < endpoints.size(); i++) {
-                if (endpoints.get(i).equals(host)) {
+                if (endpoints.get(i).getHost().equals(host)) {
                     totalReqList[index][i]--;
+                    break;
                 }
             }
         }
@@ -217,8 +221,8 @@ public class EndpointHelper {
      */
     private int getEndpointReq(int index) {
         int res = 0;
-        for (int[] reqs : totalReqList) {
-            res += reqs[index];
+        for (int i = 0; i < size; i++) {
+            res += totalReqList[i][index];
         }
         return res;
     }

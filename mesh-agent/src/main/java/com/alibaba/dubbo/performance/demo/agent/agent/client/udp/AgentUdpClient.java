@@ -3,7 +3,6 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
-import com.google.common.collect.Lists;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,7 +52,7 @@ public class AgentUdpClient {
     /**
      * 负载均衡相关对象
      */
-    private static EndpointHelper balanceHelper = EndpointHelper.getINSTANCE(true);
+    private static EndpointHelper balanceHelper = EndpointHelper.getINSTANCE(false);
 
     /**
      * 为防止每次都new，在初始化预先分配一个对象
