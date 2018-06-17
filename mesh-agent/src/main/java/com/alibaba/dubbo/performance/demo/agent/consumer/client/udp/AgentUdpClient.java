@@ -52,7 +52,7 @@ public class AgentUdpClient {
     /**
      * 负载均衡相关对象
      */
-    private static EndpointHelper balanceHelper = EndpointHelper.getINSTANCE(true);
+    private static EndpointHelper balanceHelper = EndpointHelper.getINSTANCE(false);
 
     /**
      * 为防止每次都new，在初始化预先分配一个对象
