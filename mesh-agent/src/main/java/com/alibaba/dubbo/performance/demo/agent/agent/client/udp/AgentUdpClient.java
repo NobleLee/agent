@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.agent.client.udp;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
+import com.google.common.collect.Lists;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,13 +52,9 @@ public class AgentUdpClient {
     private int responseChannelCount = 0;
 
     /**
-     * 存放所有的节点数目
+     * 负载均衡相关对象
      */
-    private static List<Endpoint> endpointList = new ArrayList<>();
-    /**
-     * 需要发送的address地址
-     */
-    private static List<List<InetSocketAddress>> interList = new ArrayList<>();
+    private static EndpointHelper balanceHelper = EndpointHelper.getINSTANCE(true);
 
     /**
      * 为防止每次都new，在初始化预先分配一个对象
@@ -72,12 +70,6 @@ public class AgentUdpClient {
      * 本Client的编号值
      */
     private int clientIndex;
-
-    /**
-     * 负载均衡相关
-     */
-    private int round = 0;
-
 
     public AgentUdpClient(EventLoop loop) {
         Bootstrap bootstrap = new Bootstrap();
@@ -96,8 +88,11 @@ public class AgentUdpClient {
 
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
+
         clientIndex = agentUdpClientCount.getAndIncrement();
         logger.info("client udp channel: " + sendChannel.localAddress() + "->");
+
+        balanceHelper.addEndpointReq(clientIndex);
     }
 
     public int putChannel(Channel channel) {
@@ -112,11 +107,7 @@ public class AgentUdpClient {
      */
     public void send(ByteBuf buf) {
         // 根据负载均衡算法，选择一个节点发送数据
-        InetSocketAddress host = EndpointHelper.getBalancePoint(interList, endpointList, clientIndex, round);
-//        if (round >= 7)
-//            round = 0;
-//        else round++;
-        buf.setInt(8, ((InetSocketAddress) sendChannel.localAddress()).getPort());
+        InetSocketAddress host = balanceHelper.getBalancePoint(clientIndex);
         sendChannel.writeAndFlush(new DatagramPacket(buf, host));
     }
 
@@ -131,12 +122,7 @@ public class AgentUdpClient {
          * 设置正在处理的数目
          */
         String hostAddress = msg.sender().getAddress().getHostAddress();
-        for (Endpoint endpoint : endpointList) {
-            if (endpoint.getHost().equals(hostAddress)) {
-                endpoint.reqNum.decrementAndGet();
-                break;
-            }
-        }
+        balanceHelper.decrease(clientIndex, hostAddress);
         int id = content.readInt();
         Channel responseChannel = responseChannelList.get(id);
         // 封装返回response
@@ -161,16 +147,7 @@ public class AgentUdpClient {
         // TODO  应该加锁
         LOCK.AgentChannelLock = true;
         for (Endpoint endpoint : endpoints) {
-            if (!endpointList.contains(endpoint)) {
-                endpointList.add(endpoint);
-                List<InetSocketAddress> singleHost = new ArrayList<>();
-                for (Integer integer : endpoint.getPort()) {
-                    singleHost.add(new InetSocketAddress(endpoint.getHost(), integer));
-                }
-                interList.add(singleHost);
-                // HttpServerHandler.udpReqList.add(new ArrayList<>());
-                logger.info("udp get endpoint: " + endpoint.toString());
-            }
+            balanceHelper.addEndpoint(endpoint);
         }
         LOCK.AgentChannelLock = false;
         return true;
