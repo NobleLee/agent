@@ -70,7 +70,7 @@ public class EndpointHelper {
 
     int size = 0;
 
-    public synchronized void addEndpointReq(int index) {
+    public synchronized void addEndpointReq(final int index) {
         totalReqList[index] = new int[3];
         size++;
     }
@@ -90,7 +90,7 @@ public class EndpointHelper {
                 singleHost.add(new InetSocketAddress(endpoint.getHost(), integer));
             }
             interList.add(singleHost);
-            logger.info("udp get endpoint: " + endpoint.toString());
+            logger.info("get endpoint: " + endpoint.toString());
         }
     }
 

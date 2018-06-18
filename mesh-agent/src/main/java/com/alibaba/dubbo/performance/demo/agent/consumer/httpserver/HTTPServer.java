@@ -35,6 +35,8 @@ public class HTTPServer {
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.SO_SNDBUF, 256 * 1024)
+                    .option(ChannelOption.SO_RCVBUF, 256 * 1024)
                     .childHandler(new HttpServerInitializer());
 
             ChannelFuture future = bootstrap.bind("localhost", port).sync();

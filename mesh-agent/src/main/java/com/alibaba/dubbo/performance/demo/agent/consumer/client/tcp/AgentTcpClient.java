@@ -11,6 +11,7 @@ import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.http.*;
+import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,20 +73,25 @@ public class AgentTcpClient {
 
     private ChannelFuture[] channelFutures = new ChannelFuture[3];
 
+    private Future<Channel> future;
+
+    private FutureTask<Channel>[] futureTasks = new FutureTask[3];
+
     public AgentTcpClient(EventLoop loop) {
         ConnecManager connecManager = new ConnecManager(loop, this, AgentTcpInitializer.class);
 
         int count = 0;
         for (Endpoint endpoint : balanceHelper.getEndpoints()) {
-            ChannelFuture channelFuture = connecManager.connect(endpoint.getHost(), endpoint.getPort().get(0));
-            channelFutures[count++] = channelFuture;
+            future = connecManager.bind0(endpoint.getHost(), endpoint.getPort().get(0));
+
+//            ChannelFuture future = connecManager.connect(endpoint.getHost(), endpoint.getPort().get(0));
+//            channelFutures[count++] = future;
         }
 
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
 
         clientIndex = agentTcpClientCount.getAndIncrement();
-
         balanceHelper.addEndpointReq(clientIndex);
     }
 
@@ -99,14 +105,22 @@ public class AgentTcpClient {
      *
      * @param buf
      */
-    public void send(ByteBuf buf) throws InterruptedException {
+    public void send(ByteBuf buf) throws InterruptedException, ExecutionException {
         // 根据负载均衡算法，选择一个节点发送数据
         int index = balanceHelper.getBalanceIndex(clientIndex);
+        System.err.println(Thread.currentThread().getName());
+        // ByteBufUtils.printDubboMsg(buf);
+        if (channels[index] == null) {
+            // while (channelFutures!=null);
+//            while (!channelFutures[index].isDone()) ;
+//            channels[index] = channelFutures[index].channel();
 
-        while (channels[index] == null && channelFutures[index].isDone()) {
+//            while (!futureTasks[index].isDone()) ;
             logger.info("get " + clientIndex + " channel.");
-            channels[index] = channelFutures[index].sync().channel();
+            channels[index] = future.get();
+
         }
+
 
         ByteBufUtils.printDubboMsg(buf);
         channels[index].writeAndFlush(buf);

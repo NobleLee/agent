@@ -30,19 +30,19 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
 
     private static AtomicInteger classCount = new AtomicInteger(0);
 
-    public static ThreadLocal<AgentUdpClient> udpClientContext = new ThreadLocal<>();
+    private static ThreadLocal<AgentUdpClient> udpClientContext = new ThreadLocal<>();
 
-    public static ThreadLocal<AgentTcpClient> tcpClientContext = new ThreadLocal<>();
+    private static ThreadLocal<AgentTcpClient> tcpClientContext = new ThreadLocal<>();
 
-    public static ThreadLocal<ByteBuf> headerThreadLocal = new ThreadLocal<>();
+    private static ThreadLocal<ByteBuf> headerThreadLocal = new ThreadLocal<>();
 
-    public long index = 0;
+    private long index = 0;
 
-    public AgentUdpClient agentUdpClient;
+    private AgentUdpClient agentUdpClient;
 
-    public AgentTcpClient agentTcpClient;
+    private AgentTcpClient agentTcpClient;
 
-    public ByteBuf header;
+    private ByteBuf header;
 
 
     @Override
@@ -51,7 +51,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
         /**
          * 每一个线程绑定一个client
          */
-        boolean isInitThread = (udpClientContext.get() == null);
+        boolean isInitThread = (headerThreadLocal.get() == null);
         if (COMMON.isUdp) {
             if (isInitThread) {
                 AgentUdpClient agentUdpClient = new AgentUdpClient(ctx.channel().eventLoop());
@@ -99,16 +99,17 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
-       // ByteBufUtils.printStringln(buf, "--------------------------------------\n");
+        // ByteBufUtils.printStringln(buf, "--------------------------------------\n");
         if (getBody(buf)) {
+          //  ByteBufUtils.printDubboMsg(globalBuf);
             if (COMMON.isUdp)
                 agentUdpClient.send(globalBuf);
             else {
                 try {
                     agentTcpClient.send(globalBuf);
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
             }

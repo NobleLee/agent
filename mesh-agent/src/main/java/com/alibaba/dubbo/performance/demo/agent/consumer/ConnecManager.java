@@ -7,7 +7,10 @@ import com.alibaba.fastjson.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoop;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,6 +122,7 @@ public class ConnecManager {
                         break;
                     }
                 } catch (Exception e) {
+                    e.printStackTrace();
                     logger.info("try " + (i++) + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
                     try {
                         Thread.sleep(1000);
@@ -145,12 +149,53 @@ public class ConnecManager {
      * @param port
      * @return
      */
+    public Future<Channel> bind0(String host, int port) {
+
+        NioEventLoopGroup loopGroup = new NioEventLoopGroup(1);
+        EventLoop loop = loopGroup.next();
+        Callable<Channel> callable = () -> {
+            int i = 1;
+            Channel channel = null;
+            while (true) {
+                try {
+                    logger.info(" new connect to " + host + ":" + port);
+                    channel = bootstrap.connect(host, port).sync().channel();
+                    i++;
+                    if (channel.isActive()) {
+                        logger.info("get channel: " + channel.localAddress() + "->" + channel.remoteAddress());
+                        break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logger.info("try " + (i++) + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                logger.info("try " + (i++) + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
+            }
+            return channel;
+        };
+        Future<Channel> task = loop.submit(callable);
+
+        return task;
+    }
+
+    /**
+     * 绑定一个Endpoint，并指定通道数目
+     *
+     * @param host
+     * @param port
+     * @return
+     */
     public ChannelFuture connect(String host, int port) {
         logger.info(" new connect to " + host + ":" + port);
 
-        ChannelFuture connect = bootstrap.connect(host, port);
+        ChannelFuture channelFuture = bootstrap.connect(host, port);
 
-        return connect;
+        return channelFuture;
     }
 
 
