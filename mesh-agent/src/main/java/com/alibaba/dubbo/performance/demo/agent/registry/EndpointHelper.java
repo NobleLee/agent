@@ -136,34 +136,33 @@ public class EndpointHelper {
         /**
          * 随机负载均衡
          */
-//        int hostIndex = random.nextInt(interList.size());
-//        return interList.get(hostIndex).get(index);
+        return random.nextInt(endpoints.size());
 
 
         /**
          * 尽可能的将请求打到最大的机器--乐观锁的形式
          */
-        if (sync) {
-            if (endpoints.get(2).reqNum.get() < limit) {
-                endpoints.get(2).reqNum.getAndIncrement();
-                return 2;
-            } else if (endpoints.get(1).reqNum.get() < limit) {
-                endpoints.get(1).reqNum.getAndIncrement();
-                return 1;
-            }
-            endpoints.get(0).reqNum.getAndIncrement();
-            return 0;
-        } else {
-            if (getEndpointReq(2) < limit) {
-                totalReqList[index][2]++;
-                return 2;
-            } else if (getEndpointReq(1) < limit) {
-                totalReqList[index][1]++;
-                return 1;
-            }
-            totalReqList[index][0]++;
-            return 0;
-        }
+//        if (sync) {
+//            if (endpoints.get(2).reqNum.get() < limit) {
+//                endpoints.get(2).reqNum.getAndIncrement();
+//                return 2;
+//            } else if (endpoints.get(1).reqNum.get() < limit) {
+//                endpoints.get(1).reqNum.getAndIncrement();
+//                return 1;
+//            }
+//            endpoints.get(0).reqNum.getAndIncrement();
+//            return 0;
+//        } else {
+//            if (getEndpointReq(2) < limit) {
+//                totalReqList[index][2]++;
+//                return 2;
+//            } else if (getEndpointReq(1) < limit) {
+//                totalReqList[index][1]++;
+//                return 1;
+//            }
+//            totalReqList[index][0]++;
+//            return 0;
+//        }
 
         /**
          * 三台机器按照4：3：1的比例进行轮询

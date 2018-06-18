@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.consumer.ConnecManager;
 import com.alibaba.dubbo.performance.demo.agent.provider.dubbo.DubboClientInitializer;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHelper;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import com.alibaba.dubbo.performance.demo.agent.tools.LOCK;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -57,7 +58,7 @@ public class AgentTcpClient {
     /**
      * 用于给Client进行编号
      */
-    private static AtomicInteger agentUdpClientCount = new AtomicInteger(0);
+    private static AtomicInteger agentTcpClientCount = new AtomicInteger(0);
 
     /**
      * 本Client的编号值
@@ -72,7 +73,7 @@ public class AgentTcpClient {
     private FutureTask<Channel>[] futureTasks = new FutureTask[3];
 
     public AgentTcpClient(EventLoop loop) {
-        ConnecManager connecManager = new ConnecManager(loop, AgentTcpInitializer.class);
+        ConnecManager connecManager = new ConnecManager(loop, this, AgentTcpInitializer.class);
 
         int count = 0;
         for (Endpoint endpoint : balanceHelper.getEndpoints()) {
@@ -83,7 +84,7 @@ public class AgentTcpClient {
         response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(CONTENT_TYPE, "text/html; charset=UTF-8");
 
-        clientIndex = agentUdpClientCount.getAndIncrement();
+        clientIndex = agentTcpClientCount.getAndIncrement();
 
         balanceHelper.addEndpointReq(clientIndex);
     }
@@ -106,6 +107,7 @@ public class AgentTcpClient {
             channels[index] = futureTasks[index].get();
         }
 
+        ByteBufUtils.printDubboMsg(buf);
         channels[index].writeAndFlush(buf);
     }
 
@@ -169,32 +171,5 @@ public class AgentTcpClient {
 //        }
         return true;
     }
-
-    public class AgentTcpInitializer extends ChannelInitializer<NioSocketChannel> {
-
-        @Override
-        protected void initChannel(NioSocketChannel ch) {
-            ChannelPipeline pipeline = ch.pipeline();
-            pipeline.addLast(new LineBasedFrameDecoder(1024, true, true));
-            pipeline.addLast(new ChannelInboundHandlerAdapter() {
-                @Override
-                public void channelActive(ChannelHandlerContext ctx) throws Exception {
-                    super.channelActive(ctx);
-                }
-
-                @Override
-                public void channelRead(ChannelHandlerContext ctx, Object msg) {
-                    ByteBuf in = (ByteBuf) msg;
-
-                    try {
-                        response(in);
-                    } finally {
-                        in.release();
-                    }
-                }
-            });
-        }
-    }
-
 
 }

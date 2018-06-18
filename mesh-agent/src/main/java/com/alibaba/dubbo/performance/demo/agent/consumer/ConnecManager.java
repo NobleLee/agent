@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.consumer.client.tcp.AgentTcpClient;
 import com.alibaba.dubbo.performance.demo.agent.provider.server.tcp.ServerTcpHandler;
 import com.alibaba.dubbo.performance.demo.agent.provider.server.udp.ServerUdpHandler;
 import com.alibaba.fastjson.JSON;
@@ -22,6 +23,7 @@ public class ConnecManager {
 
     /**
      * udp
+     *
      * @param loop
      * @param udpHandler
      * @param initializer
@@ -49,6 +51,7 @@ public class ConnecManager {
 
     /**
      * tcp
+     *
      * @param loop
      * @param tcpHandler
      * @param initializer
@@ -74,13 +77,22 @@ public class ConnecManager {
         bootstrap = initBootstrap(channelInitializer, loop);
     }
 
-    public ConnecManager(EventLoopGroup loop, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
+    public ConnecManager(EventLoopGroup loop, AgentTcpClient agentTcpClient, Class<? extends ChannelInitializer<NioSocketChannel>> initializer) {
         ChannelInitializer<NioSocketChannel> channelInitializer = null;
+        Class<?>[] parTypes = new Class<?>[1];
+        parTypes[0] = AgentTcpClient.class;
         try {
-            channelInitializer = initializer.newInstance();
-        } catch (InstantiationException e) {
+            Constructor<?> constructor = initializer.getConstructor(parTypes);
+            Object[] pars = new Object[1];
+            pars[0] = agentTcpClient;
+            channelInitializer = (ChannelInitializer<NioSocketChannel>) constructor.newInstance(pars);
+        } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
         bootstrap = initBootstrap(channelInitializer, loop);
@@ -114,6 +126,7 @@ public class ConnecManager {
                         e1.printStackTrace();
                     }
                 }
+                logger.info("try " + (i++) + " times to connect " + host + ":" + port + JSON.toJSONString(channel));
             }
             return channel;
         };

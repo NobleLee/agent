@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.consumer.httpserver;
 import com.alibaba.dubbo.performance.demo.agent.COMMON;
 import com.alibaba.dubbo.performance.demo.agent.consumer.client.tcp.AgentTcpClient;
 import com.alibaba.dubbo.performance.demo.agent.consumer.client.udp.AgentUdpClient;
+import com.alibaba.dubbo.performance.demo.agent.tools.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -99,7 +100,7 @@ public class HttpSimpleHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
-        // ByteBufUtils.printStringln(buf, "--------------------------------------\n");
+       // ByteBufUtils.printStringln(buf, "--------------------------------------\n");
         if (getBody(buf)) {
             // logger.info("msgCount " + msgCount.incrementAndGet());
             // ByteBufUtils.printDubboMsg(globalBuf);
